@@ -26,11 +26,11 @@ type DatabasesService interface {
 
 // Database represents a PlanetScale database
 type Database struct {
-	ID        int64      `json:"id,omitempty" header:"id"`
-	Name      string     `json:"name" header:"name"`
-	Notes     string     `json:"notes" header:"notes"`
-	CreatedAt *time.Time `json:"created_at" header:"created_at,unixtime_human"`
-	UpdatedAt *time.Time `json:"updated_at" header:"updated_at,unixtime_human"`
+	ID        int64      `json:"id,omitempty" jsonapi:"primary,databases" header:"id"`
+	Name      string     `json:"name" jsonapi:"attr,name" header:"name"`
+	Notes     string     `json:"notes" jsonapi:"attr,notes" header:"notes"`
+	CreatedAt *time.Time `json:"created_at" jsonapi:"attr,created_at" header:"created_at,unixtime_human"`
+	UpdatedAt *time.Time `json:"updated_at" jsonapi:"attr,updated_at" header:"updated_at,unixtime_human"`
 }
 
 // DatabaseStatus represents the status of a PlanetScale database.

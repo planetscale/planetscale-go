@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/google/jsonapi"
 	"github.com/hashicorp/go-cleanhttp"
 	"golang.org/x/oauth2"
 )
@@ -85,9 +86,41 @@ func NewClientFromToken(accessToken string, opts ...ClientOption) (*Client, erro
 	return NewClient(oauthClient, opts...)
 }
 
+type RequestOpts struct {
+	useJSONAPI     bool
+	useJSONAPIMany bool
+}
+
+type RequestOption func(*RequestOpts)
+
+func WithJSONAPIMany() RequestOption {
+	return func(opts *RequestOpts) {
+		opts.useJSONAPIMany = true
+	}
+}
+
+func WithoutJSONAPI() RequestOption {
+	return func(opts *RequestOpts) {
+		opts.useJSONAPI = false
+	}
+}
+
+// DefaultRequestOpts returns the default request options that we will use
+// within our requests.
+func DefaultRequestOpts() *RequestOpts {
+	return &RequestOpts{
+		useJSONAPI: true,
+	}
+}
+
 // Do executes the inputted HTTP request.
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts ...RequestOption) (*http.Response, error) {
 	req = req.WithContext(ctx)
+	requestOpts := DefaultRequestOpts()
+
+	for _, opt := range opts {
+		opt(requestOpts)
+	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
@@ -121,9 +154,17 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	}
 
 	if v != nil {
-		err = json.NewDecoder(res.Body).Decode(v)
-		if err != nil {
-			return nil, err
+		if requestOpts.useJSONAPI {
+			// TODO(iheanyi): Figure out a cleaner way of doing this type of logic.
+			err = jsonapi.UnmarshalPayload(res.Body, v)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err = json.NewDecoder(res.Body).Decode(v)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

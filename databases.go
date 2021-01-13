@@ -9,8 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var databasesAPIPath = "databases"
-
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {
 	Database *Database `json:"database"`
@@ -19,11 +17,11 @@ type CreateDatabaseRequest struct {
 // DatabaseService is an interface for communicating with the PlanetScale
 // Databases API endpoint.
 type DatabasesService interface {
-	Create(context.Context, *CreateDatabaseRequest) (*Database, error)
-	Get(context.Context, int64) (*Database, error)
-	Status(context.Context, int64) (*DatabaseStatus, error)
-	List(context.Context) ([]*Database, error)
-	Delete(context.Context, int64) (bool, error)
+	Create(context.Context, string, *CreateDatabaseRequest) (*Database, error)
+	Get(context.Context, string, int64) (*Database, error)
+	Status(context.Context, string, int64) (*DatabaseStatus, error)
+	List(context.Context, string) ([]*Database, error)
+	Delete(context.Context, string, int64) (bool, error)
 }
 
 // Database represents a PlanetScale database
@@ -61,8 +59,8 @@ type ListDatabasesResponse struct {
 	Databases []*Database `json:"databases"`
 }
 
-func (ds *databasesService) List(ctx context.Context) ([]*Database, error) {
-	req, err := ds.client.NewRequest(http.MethodGet, databasesAPIPath, nil)
+func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, error) {
+	req, err := ds.client.NewRequest(http.MethodGet, databasesAPIPath(org), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
@@ -82,8 +80,8 @@ type DatabaseResponse struct {
 	Database *Database `json:"database"`
 }
 
-func (ds *databasesService) Create(ctx context.Context, createReq *CreateDatabaseRequest) (*Database, error) {
-	req, err := ds.client.NewRequest(http.MethodPost, databasesAPIPath, createReq)
+func (ds *databasesService) Create(ctx context.Context, org string, createReq *CreateDatabaseRequest) (*Database, error) {
+	req, err := ds.client.NewRequest(http.MethodPost, databasesAPIPath(org), createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for create database")
 	}
@@ -97,8 +95,8 @@ func (ds *databasesService) Create(ctx context.Context, createReq *CreateDatabas
 	return createRes.Database, nil
 }
 
-func (ds *databasesService) Get(ctx context.Context, id int64) (*Database, error) {
-	path := fmt.Sprintf("%s/%d", databasesAPIPath, id)
+func (ds *databasesService) Get(ctx context.Context, org string, id int64) (*Database, error) {
+	path := fmt.Sprintf("%s/%d", databasesAPIPath(org), id)
 	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get database")
@@ -118,8 +116,8 @@ func (ds *databasesService) Get(ctx context.Context, id int64) (*Database, error
 	return dbRes.Database, nil
 }
 
-func (ds *databasesService) Delete(ctx context.Context, id int64) (bool, error) {
-	path := fmt.Sprintf("%s/%d", databasesAPIPath, id)
+func (ds *databasesService) Delete(ctx context.Context, org string, id int64) (bool, error) {
+	path := fmt.Sprintf("%s/%d", databasesAPIPath(org), id)
 	req, err := ds.client.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating request for delete database")
@@ -142,8 +140,12 @@ type StatusResponse struct {
 	Status *DatabaseStatus `json:"status"`
 }
 
-func (ds *databasesService) Status(ctx context.Context, id int64) (*DatabaseStatus, error) {
-	path := fmt.Sprintf("%s/%d/status", databasesAPIPath, id)
+func databasesAPIPath(org string) string {
+	return fmt.Sprintf("%s/databases", org)
+}
+
+func (ds *databasesService) Status(ctx context.Context, org string, id int64) (*DatabaseStatus, error) {
+	path := fmt.Sprintf("%s/%d/status", databasesAPIPath(org), id)
 	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for database status")

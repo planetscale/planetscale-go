@@ -26,20 +26,20 @@ type DatabasesService interface {
 
 // Database represents a PlanetScale database
 type Database struct {
-	Name      string    `jsonapi:"attr,name"`
-	Notes     string    `jsonapi:"attr,notes"`
-	CreatedAt time.Time `jsonapi:"attr,created_at,iso8601"`
-	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601"`
+	Name      string    `jsonapi:"attr,name" json:"name"`
+	Notes     string    `jsonapi:"attr,notes" json:"notes"`
+	CreatedAt time.Time `jsonapi:"attr,created_at,iso8601" json:"created_at"`
+	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601" json:"updated_at"`
 }
 
 // DatabaseStatus represents the status of a PlanetScale database.
 type DatabaseStatus struct {
-	DatabaseID    int64  `json:"database_id"`
-	DeployPhase   string `json:"deploy_phase"`
-	GatewayHost   string `json:"mysql_gateway_host"`
-	GatewayPort   int    `json:"mysql_gateway_port"`
-	MySQLUser     string `json:"mysql_gateway_user"`
-	MySQLPassword string `json:"mysql_gateway_pass"`
+	DatabaseID    int64  `json:"database_id" jsonapi:"database_id"`
+	DeployPhase   string `json:"deploy_phase" jsonapi:"deploy_phase"`
+	GatewayHost   string `json:"mysql_gateway_host" jsonapi:"gateway_host"`
+	GatewayPort   int    `json:"mysql_gateway_port" jsonapi:"gateway_port"`
+	MySQLUser     string `json:"mysql_gateway_user" jsonapi:"my_sql_user"`
+	MySQLPassword string `json:"mysql_gateway_pass" jsonapi:"my_sql_password"`
 }
 
 type databasesService struct {

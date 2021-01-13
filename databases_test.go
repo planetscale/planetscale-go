@@ -34,6 +34,7 @@ func TestDatabases_List(t *testing.T) {
 	}
 
 	dbName := "planetscale-go-test-db"
+
 	_, err = client.Databases.Create(ctx, org, &CreateDatabaseRequest{
 		Database: &Database{
 			Name:  dbName,

@@ -54,10 +54,8 @@ func TestDo(t *testing.T) {
       }
     }
 }`,
-			body: &CreateDatabaseRequest{
-				Database: &Database{
-					Name: "foo-bar",
-				},
+			body: &Database{
+				Name: "foo-bar",
 			},
 			v: &Database{},
 			want: &Database{

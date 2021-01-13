@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -84,11 +83,6 @@ func NewClientFromToken(accessToken string, opts ...ClientOption) (*Client, erro
 	oauthClient := oauth2.NewClient(context.Background(), tokenSource)
 
 	return NewClient(oauthClient, opts...)
-}
-
-// GetAPIEndpoint simply returns an API endpoint.
-func (c *Client) GetAPIEndpoint(path string) string {
-	return fmt.Sprintf("%s/%s", c.BaseURL, path)
 }
 
 // Do executes the inputted HTTP request.

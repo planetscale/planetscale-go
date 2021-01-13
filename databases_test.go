@@ -9,6 +9,12 @@ import (
 	"testing"
 )
 
+// This integration test creates, lists and then deletes a PlanetScale
+// Database. Use with caution!. Usage:
+//
+//   PLANETSCALE_TOKEN=$(cat ~/.config/psctl/access-token) PLANETSCALE_ORG="damp-dew-9934" go test -tags integration
+//
+
 func TestDatabases_List(t *testing.T) {
 	token := os.Getenv("PLANETSCALE_TOKEN")
 	if token == "" {

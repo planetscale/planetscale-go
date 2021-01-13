@@ -94,21 +94,15 @@ type RequestOpts struct {
 
 type RequestOption func(*RequestOpts)
 
-func WithJSONAPIMany() RequestOption {
+func withJSONAPIMany() RequestOption {
 	return func(opts *RequestOpts) {
 		opts.useJSONAPIMany = true
 	}
 }
 
-func WithoutJSONAPI() RequestOption {
-	return func(opts *RequestOpts) {
-		opts.useJSONAPI = false
-	}
-}
-
-// DefaultRequestOpts returns the default request options that we will use
+// defaultRequestOpts returns the default request options that we will use
 // within our requests.
-func DefaultRequestOpts() *RequestOpts {
+func defaultRequestOpts() *RequestOpts {
 	return &RequestOpts{
 		useJSONAPI: true,
 	}
@@ -117,7 +111,7 @@ func DefaultRequestOpts() *RequestOpts {
 // Do executes the inputted HTTP request.
 func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts ...RequestOption) (*http.Response, error) {
 	req = req.WithContext(ctx)
-	requestOpts := DefaultRequestOpts()
+	requestOpts := defaultRequestOpts()
 
 	for _, opt := range opts {
 		opt(requestOpts)
@@ -155,23 +149,15 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 	}
 
 	if v != nil {
-		if requestOpts.useJSONAPI {
-			// TODO(iheanyi): Figure out a cleaner way of doing this logic for
-			// unmarshaling.
-			if requestOpts.useJSONAPIMany {
-				_, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(v))
-				if err != nil {
-					return nil, err
-				}
-
-			} else {
-				err = jsonapi.UnmarshalPayload(res.Body, v)
-				if err != nil {
-					return nil, err
-				}
+		// TODO(iheanyi): Figure out a cleaner way of doing this logic for
+		// unmarshaling.
+		if requestOpts.useJSONAPIMany {
+			_, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(v))
+			if err != nil {
+				return nil, err
 			}
 		} else {
-			err = json.NewDecoder(res.Body).Decode(v)
+			err = jsonapi.UnmarshalPayload(res.Body, v)
 			if err != nil {
 				return nil, err
 			}

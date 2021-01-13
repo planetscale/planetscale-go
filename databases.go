@@ -26,21 +26,20 @@ type DatabasesService interface {
 
 // Database represents a PlanetScale database
 type Database struct {
-	ID        int64      `json:"id,omitempty" jsonapi:"primary,databases" header:"id"`
-	Name      string     `json:"name" jsonapi:"attr,name" header:"name"`
-	Notes     string     `json:"notes" jsonapi:"attr,notes" header:"notes"`
-	CreatedAt *time.Time `json:"created_at" jsonapi:"attr,created_at" header:"created_at,unixtime_human"`
-	UpdatedAt *time.Time `json:"updated_at" jsonapi:"attr,updated_at" header:"updated_at,unixtime_human"`
+	Name      string    `jsonapi:"attr,name"`
+	Notes     string    `jsonapi:"attr,notes"`
+	CreatedAt time.Time `jsonapi:"attr,created_at,iso8601"`
+	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601"`
 }
 
 // DatabaseStatus represents the status of a PlanetScale database.
 type DatabaseStatus struct {
-	DatabaseID    int64  `json:"database_id" header:"database_id"`
-	DeployPhase   string `json:"deploy_phase" header:"status"`
-	GatewayHost   string `json:"mysql_gateway_host" header:"gateway_host"`
-	GatewayPort   int    `json:"mysql_gateway_port" header:"gateway_port"`
-	MySQLUser     string `json:"mysql_gateway_user" header:"user"`
-	MySQLPassword string `json:"mysql_gateway_pass" header:"password"`
+	DatabaseID    int64  `json:"database_id"`
+	DeployPhase   string `json:"deploy_phase"`
+	GatewayHost   string `json:"mysql_gateway_host"`
+	GatewayPort   int    `json:"mysql_gateway_port"`
+	MySQLUser     string `json:"mysql_gateway_user"`
+	MySQLPassword string `json:"mysql_gateway_pass"`
 }
 
 type databasesService struct {
@@ -66,7 +65,8 @@ func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, 
 	}
 
 	listRes := &ListDatabasesResponse{}
-	_, err = ds.client.Do(ctx, req, listRes, WithJSONAPIMany())
+
+	_, err = ds.client.Do(ctx, req, listRes, withJSONAPIMany())
 	if err != nil {
 		return nil, err
 	}

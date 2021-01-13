@@ -43,45 +43,42 @@ func TestDo(t *testing.T) {
 		{
 			desc:       "returns an HTTP response 200 when posting a request",
 			statusCode: http.StatusOK,
-			response: `{
-			"database": {
-				"id": 1,
-				"name": "foo-bar"
-			}
-			}`,
+			response: `
+{ 
+"data": {
+      "id": "509",
+      "type": "database",
+      "attributes": {
+        "name": "foo-bar",
+        "notes": ""
+      }
+    }
+}`,
 			body: &CreateDatabaseRequest{
 				Database: &Database{
 					Name: "foo-bar",
 				},
 			},
-			v: &DatabaseResponse{},
-			want: &DatabaseResponse{
-				Database: &Database{
-					ID:   1,
-					Name: "foo-bar",
-				},
+			v: &Database{},
+			want: &Database{
+				Name: "foo-bar",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			srv, cleanup := setupServer(func(mux *http.ServeMux) {
-				mux.HandleFunc("/api-endpoint", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(tt.statusCode)
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tt.statusCode)
 
-					_, err := w.Write([]byte(tt.response))
-					if err != nil {
-						t.Fatal(err)
-					}
-				})
-			})
+				_, err := w.Write([]byte(tt.response))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}))
+			t.Cleanup(ts.Close)
 
-			t.Cleanup(func() {
-				cleanup()
-			})
-
-			client, err := NewClient(cleanhttp.DefaultClient(), SetBaseURL(srv.URL))
+			client, err := NewClient(cleanhttp.DefaultClient(), SetBaseURL(ts.URL))
 			if err != nil {
 				t.Fatal(err)
 				return
@@ -109,16 +106,5 @@ func TestDo(t *testing.T) {
 			assert.Equal(t, res.StatusCode, tt.statusCode)
 			assert.Equal(t, tt.want, tt.v)
 		})
-	}
-}
-
-func setupServer(fn func(mux *http.ServeMux)) (*httptest.Server, func()) {
-	mux := http.NewServeMux()
-
-	fn(mux)
-	server := httptest.NewServer(mux)
-
-	return server, func() {
-		server.Close()
 	}
 }

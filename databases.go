@@ -18,10 +18,10 @@ type CreateDatabaseRequest struct {
 // Databases API endpoint.
 type DatabasesService interface {
 	Create(context.Context, string, *CreateDatabaseRequest) (*Database, error)
-	Get(context.Context, string, int64) (*Database, error)
-	Status(context.Context, string, int64) (*DatabaseStatus, error)
+	Get(context.Context, string, string) (*Database, error)
+	Status(context.Context, string, string) (*DatabaseStatus, error)
 	List(context.Context, string) ([]*Database, error)
-	Delete(context.Context, string, int64) (bool, error)
+	Delete(context.Context, string, string) (bool, error)
 }
 
 // Database represents a PlanetScale database
@@ -95,8 +95,8 @@ func (ds *databasesService) Create(ctx context.Context, org string, createReq *C
 	return createRes.Database, nil
 }
 
-func (ds *databasesService) Get(ctx context.Context, org string, id int64) (*Database, error) {
-	path := fmt.Sprintf("%s/%d", databasesAPIPath(org), id)
+func (ds *databasesService) Get(ctx context.Context, org string, name string) (*Database, error) {
+	path := fmt.Sprintf("%s/%s", databasesAPIPath(org), name)
 	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get database")
@@ -116,8 +116,8 @@ func (ds *databasesService) Get(ctx context.Context, org string, id int64) (*Dat
 	return dbRes.Database, nil
 }
 
-func (ds *databasesService) Delete(ctx context.Context, org string, id int64) (bool, error) {
-	path := fmt.Sprintf("%s/%d", databasesAPIPath(org), id)
+func (ds *databasesService) Delete(ctx context.Context, org string, name string) (bool, error) {
+	path := fmt.Sprintf("%s/%s", databasesAPIPath(org), name)
 	req, err := ds.client.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating request for delete database")
@@ -144,8 +144,8 @@ func databasesAPIPath(org string) string {
 	return fmt.Sprintf("%s/databases", org)
 }
 
-func (ds *databasesService) Status(ctx context.Context, org string, id int64) (*DatabaseStatus, error) {
-	path := fmt.Sprintf("%s/%d/status", databasesAPIPath(org), id)
+func (ds *databasesService) Status(ctx context.Context, org string, name string) (*DatabaseStatus, error) {
+	path := fmt.Sprintf("%s/%s/status", databasesAPIPath(org), name)
 	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for database status")

@@ -141,7 +141,7 @@ type StatusResponse struct {
 }
 
 func databasesAPIPath(org string) string {
-	return fmt.Sprintf("%s/databases", org)
+	return fmt.Sprintf("organizations/%s/databases", org)
 }
 
 func (ds *databasesService) Status(ctx context.Context, org string, name string) (*DatabaseStatus, error) {

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 
 	"github.com/google/jsonapi"
 	"github.com/hashicorp/go-cleanhttp"
@@ -157,9 +158,17 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 		if requestOpts.useJSONAPI {
 			// TODO(iheanyi): Figure out a cleaner way of doing this logic for
 			// unmarshaling.
-			err = jsonapi.UnmarshalPayload(res.Body, v)
-			if err != nil {
-				return nil, err
+			if requestOpts.useJSONAPIMany {
+				_, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(v))
+				if err != nil {
+					return nil, err
+				}
+
+			} else {
+				err = jsonapi.UnmarshalPayload(res.Body, v)
+				if err != nil {
+					return nil, err
+				}
 			}
 		} else {
 			err = json.NewDecoder(res.Body).Decode(v)

@@ -66,7 +66,7 @@ func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, 
 	}
 
 	listRes := &ListDatabasesResponse{}
-	_, err = ds.client.Do(ctx, req, listRes)
+	_, err = ds.client.Do(ctx, req, listRes, WithJSONAPIMany())
 	if err != nil {
 		return nil, err
 	}

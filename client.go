@@ -155,7 +155,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 
 	if v != nil {
 		if requestOpts.useJSONAPI {
-			// TODO(iheanyi): Figure out a cleaner way of doing this type of logic.
+			// TODO(iheanyi): Figure out a cleaner way of doing this logic for
+			// unmarshaling.
 			err = jsonapi.UnmarshalPayload(res.Body, v)
 			if err != nil {
 				return nil, err

@@ -128,7 +128,7 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch s
 
 	res, err := ds.client.Do(ctx, req)
 	if err != nil {
-		return false, errors.Wrap(err, "error deleting database")
+		return false, err
 	}
 	defer res.Body.Close()
 

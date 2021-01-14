@@ -8,9 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"reflect"
 
-	"github.com/google/jsonapi"
 	"github.com/hashicorp/go-cleanhttp"
 	"golang.org/x/oauth2"
 )
@@ -87,41 +85,14 @@ func NewClientFromToken(accessToken string, opts ...ClientOption) (*Client, erro
 	return NewClient(oauthClient, opts...)
 }
 
-type RequestOpts struct {
-	useJSONAPI     bool
-	useJSONAPIMany bool
-}
-
-type RequestOption func(*RequestOpts)
-
-func withJSONAPIMany() RequestOption {
-	return func(opts *RequestOpts) {
-		opts.useJSONAPIMany = true
-	}
-}
-
-// defaultRequestOpts returns the default request options that we will use
-// within our requests.
-func defaultRequestOpts() *RequestOpts {
-	return &RequestOpts{
-		useJSONAPI: true,
-	}
-}
-
 // Do executes the inputted HTTP request.
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts ...RequestOption) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	req = req.WithContext(ctx)
-	requestOpts := defaultRequestOpts()
-
-	for _, opt := range opts {
-		opt(requestOpts)
-	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
 	if res.StatusCode >= 400 {
 		out, err := ioutil.ReadAll(res.Body)
@@ -140,7 +111,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 		// check here to make sure that errorRes is populated. If
 		// not, we return the full response back to the user, so
 		// they can debug the issue.
-		// TODO(arslan): fix the behavior on the API side
+		// TODO(fatih): fix the behavior on the API side
 		if *errorRes == (ErrorResponse{}) {
 			return nil, errors.New(string(out))
 		}
@@ -148,26 +119,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 		return res, errorRes
 	}
 
-	if v != nil {
-		// TODO(iheanyi): Figure out a cleaner way of doing this logic for
-		// unmarshaling.
-		if requestOpts.useJSONAPIMany {
-			_, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(v))
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			err = jsonapi.UnmarshalPayload(res.Body, v)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	return res, nil
 }
 
-func (c *Client) NewRequest(method string, path string, body interface{}) (*http.Request, error) {
+func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
 	u, err := c.baseURL.Parse(path)
 	if err != nil {
 		return nil, err

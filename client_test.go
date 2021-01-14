@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/jsonapi"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,13 +83,13 @@ func TestDo(t *testing.T) {
 				return
 			}
 
-			req, err := client.NewRequest(tt.method, "/api-endpoint", tt.body)
+			req, err := client.newRequest(tt.method, "/api-endpoint", tt.body)
 			if err != nil {
 				t.Fatal(err)
 				return
 			}
 
-			res, err := client.Do(context.Background(), req, tt.v)
+			res, err := client.Do(context.Background(), req)
 			if err != nil && tt.expectedError == nil {
 				if tt.expectedError != nil {
 					assert.Equal(t, tt.expectedError, err)
@@ -97,6 +98,14 @@ func TestDo(t *testing.T) {
 				}
 
 				return
+			}
+			defer res.Body.Close()
+
+			if tt.v != nil {
+				err = jsonapi.UnmarshalPayload(res.Body, tt.v)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 
 			assert.Equal(t, tt.expectedError, err)

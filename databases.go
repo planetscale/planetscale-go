@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"reflect"
 	"time"
 
+	"github.com/google/jsonapi"
 	"github.com/pkg/errors"
 )
 
@@ -59,14 +61,19 @@ type ListDatabasesResponse struct {
 }
 
 func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, error) {
-	req, err := ds.client.NewRequest(http.MethodGet, databasesAPIPath(org), nil)
+	req, err := ds.client.newRequest(http.MethodGet, databasesAPIPath(org), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	listRes := &ListDatabasesResponse{}
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
 
-	_, err = ds.client.Do(ctx, req, listRes, withJSONAPIMany())
+	listRes := &ListDatabasesResponse{}
+	_, err = jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(listRes))
 	if err != nil {
 		return nil, err
 	}
@@ -81,13 +88,19 @@ type DatabaseResponse struct {
 }
 
 func (ds *databasesService) Create(ctx context.Context, org string, createReq *CreateDatabaseRequest) (*Database, error) {
-	req, err := ds.client.NewRequest(http.MethodPost, databasesAPIPath(org), createReq)
+	req, err := ds.client.newRequest(http.MethodPost, databasesAPIPath(org), createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for create database")
 	}
 
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
 	createRes := &DatabaseResponse{}
-	_, err = ds.client.Do(ctx, req, createRes)
+	err = jsonapi.UnmarshalPayload(res.Body, createRes)
 	if err != nil {
 		return nil, err
 	}
@@ -97,18 +110,19 @@ func (ds *databasesService) Create(ctx context.Context, org string, createReq *C
 
 func (ds *databasesService) Get(ctx context.Context, org string, name string) (*Database, error) {
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(org), name)
-	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get database")
 	}
 
-	_, err = ds.client.Do(ctx, req, nil)
+	res, err := ds.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	dbRes := &DatabaseResponse{}
-	_, err = ds.client.Do(ctx, req, dbRes)
+	err = jsonapi.UnmarshalPayload(res.Body, dbRes)
 	if err != nil {
 		return nil, err
 	}
@@ -118,15 +132,16 @@ func (ds *databasesService) Get(ctx context.Context, org string, name string) (*
 
 func (ds *databasesService) Delete(ctx context.Context, org string, name string) (bool, error) {
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(org), name)
-	req, err := ds.client.NewRequest(http.MethodDelete, path, nil)
+	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating request for delete database")
 	}
 
-	res, err := ds.client.Do(ctx, req, nil)
+	res, err := ds.client.Do(ctx, req)
 	if err != nil {
 		return false, errors.Wrap(err, "error deleting database")
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
 		return false, errors.New("database not found")
@@ -146,15 +161,21 @@ func databasesAPIPath(org string) string {
 
 func (ds *databasesService) Status(ctx context.Context, org string, name string) (*DatabaseStatus, error) {
 	path := fmt.Sprintf("%s/%s/status", databasesAPIPath(org), name)
-	req, err := ds.client.NewRequest(http.MethodGet, path, nil)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for database status")
 	}
 
-	status := &StatusResponse{}
-	_, err = ds.client.Do(ctx, req, status)
+	res, err := ds.client.Do(ctx, req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting database status")
+	}
+	defer res.Body.Close()
+
+	status := &StatusResponse{}
+	err = jsonapi.UnmarshalPayload(res.Body, status)
+	if err != nil {
+		return nil, err
 	}
 
 	return status.Status, nil

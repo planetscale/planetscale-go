@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	qt "github.com/frankban/quicktest"
 	"github.com/google/jsonapi"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDo(t *testing.T) {
@@ -66,6 +66,7 @@ func TestDo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
+			c := qt.New(t)
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
 
@@ -79,24 +80,21 @@ func TestDo(t *testing.T) {
 			client, err := NewClient(WithBaseURL(ts.URL))
 			if err != nil {
 				t.Fatal(err)
-				return
 			}
 
 			req, err := client.newRequest(tt.method, "/api-endpoint", tt.body)
 			if err != nil {
 				t.Fatal(err)
-				return
 			}
 
 			res, err := client.Do(context.Background(), req)
 			if err != nil && tt.expectedError == nil {
 				if tt.expectedError != nil {
-					assert.Equal(t, tt.expectedError, err)
+					c.Assert(tt.expectedError, qt.DeepEquals, err)
 				} else {
-					t.Fatal(err)
+					c.Assert(err, qt.IsNil)
 				}
 
-				return
 			}
 			defer res.Body.Close()
 
@@ -107,10 +105,10 @@ func TestDo(t *testing.T) {
 				}
 			}
 
-			assert.Equal(t, tt.expectedError, err)
-			assert.NotNil(t, res)
-			assert.Equal(t, res.StatusCode, tt.statusCode)
-			assert.Equal(t, tt.want, tt.v)
+			c.Assert(tt.expectedError, qt.DeepEquals, err)
+			c.Assert(res, qt.Not(qt.IsNil))
+			c.Assert(res.StatusCode, qt.Equals, tt.statusCode)
+			c.Assert(tt.want, qt.DeepEquals, tt.v)
 		})
 	}
 }

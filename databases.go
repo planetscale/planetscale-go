@@ -72,19 +72,20 @@ func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, 
 	}
 	defer res.Body.Close()
 
-	listRes := &ListDatabasesResponse{}
-	_, err = jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(listRes))
+	databases, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(new(Database)))
 	if err != nil {
 		return nil, err
 	}
 
-	return listRes.Databases, nil
-}
+	dbs := make([]*Database, 0, len(databases))
+	for _, database := range databases {
+		db, ok := database.(*Database)
+		if ok {
+			dbs = append(dbs, db)
+		}
+	}
 
-// DatabaseResponse encapsulates the JSON returned after successfully creating
-// or fetching a database.
-type DatabaseResponse struct {
-	Database *Database `json:"database"`
+	return dbs, nil
 }
 
 func (ds *databasesService) Create(ctx context.Context, org string, createReq *CreateDatabaseRequest) (*Database, error) {
@@ -121,13 +122,13 @@ func (ds *databasesService) Get(ctx context.Context, org string, name string) (*
 	}
 	defer res.Body.Close()
 
-	dbRes := &DatabaseResponse{}
-	err = jsonapi.UnmarshalPayload(res.Body, dbRes)
+	db := &Database{}
+	err = jsonapi.UnmarshalPayload(res.Body, db)
 	if err != nil {
 		return nil, err
 	}
 
-	return dbRes.Database, nil
+	return db, nil
 }
 
 func (ds *databasesService) Delete(ctx context.Context, org string, name string) (bool, error) {

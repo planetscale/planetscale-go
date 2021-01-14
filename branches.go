@@ -68,6 +68,28 @@ func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, c
 	return dbBranch, nil
 }
 
+func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch string) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	dbBranch := &DatabaseBranch{}
+	err = jsonapi.UnmarshalPayload(res.Body, dbBranch)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbBranch, nil
+}
+
 func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]*DatabaseBranch, error) {
 	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(org, db), nil)
 	if err != nil {
@@ -95,10 +117,6 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 	}
 
 	return dbBranches, nil
-}
-
-func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch string) (*DatabaseBranch, error) {
-	return nil, nil
 }
 
 func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {

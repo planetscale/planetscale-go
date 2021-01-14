@@ -63,7 +63,10 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 	}
 
 	var buf bytes.Buffer
-	pem.Encode(&buf, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
+	err = pem.Encode(&buf, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
+	if err != nil {
+		return nil, fmt.Errorf("unable to encode the CSR to PEM: %s", err)
+	}
 
 	var certReq = struct {
 		CSR string `json:"csr"`

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/google/jsonapi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,57 +43,52 @@ func TestDo(t *testing.T) {
 		{
 			desc:       "returns an HTTP response 200 when posting a request",
 			statusCode: http.StatusOK,
-			response: `{
-			"database": {
-				"id": 1,
-				"name": "foo-bar"
-			}
-			}`,
-			body: &CreateDatabaseRequest{
-				Database: &Database{
-					Name: "foo-bar",
-				},
+			response: `
+{ 
+"data": {
+      "id": "509",
+      "type": "database",
+      "attributes": {
+        "name": "foo-bar",
+        "notes": ""
+      }
+    }
+}`,
+			body: &Database{
+				Name: "foo-bar",
 			},
-			v: &DatabaseResponse{},
-			want: &DatabaseResponse{
-				Database: &Database{
-					ID:   1,
-					Name: "foo-bar",
-				},
+			v: &Database{},
+			want: &Database{
+				Name: "foo-bar",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			srv, cleanup := setupServer(func(mux *http.ServeMux) {
-				mux.HandleFunc("/api-endpoint", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(tt.statusCode)
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tt.statusCode)
 
-					_, err := w.Write([]byte(tt.response))
-					if err != nil {
-						t.Fatal(err)
-					}
-				})
-			})
+				_, err := w.Write([]byte(tt.response))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}))
+			t.Cleanup(ts.Close)
 
-			t.Cleanup(func() {
-				cleanup()
-			})
-
-			client, err := NewClient(cleanhttp.DefaultClient(), SetBaseURL(srv.URL))
+			client, err := NewClient(WithBaseURL(ts.URL))
 			if err != nil {
 				t.Fatal(err)
 				return
 			}
 
-			req, err := client.NewRequest(tt.method, "/api-endpoint", tt.body)
+			req, err := client.newRequest(tt.method, "/api-endpoint", tt.body)
 			if err != nil {
 				t.Fatal(err)
 				return
 			}
 
-			res, err := client.Do(context.Background(), req, tt.v)
+			res, err := client.Do(context.Background(), req)
 			if err != nil && tt.expectedError == nil {
 				if tt.expectedError != nil {
 					assert.Equal(t, tt.expectedError, err)
@@ -103,22 +98,19 @@ func TestDo(t *testing.T) {
 
 				return
 			}
+			defer res.Body.Close()
+
+			if tt.v != nil {
+				err = jsonapi.UnmarshalPayload(res.Body, tt.v)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 
 			assert.Equal(t, tt.expectedError, err)
 			assert.NotNil(t, res)
 			assert.Equal(t, res.StatusCode, tt.statusCode)
 			assert.Equal(t, tt.want, tt.v)
 		})
-	}
-}
-
-func setupServer(fn func(mux *http.ServeMux)) (*httptest.Server, func()) {
-	mux := http.NewServeMux()
-
-	fn(mux)
-	server := httptest.NewServer(mux)
-
-	return server, func() {
-		server.Close()
 	}
 }

@@ -120,7 +120,23 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 }
 
 func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {
-	return false, nil
+	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
+	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return false, errors.Wrap(err, "error creating request for delete branch")
+	}
+
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return false, errors.Wrap(err, "error deleting database")
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return false, errors.New("database branch not found")
+	}
+
+	return true, nil
 }
 
 func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseStatus, error) {

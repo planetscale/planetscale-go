@@ -20,6 +20,7 @@ const (
 
 // Client encapsulates a client that talks to the PlanetScale API
 type Client struct {
+	// client represents the HTTP client used for making HTTP requests.
 	client *http.Client
 
 	// base URL for the API
@@ -31,8 +32,8 @@ type Client struct {
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
 
-// SetBaseURL overrides the base URL for the API.
-func SetBaseURL(baseURL string) ClientOption {
+// WithBaseURL overrides the base URL for the API.
+func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) error {
 		parsedURL, err := url.Parse(baseURL)
 		if err != nil {
@@ -44,18 +45,45 @@ func SetBaseURL(baseURL string) ClientOption {
 	}
 }
 
-// NewClient instantiates an instance of the PlanetScale API client
-func NewClient(client *http.Client, opts ...ClientOption) (*Client, error) {
-	if client == nil {
-		client = cleanhttp.DefaultClient()
-	}
+// WithAccessToken configures a client with the tiven PlanetScale access token.
+func WithAccessToken(token string) ClientOption {
+	return func(c *Client) error {
+		if token == "" {
+			return errors.New("missing access token")
+		}
 
+		tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+
+		// make sure we use our own HTTP client
+		ctx := context.WithValue(context.Background(), oauth2.HTTPClient, c.client)
+		oauthClient := oauth2.NewClient(ctx, tokenSource)
+
+		c.client = oauthClient
+		return nil
+	}
+}
+
+// WithHTTPClient configures the PLanetScale client with the given HTTP client.
+func WithHTTPClient(client *http.Client) ClientOption {
+	return func(c *Client) error {
+		if client == nil {
+			client = cleanhttp.DefaultClient()
+		}
+
+		c.client = client
+		return nil
+	}
+}
+
+// NewClient instantiates an instance of the PlanetScale API client.
+func NewClient(opts ...ClientOption) (*Client, error) {
 	baseURL, err := url.Parse(DefaultBaseURL)
 	if err != nil {
 		return nil, err
 	}
+
 	c := &Client{
-		client:  client,
+		client:  cleanhttp.DefaultClient(),
 		baseURL: baseURL,
 	}
 
@@ -66,26 +94,13 @@ func NewClient(client *http.Client, opts ...ClientOption) (*Client, error) {
 		}
 	}
 
-	c.Databases = &databasesService{
-		client: c,
-	}
+	c.Databases = &databasesService{client: c}
 
 	return c, nil
 }
 
-// NewClientFromToken instantiates an API client with a given access token.
-func NewClientFromToken(accessToken string, opts ...ClientOption) (*Client, error) {
-	if accessToken == "" {
-		return nil, errors.New("missing access token")
-	}
-
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
-	oauthClient := oauth2.NewClient(context.Background(), tokenSource)
-
-	return NewClient(oauthClient, opts...)
-}
-
-// Do executes the inputted HTTP request.
+// Do sends an HTTP request and returns an HTTP response with the configured
+// HTTP client.
 func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	req = req.WithContext(ctx)
 

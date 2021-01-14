@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 )
 
 // This integration test creates, lists and then deletes a PlanetScale
@@ -28,7 +29,9 @@ func TestDatabases_List(t *testing.T) {
 
 	ctx := context.Background()
 
-	client, err := NewClientFromToken(token)
+	client, err := NewClient(
+		WithAccessToken(token),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,6 +47,9 @@ func TestDatabases_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create database failed: %s", err)
 	}
+
+	// poor mans polling, remove once we have an API to poll the status of the DB
+	time.Sleep(time.Second * 2)
 
 	dbs, err := client.Databases.List(ctx, org)
 	if err != nil {

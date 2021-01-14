@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/google/jsonapi"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,7 +76,7 @@ func TestDo(t *testing.T) {
 			}))
 			t.Cleanup(ts.Close)
 
-			client, err := NewClient(cleanhttp.DefaultClient(), SetBaseURL(ts.URL))
+			client, err := NewClient(WithBaseURL(ts.URL))
 			if err != nil {
 				t.Fatal(err)
 				return

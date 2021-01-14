@@ -24,8 +24,8 @@ const (
 type Client struct {
 	client *http.Client
 
-	// Base URL for the API
-	BaseURL *url.URL
+	// base URL for the API
+	baseURL *url.URL
 
 	Databases DatabasesService
 }
@@ -41,7 +41,7 @@ func SetBaseURL(baseURL string) ClientOption {
 			return err
 		}
 
-		c.BaseURL = parsedURL
+		c.baseURL = parsedURL
 		return nil
 	}
 }
@@ -58,7 +58,7 @@ func NewClient(client *http.Client, opts ...ClientOption) (*Client, error) {
 	}
 	c := &Client{
 		client:  client,
-		BaseURL: baseURL,
+		baseURL: baseURL,
 	}
 
 	for _, opt := range opts {
@@ -168,7 +168,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}, opts 
 }
 
 func (c *Client) NewRequest(method string, path string, body interface{}) (*http.Request, error) {
-	u, err := c.BaseURL.Parse(path)
+	u, err := c.baseURL.Parse(path)
 	if err != nil {
 		return nil, err
 	}

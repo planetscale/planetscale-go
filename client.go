@@ -26,7 +26,8 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
-	Databases DatabasesService
+	Databases        DatabasesService
+	DatabaseBranches DatabaseBranchesService
 }
 
 // ClientOption provides a variadic option for configuring the client
@@ -95,6 +96,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}
 
 	c.Databases = &databasesService{client: c}
+	c.DatabaseBranches = &databaseBranchesService{client: c}
 
 	return c, nil
 }

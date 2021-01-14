@@ -1,19 +1,36 @@
 package planetscale
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"reflect"
+	"time"
+
+	"github.com/google/jsonapi"
+	"github.com/pkg/errors"
+)
 
 // CreateDatabaseBranchRequest encapsulates the request for creating a new
 // database branch
 type CreateDatabaseBranchRequest struct {
-	Branch *Database `json:"branch"`
+	Branch *DatabaseBranch `json:"branch"`
+}
+
+// DatabaseBranch represents a database branch
+type DatabaseBranch struct {
+	Name      string    `jsonapi:"attr,name" json:"name"`
+	Notes     string    `jsonapi:"attr,notes" json:"notes"`
+	CreatedAt time.Time `jsonapi:"attr,created_at,iso8601" json:"created_at"`
+	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601" json:"updated_at"`
 }
 
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
-	Create(context.Context, string, string, *CreateDatabaseBranchRequest) (*Database, error)
-	List(context.Context, string, string) ([]*Database, error)
-	Get(context.Context, string, string, string) (*Database, error)
+	Create(context.Context, string, string, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
+	List(context.Context, string, string) ([]*DatabaseBranch, error)
+	Get(context.Context, string, string, string) (*DatabaseBranch, error)
 	Delete(context.Context, string, string, string) (bool, error)
 	Status(context.Context, string, string, string) (*DatabaseStatus, error)
 }
@@ -30,23 +47,68 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 	}
 }
 
-func (dbs *databaseBranchesService) Create(ctx context.Context, org, db string, req *CreateDatabaseBranchRequest) (*Database, error) {
+func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
+	path := databaseBranchesAPIPath(org, db)
+	req, err := ds.client.newRequest(http.MethodPost, path, createReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch database")
+	}
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
 
+	dbBranch := &DatabaseBranch{}
+	err = jsonapi.UnmarshalPayload(res.Body, dbBranch)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbBranch, nil
+}
+
+func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]*DatabaseBranch, error) {
+	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(org, db), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	databases, err := jsonapi.UnmarshalManyPayload(res.Body, reflect.TypeOf(new(DatabaseBranch)))
+	if err != nil {
+		return nil, err
+	}
+
+	dbBranches := make([]*DatabaseBranch, 0, len(databases))
+
+	for _, database := range databases {
+		db, ok := database.(*DatabaseBranch)
+		if ok {
+			dbBranches = append(dbBranches, db)
+		}
+	}
+
+	return dbBranches, nil
+}
+
+func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch string) (*DatabaseBranch, error) {
 	return nil, nil
 }
 
-func (dbs *databaseBranchesService) List(ctx context.Context, org, db string) ([]*Database, error) {
-	return nil, nil
-}
-
-func (dbs *databaseBranchesService) Get(ctx context.Context, org, db, branch string) (*Database, error) {
-	return nil, nil
-}
-
-func (dbs *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {
+func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {
 	return false, nil
 }
 
-func (dbs *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseStatus, error) {
+func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseStatus, error) {
 	return nil, nil
+}
+
+func databaseBranchesAPIPath(org, db string) string {
+	return fmt.Sprintf("%s/%s/branches", databasesAPIPath(org), db)
 }

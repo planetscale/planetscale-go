@@ -26,7 +26,8 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
-	Databases DatabasesService
+	Databases    DatabasesService
+	Certificates CertificatesService
 }
 
 // ClientOption provides a variadic option for configuring the client
@@ -95,6 +96,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}
 
 	c.Databases = &databasesService{client: c}
+	c.Certificates = &certificatesService{client: c}
 
 	return c, nil
 }
@@ -103,7 +105,6 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 // HTTP client.
 func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	req = req.WithContext(ctx)
-
 	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

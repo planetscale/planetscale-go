@@ -122,10 +122,9 @@ func TestCertificates_Create(t *testing.T) {
 	c.Assert(cert.ClientCert.PrivateKey, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.Certificate, qt.HasLen, 1)
 
-	for _, ccert := range cert.ClientCert.Certificate {
-		ct, err := x509.ParseCertificate(ccert)
-		c.Assert(err, qt.IsNil)
-		c.Assert(ct.Subject.CommonName, qt.Equals, "org-foo/db-foo/branch-foo")
-		c.Assert(ct.Issuer.CommonName, qt.Equals, cert.CACert.Issuer.CommonName)
-	}
+	ccert := cert.ClientCert.Certificate[0]
+	ct, err := x509.ParseCertificate(ccert)
+	c.Assert(err, qt.IsNil)
+	c.Assert(ct.Subject.CommonName, qt.Equals, "org-foo/db-foo/branch-foo")
+	c.Assert(ct.Issuer.CommonName, qt.Equals, cert.CACert.Issuer.CommonName)
 }

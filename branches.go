@@ -32,7 +32,7 @@ type DatabaseBranchesService interface {
 	List(context.Context, string, string) ([]*DatabaseBranch, error)
 	Get(context.Context, string, string, string) (*DatabaseBranch, error)
 	Delete(context.Context, string, string, string) (bool, error)
-	Status(context.Context, string, string, string) (*DatabaseStatus, error)
+	Status(context.Context, string, string, string) (*DatabaseBranchStatus, error)
 }
 
 type databaseBranchesService struct {
@@ -139,8 +139,35 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch s
 	return true, nil
 }
 
-func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseStatus, error) {
-	return nil, nil
+// DatabaseBranchStatus represents the status of a PlanetScale database branch.
+type DatabaseBranchStatus struct {
+	DeployPhase string `json:"deploy_phase" jsonapi:"attr,deploy_phase"`
+	GatewayHost string `json:"mysql_gateway_host" jsonapi:"attr,mysql_gateway_host"`
+	GatewayPort int    `json:"mysql_gateway_port" jsonapi:"attr,mysql_gateway_port"`
+	User        string `json:"mysql_gateway_user" jsonapi:"attr,mysql_gateway_user"`
+	Password    string `json:"mysql_gateway_pass" jsonapi:"attr,mysql_gateway_pass"`
+}
+
+// Status returns the status of a specific database branch
+func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseBranchStatus, error) {
+	path := fmt.Sprintf("%s/%s/status", databasesAPIPath(org), db)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch status")
+	}
+
+	res, err := ds.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	status := &DatabaseBranchStatus{}
+	err = jsonapi.UnmarshalPayload(res.Body, status)
+	if err != nil {
+		return nil, err
+	}
+
+	return status, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

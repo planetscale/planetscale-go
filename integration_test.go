@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	qt "github.com/frankban/quicktest"
 )
 
 // This integration test creates, lists and then deletes a PlanetScale
@@ -15,6 +17,31 @@ import (
 //
 //   PLANETSCALE_TOKEN=$(cat ~/.config/psctl/access-token) PLANETSCALE_ORG="damp-dew-9934" go test -tags integration
 //
+
+func TestCertificate_Create(t *testing.T) {
+	c := qt.New(t)
+	token := os.Getenv("PLANETSCALE_TOKEN")
+	c.Assert(token, qt.Not(qt.Equals), "", qt.Commentf("PLANETSCALE_TOKEN is not set"))
+
+	org := os.Getenv("PLANETSCALE_ORG")
+	c.Assert(org, qt.Not(qt.Equals), "", qt.Commentf("PLANETSCALE_ORG is not set"))
+
+	ctx := context.Background()
+
+	client, err := NewClient(
+		WithAccessToken(token),
+	)
+	c.Assert(err, qt.IsNil)
+
+	cert, err := client.Certificates.Create(ctx, &CreateCertificateRequest{
+		Organization: "damp-dew-9943",
+		DatabaseName: "fatihs-db",
+		Branch:       "branch-foo",
+	})
+	c.Assert(err, qt.IsNil)
+
+	fmt.Printf("cert = %+v\n", cert)
+}
 
 func TestDatabases_List(t *testing.T) {
 	token := os.Getenv("PLANETSCALE_TOKEN")

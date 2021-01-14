@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// DatabaseBranch represents a database branch
+// DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
 	Name      string    `jsonapi:"attr,name" json:"name"`
 	Notes     string    `jsonapi:"attr,notes" json:"notes"`
@@ -155,7 +155,7 @@ type DatabaseBranchStatus struct {
 
 // Status returns the status of a specific database branch
 func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch string) (*DatabaseBranchStatus, error) {
-	path := fmt.Sprintf("%s/%s/status", databasesAPIPath(org), db)
+	path := fmt.Sprintf("%s/%s/%s/status", databasesAPIPath(org), db, branch)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch status")

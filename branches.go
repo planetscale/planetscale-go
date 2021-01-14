@@ -11,12 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateDatabaseBranchRequest encapsulates the request for creating a new
-// database branch
-type CreateDatabaseBranchRequest struct {
-	Branch *DatabaseBranch `json:"branch"`
-}
-
 // DatabaseBranch represents a database branch
 type DatabaseBranch struct {
 	Name      string    `jsonapi:"attr,name" json:"name"`
@@ -47,6 +41,13 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 	}
 }
 
+// CreateDatabaseBranchRequest encapsulates the request for creating a new
+// database branch
+type CreateDatabaseBranchRequest struct {
+	Branch *DatabaseBranch `json:"branch"`
+}
+
+// Create creates a new branch for an organization's database.
 func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := databaseBranchesAPIPath(org, db)
 	req, err := ds.client.newRequest(http.MethodPost, path, createReq)
@@ -68,6 +69,7 @@ func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, c
 	return dbBranch, nil
 }
 
+// Get returns a database branch for an organization's database.
 func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch string) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
@@ -90,6 +92,8 @@ func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch stri
 	return dbBranch, nil
 }
 
+// List returns all of the branches for an organization's
+// database.
 func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]*DatabaseBranch, error) {
 	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(org, db), nil)
 	if err != nil {
@@ -119,6 +123,7 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 	return dbBranches, nil
 }
 
+// Delete deletes a database branch from an organization's database.
 func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)

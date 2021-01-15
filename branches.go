@@ -123,10 +123,8 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 	dbBranches := make([]*DatabaseBranch, 0, len(databases))
 
 	for _, database := range databases {
-		db, ok := database.(*DatabaseBranch)
-		if ok {
-			dbBranches = append(dbBranches, db)
-		}
+		db := database.(*DatabaseBranch)
+		dbBranches = append(dbBranches, db)
 	}
 
 	return dbBranches, nil

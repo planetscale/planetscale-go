@@ -12,7 +12,7 @@ import (
 
 const testBranch = "planetscale-go-test-db-branch"
 
-func TestDatabaseBranchess_Create(t *testing.T) {
+func TestDatabaseBranches_Create(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

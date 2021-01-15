@@ -25,7 +25,7 @@ type DatabaseBranchesService interface {
 	Create(context.Context, string, string, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
 	List(context.Context, string, string) ([]*DatabaseBranch, error)
 	Get(context.Context, string, string, string) (*DatabaseBranch, error)
-	Delete(context.Context, string, string, string) (bool, error)
+	Delete(context.Context, string, string, string) error
 	Status(context.Context, string, string, string) (*DatabaseBranchStatus, error)
 }
 
@@ -124,24 +124,24 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 }
 
 // Delete deletes a database branch from an organization's database.
-func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) (bool, error) {
+func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch string) error {
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return false, errors.Wrap(err, "error creating request for delete branch")
+		return errors.Wrap(err, "error creating request for delete branch")
 	}
 
 	res, err := ds.client.Do(ctx, req)
 	if err != nil {
-		return false, err
+		return err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return false, errors.New("database branch not found")
+		return errors.New("database branch not found")
 	}
 
-	return true, nil
+	return nil
 }
 
 // DatabaseBranchStatus represents the status of a PlanetScale database branch.

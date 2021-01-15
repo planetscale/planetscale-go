@@ -19,6 +19,12 @@ type DatabaseBranch struct {
 	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601" json:"updated_at"`
 }
 
+// CreateDatabaseBranchRequest encapsulates the request for creating a new
+// database branch
+type CreateDatabaseBranchRequest struct {
+	Branch *DatabaseBranch `json:"branch"`
+}
+
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
@@ -33,18 +39,21 @@ type databaseBranchesService struct {
 	client *Client
 }
 
+// DatabaseBranchStatus represents the status of a PlanetScale database branch.
+type DatabaseBranchStatus struct {
+	DeployPhase string `json:"deploy_phase" jsonapi:"attr,deploy_phase"`
+	GatewayHost string `json:"mysql_gateway_host" jsonapi:"attr,mysql_gateway_host"`
+	GatewayPort int    `json:"mysql_gateway_port" jsonapi:"attr,mysql_gateway_port"`
+	User        string `json:"mysql_gateway_user" jsonapi:"attr,mysql_gateway_user"`
+	Password    string `json:"mysql_gateway_pass" jsonapi:"attr,mysql_gateway_pass"`
+}
+
 var _ DatabaseBranchesService = &databaseBranchesService{}
 
 func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 	return &databaseBranchesService{
 		client: client,
 	}
-}
-
-// CreateDatabaseBranchRequest encapsulates the request for creating a new
-// database branch
-type CreateDatabaseBranchRequest struct {
-	Branch *DatabaseBranch `json:"branch"`
 }
 
 // Create creates a new branch for an organization's database.
@@ -142,15 +151,6 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, org, db, branch s
 	}
 
 	return nil
-}
-
-// DatabaseBranchStatus represents the status of a PlanetScale database branch.
-type DatabaseBranchStatus struct {
-	DeployPhase string `json:"deploy_phase" jsonapi:"attr,deploy_phase"`
-	GatewayHost string `json:"mysql_gateway_host" jsonapi:"attr,mysql_gateway_host"`
-	GatewayPort int    `json:"mysql_gateway_port" jsonapi:"attr,mysql_gateway_port"`
-	User        string `json:"mysql_gateway_user" jsonapi:"attr,mysql_gateway_user"`
-	Password    string `json:"mysql_gateway_pass" jsonapi:"attr,mysql_gateway_pass"`
 }
 
 // Status returns the status of a specific database branch

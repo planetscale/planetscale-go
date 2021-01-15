@@ -60,6 +60,7 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 // Create creates a new branch for an organization's database.
 func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := databaseBranchesAPIPath(org, db)
+
 	req, err := ds.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch database")

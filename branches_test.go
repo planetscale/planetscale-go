@@ -30,7 +30,7 @@ func TestDatabaseBranches_Create(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.DatabaseBranches.Create(ctx, org, name, "", &CreateDatabaseBranchRequest{
+	db, err := client.DatabaseBranches.Create(ctx, org, name, &CreateDatabaseBranchRequest{
 		Branch: &DatabaseBranch{
 			Name:  testBranch,
 			Notes: notes,

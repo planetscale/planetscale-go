@@ -13,10 +13,11 @@ import (
 
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
-	Name      string    `jsonapi:"attr,name" json:"name"`
-	Notes     string    `jsonapi:"attr,notes" json:"notes"`
-	CreatedAt time.Time `jsonapi:"attr,created_at,iso8601" json:"created_at"`
-	UpdatedAt time.Time `jsonapi:"attr,updated_at,iso8601" json:"updated_at"`
+	Name         string    `jsonapi:"attr,name" json:"name"`
+	Notes        string    `jsonapi:"attr,notes" json:"notes"`
+	ParentBranch string    `jsonapi:"attr,parent_branch" json:"parent_branch,omitempty"`
+	CreatedAt    time.Time `jsonapi:"attr,created_at,iso8601" json:"created_at"`
+	UpdatedAt    time.Time `jsonapi:"attr,updated_at,iso8601" json:"updated_at"`
 }
 
 // CreateDatabaseBranchRequest encapsulates the request for creating a new
@@ -28,7 +29,7 @@ type CreateDatabaseBranchRequest struct {
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
-	Create(context.Context, string, string, string, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
+	Create(context.Context, string, string, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
 	List(context.Context, string, string) ([]*DatabaseBranch, error)
 	Get(context.Context, string, string, string) (*DatabaseBranch, error)
 	Delete(context.Context, string, string, string) error
@@ -57,10 +58,10 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 }
 
 // Create creates a new branch for an organization's database.
-func (ds *databaseBranchesService) Create(ctx context.Context, org string, db string, parentBranch string, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
+func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := databaseBranchesAPIPath(org, db)
-	if parentBranch != "" {
-		path = fmt.Sprintf("%s?parent_branch=%s", path, parentBranch)
+	if createReq.Branch.ParentBranch != "" {
+		path = fmt.Sprintf("%s?parent_branch=%s", path, createReq.Branch.ParentBranch)
 	}
 
 	req, err := ds.client.newRequest(http.MethodPost, path, createReq)

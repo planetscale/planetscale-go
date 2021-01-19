@@ -40,13 +40,13 @@ func NewOrganizationsService(client *Client) *organizationsService {
 }
 
 // Get fetches a single organization by name.
-func (os *organizationsService) Get(ctx context.Context, org string) (*Organization, error) {
-	req, err := os.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, org), nil)
+func (o *organizationsService) Get(ctx context.Context, org string) (*Organization, error) {
+	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, org), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get organization")
 	}
 
-	res, err := os.client.Do(ctx, req)
+	res, err := o.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +62,13 @@ func (os *organizationsService) Get(ctx context.Context, org string) (*Organizat
 }
 
 // List returns all the organizations for a user.
-func (os *organizationsService) List(ctx context.Context) ([]*Organization, error) {
-	req, err := os.client.newRequest(http.MethodGet, organizationsAPIPath, nil)
+func (o *organizationsService) List(ctx context.Context) ([]*Organization, error) {
+	req, err := o.client.newRequest(http.MethodGet, organizationsAPIPath, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for list organization")
 	}
 
-	res, err := os.client.Do(ctx, req)
+	res, err := o.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}

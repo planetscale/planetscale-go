@@ -2,12 +2,12 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	"github.com/google/jsonapi"
 )
 
 func TestDo(t *testing.T) {
@@ -45,14 +45,10 @@ func TestDo(t *testing.T) {
 			statusCode: http.StatusOK,
 			response: `
 { 
-"data": {
-      "id": "509",
-      "type": "database",
-      "attributes": {
-        "name": "foo-bar",
-        "notes": ""
-      }
-    }
+	"id": "509",
+	"type": "database",
+	"name": "foo-bar",
+	"notes": ""
 }`,
 			body: &Database{
 				Name: "foo-bar",
@@ -99,7 +95,9 @@ func TestDo(t *testing.T) {
 			defer res.Body.Close()
 
 			if tt.v != nil {
-				err = jsonapi.UnmarshalPayload(res.Body, tt.v)
+				decoder := json.NewDecoder(res.Body)
+				err = decoder.Decode(&tt.v)
+
 				if err != nil {
 					t.Fatal(err)
 				}

@@ -83,5 +83,9 @@ func (o *organizationsService) List(ctx context.Context) ([]*Organization, error
 	decoder := json.NewDecoder(res.Body)
 	err = decoder.Decode(&orgResponse)
 
+	if err != nil {
+		return nil, err
+	}
+
 	return orgResponse.Organizations, nil
 }

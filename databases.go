@@ -41,7 +41,7 @@ type DatabasesService interface {
 	Create(context.Context, *CreateDatabaseRequest) (*Database, error)
 	Get(context.Context, *GetDatabaseRequest) (*Database, error)
 	List(context.Context, *ListDatabaseRequest) ([]*Database, error)
-	Delete(context.Context, *DeleteDatabaseRequest) (bool, error)
+	Delete(context.Context, *DeleteDatabaseRequest) error
 }
 
 // Database represents a PlanetScale database
@@ -136,24 +136,24 @@ func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest)
 	return db, nil
 }
 
-func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) (bool, error) {
+func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) error {
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.DatabaseName)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return false, errors.Wrap(err, "error creating request for delete database")
+		return errors.Wrap(err, "error creating request for delete database")
 	}
 
 	res, err := ds.client.Do(ctx, req)
 	if err != nil {
-		return false, errors.Wrap(err, "error deleting database")
+		return err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusNotFound {
-		return false, errors.New("database not found")
+		return errors.New("database not found")
 	}
 
-	return true, nil
+	return nil
 }
 
 func databasesAPIPath(org string) string {

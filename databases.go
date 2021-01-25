@@ -19,7 +19,7 @@ type CreateDatabaseRequest struct {
 // DatabaseRequest encapsulates the request for getting a single database.
 type GetDatabaseRequest struct {
 	Organization string
-	DatabaseName string
+	Database     string
 }
 
 // ListDatabaseRequest encapsulates the request for listing all databases in an
@@ -32,7 +32,7 @@ type ListDatabaseRequest struct {
 // an organization.
 type DeleteDatabaseRequest struct {
 	Organization string
-	DatabaseName string
+	Database     string
 }
 
 // DatabaseService is an interface for communicating with the PlanetScale
@@ -114,7 +114,7 @@ func (ds *databasesService) Create(ctx context.Context, createReq *CreateDatabas
 }
 
 func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest) (*Database, error) {
-	path := fmt.Sprintf("%s/%s", databasesAPIPath(getReq.Organization), getReq.DatabaseName)
+	path := fmt.Sprintf("%s/%s", databasesAPIPath(getReq.Organization), getReq.Database)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get database")
@@ -137,7 +137,7 @@ func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest)
 }
 
 func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) error {
-	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.DatabaseName)
+	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.Database)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return errors.Wrap(err, "error creating request for delete database")

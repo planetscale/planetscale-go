@@ -28,7 +28,7 @@ type databaseBranchesResponse struct {
 // database branch
 type CreateDatabaseBranchRequest struct {
 	Organization string
-	DatabaseName string
+	Database     string
 	Branch       *DatabaseBranch `json:"branch"`
 }
 
@@ -46,31 +46,31 @@ type DatabaseBranchesService interface {
 // of a database.
 type ListDatabaseBranchRequest struct {
 	Organization string
-	DatabaseName string
+	Database     string
 }
 
 // GetDatabaseBranchRequest encapsulates the request for getting a single
 // database branch for a database.
 type GetDatabaseBranchRequest struct {
 	Organization string
-	DatabaseName string
-	BranchName   string
+	Database     string
+	Branch       string
 }
 
 // DeleteDatabaseRequest encapsulates the request for deleting a database branch
 // from a database.
 type DeleteDatabaseBranchRequest struct {
 	Organization string
-	DatabaseName string
-	BranchName   string
+	Database     string
+	Branch       string
 }
 
 // DatabaseBranchStatusRequest encapsulates the request for getting the status
 // of a specific database branch.
 type DatabaseBranchStatusRequest struct {
 	Organization string
-	DatabaseName string
-	BranchName   string
+	Database     string
+	Branch       string
 }
 
 type databaseBranchesService struct {
@@ -96,7 +96,7 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 
 // Create creates a new branch for an organization's database.
 func (ds *databaseBranchesService) Create(ctx context.Context, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
-	path := databaseBranchesAPIPath(createReq.Organization, createReq.DatabaseName)
+	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
 
 	req, err := ds.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
@@ -120,7 +120,7 @@ func (ds *databaseBranchesService) Create(ctx context.Context, createReq *Create
 
 // Get returns a database branch for an organization's database.
 func (ds *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBranchRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(getReq.Organization, getReq.DatabaseName), getReq.BranchName)
+	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
@@ -145,7 +145,7 @@ func (ds *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseB
 // List returns all of the branches for an organization's
 // database.
 func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchRequest) ([]*DatabaseBranch, error) {
-	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.DatabaseName), nil)
+	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
@@ -168,7 +168,7 @@ func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDataba
 
 // Delete deletes a database branch from an organization's database.
 func (ds *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchRequest) error {
-	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(deleteReq.Organization, deleteReq.DatabaseName), deleteReq.BranchName)
+	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return errors.Wrap(err, "error creating request for delete branch")
@@ -189,7 +189,7 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, deleteReq *Delete
 
 // Status returns the status of a specific database branch
 func (ds *databaseBranchesService) Status(ctx context.Context, statusReq *DatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
-	path := fmt.Sprintf("%s/%s/status", databaseBranchesAPIPath(statusReq.Organization, statusReq.DatabaseName), statusReq.BranchName)
+	path := fmt.Sprintf("%s/%s/status", databaseBranchesAPIPath(statusReq.Organization, statusReq.Database), statusReq.Branch)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch status")

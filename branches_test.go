@@ -172,7 +172,7 @@ func TestDatabaseBranches_Status(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.Status(ctx, &DatabaseBranchStatusRequest{
+	db, err := client.DatabaseBranches.GetStatus(ctx, &GetDatabaseBranchStatusRequest{
 		Organization: org,
 		Database:     name,
 		Branch:       testBranch,

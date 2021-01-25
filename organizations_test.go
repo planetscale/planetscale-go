@@ -72,7 +72,9 @@ func TestOrganizations_Get(t *testing.T) {
 
 	ctx := context.Background()
 
-	org, err := client.Organizations.Get(ctx, "my-cool-org")
+	org, err := client.Organizations.Get(ctx, &GetOrganizationRequest{
+		Organization: "my-cool-org",
+	})
 
 	c.Assert(err, qt.IsNil)
 	want := &Organization{

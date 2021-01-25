@@ -4,6 +4,8 @@ package planetscale
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
 	"os"
 	"testing"
@@ -15,10 +17,10 @@ import (
 // This integration test creates, lists and then deletes a PlanetScale
 // Database. Use with caution!. Usage:
 //
-//   PLANETSCALE_TOKEN=$(cat ~/.config/psctl/access-token) PLANETSCALE_ORG="damp-dew-9934" go test -tags integration
+//   PLANETSCALE_TOKEN=$(cat ~/.config/planetscale/access-token) PLANETSCALE_ORG="damp-dew-9934" go test -tags integration
 //
 
-func TestCertificate_Create(t *testing.T) {
+func TestIntegration_Certificate_Create(t *testing.T) {
 	c := qt.New(t)
 	token := os.Getenv("PLANETSCALE_TOKEN")
 	c.Assert(token, qt.Not(qt.Equals), "", qt.Commentf("PLANETSCALE_TOKEN is not set"))
@@ -33,17 +35,21 @@ func TestCertificate_Create(t *testing.T) {
 	)
 	c.Assert(err, qt.IsNil)
 
+	pkey, err := rsa.GenerateKey(rand.Reader, 2048)
+	c.Assert(err, qt.IsNil)
+
 	cert, err := client.Certificates.Create(ctx, &CreateCertificateRequest{
-		Organization: "damp-dew-9943",
+		Organization: org,
 		DatabaseName: "fatihs-db",
-		Branch:       "branch-foo",
+		Branch:       "development",
+		PrivateKey:   pkey,
 	})
 	c.Assert(err, qt.IsNil)
 
 	fmt.Printf("cert = %+v\n", cert)
 }
 
-func TestDatabases_List(t *testing.T) {
+func TestIntegration_Databases_List(t *testing.T) {
 	token := os.Getenv("PLANETSCALE_TOKEN")
 	if token == "" {
 		t.Fatalf("PLANETSCALE_TOKEN is not set")
@@ -85,6 +91,8 @@ func TestDatabases_List(t *testing.T) {
 
 	fmt.Printf("Found %d databases\n", len(dbs))
 	for _, db := range dbs {
+		fmt.Printf("db struct = %+v\n", db)
+		fmt.Println("----------")
 		fmt.Printf("Name: %q\n", db.Name)
 		fmt.Printf("Notes: %q\n", db.Notes)
 	}

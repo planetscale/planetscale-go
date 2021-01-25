@@ -36,15 +36,15 @@ type CreateDatabaseBranchRequest struct {
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
 	Create(context.Context, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
-	List(context.Context, *ListDatabaseBranchRequest) ([]*DatabaseBranch, error)
+	List(context.Context, *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error)
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	Status(context.Context, *DatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
 }
 
-// ListDatabaseBranchRequest encapsulates the request for listing the branches
+// ListDatabaseBranchesRequest encapsulates the request for listing the branches
 // of a database.
-type ListDatabaseBranchRequest struct {
+type ListDatabaseBranchesRequest struct {
 	Organization string
 	Database     string
 }
@@ -144,7 +144,7 @@ func (ds *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseB
 
 // List returns all of the branches for an organization's
 // database.
-func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchRequest) ([]*DatabaseBranch, error) {
+func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error) {
 	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

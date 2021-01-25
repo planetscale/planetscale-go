@@ -68,7 +68,7 @@ func TestDatabaseBranches_List(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchRequest{
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchesRequest{
 		Organization: org,
 		Database:     name,
 	})
@@ -101,7 +101,7 @@ func TestDatabaseBranches_ListEmpty(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchRequest{
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchesRequest{
 		Organization: org,
 		Database:     name,
 	})

@@ -99,7 +99,7 @@ func TestDatabases_List(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.Databases.List(ctx, &ListDatabaseRequest{
+	db, err := client.Databases.List(ctx, &ListDatabasesRequest{
 		Organization: org,
 	})
 
@@ -130,7 +130,7 @@ func TestDatabases_Empty(t *testing.T) {
 	ctx := context.Background()
 	org := "my-org"
 
-	db, err := client.Databases.List(ctx, &ListDatabaseRequest{
+	db, err := client.Databases.List(ctx, &ListDatabasesRequest{
 		Organization: org,
 	})
 

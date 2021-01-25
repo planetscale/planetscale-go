@@ -85,7 +85,7 @@ func TestIntegration_Databases_List(t *testing.T) {
 	// poor mans polling, remove once we have an API to poll the status of the DB
 	time.Sleep(time.Second * 2)
 
-	dbs, err := client.Databases.List(ctx, &ListDatabaseRequest{
+	dbs, err := client.Databases.List(ctx, &ListDatabasesRequest{
 		Organization: org,
 	})
 	if err != nil {

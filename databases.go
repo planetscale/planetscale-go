@@ -22,9 +22,9 @@ type GetDatabaseRequest struct {
 	Database     string
 }
 
-// ListDatabaseRequest encapsulates the request for listing all databases in an
+// ListDatabasesRequest encapsulates the request for listing all databases in an
 // organization.
-type ListDatabaseRequest struct {
+type ListDatabasesRequest struct {
 	Organization string
 }
 
@@ -40,7 +40,7 @@ type DeleteDatabaseRequest struct {
 type DatabasesService interface {
 	Create(context.Context, *CreateDatabaseRequest) (*Database, error)
 	Get(context.Context, *GetDatabaseRequest) (*Database, error)
-	List(context.Context, *ListDatabaseRequest) ([]*Database, error)
+	List(context.Context, *ListDatabasesRequest) ([]*Database, error)
 	Delete(context.Context, *DeleteDatabaseRequest) error
 }
 
@@ -69,7 +69,7 @@ func NewDatabasesService(client *Client) *databasesService {
 	}
 }
 
-func (ds *databasesService) List(ctx context.Context, listReq *ListDatabaseRequest) ([]*Database, error) {
+func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequest) ([]*Database, error) {
 	req, err := ds.client.newRequest(http.MethodGet, databasesAPIPath(listReq.Organization), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

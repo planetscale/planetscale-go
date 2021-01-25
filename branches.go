@@ -32,16 +32,6 @@ type CreateDatabaseBranchRequest struct {
 	Branch       *DatabaseBranch `json:"branch"`
 }
 
-// DatabaseBranchesService is an interface for communicating with the PlanetScale
-// Database Branch API endpoint.
-type DatabaseBranchesService interface {
-	Create(context.Context, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
-	List(context.Context, *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error)
-	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
-	Delete(context.Context, *DeleteDatabaseBranchRequest) error
-	Status(context.Context, *DatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
-}
-
 // ListDatabaseBranchesRequest encapsulates the request for listing the branches
 // of a database.
 type ListDatabaseBranchesRequest struct {
@@ -65,12 +55,22 @@ type DeleteDatabaseBranchRequest struct {
 	Branch       string
 }
 
-// DatabaseBranchStatusRequest encapsulates the request for getting the status
+// GetDatabaseBranchStatusRequest encapsulates the request for getting the status
 // of a specific database branch.
-type DatabaseBranchStatusRequest struct {
+type GetDatabaseBranchStatusRequest struct {
 	Organization string
 	Database     string
 	Branch       string
+}
+
+// DatabaseBranchesService is an interface for communicating with the PlanetScale
+// Database Branch API endpoint.
+type DatabaseBranchesService interface {
+	Create(context.Context, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
+	List(context.Context, *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error)
+	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
+	Delete(context.Context, *DeleteDatabaseBranchRequest) error
+	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
 }
 
 type databaseBranchesService struct {
@@ -184,7 +184,7 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, deleteReq *Delete
 }
 
 // Status returns the status of a specific database branch
-func (ds *databaseBranchesService) Status(ctx context.Context, statusReq *DatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
+func (ds *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
 	path := fmt.Sprintf("%s/%s/status", databaseBranchesAPIPath(statusReq.Organization, statusReq.Database), statusReq.Branch)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {

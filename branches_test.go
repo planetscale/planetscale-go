@@ -79,6 +79,29 @@ func TestDatabaseBranches_List(t *testing.T) {
 	c.Assert(db, qt.DeepEquals, want)
 }
 
+func TestDatabaseBranches_ListEmpty(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"data":[]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.List(ctx, org, name)
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.HasLen, 0)
+}
+
 func TestDatabaseBranches_Get(t *testing.T) {
 	c := qt.New(t)
 

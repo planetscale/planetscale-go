@@ -26,7 +26,7 @@ type Organization struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type OrganizationsResponse struct {
+type organizationsResponse struct {
 	Organizations []*Organization `json:"data"`
 }
 
@@ -56,8 +56,7 @@ func (o *organizationsService) Get(ctx context.Context, org string) (*Organizati
 	defer res.Body.Close()
 
 	organization := &Organization{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&organization)
+	err = json.NewDecoder(res.Body).Decode(&organization)
 
 	if err != nil {
 		return nil, err
@@ -79,7 +78,7 @@ func (o *organizationsService) List(ctx context.Context) ([]*Organization, error
 	}
 	defer res.Body.Close()
 
-	orgResponse := &OrganizationsResponse{}
+	orgResponse := &organizationsResponse{}
 	err = json.NewDecoder(res.Body).Decode(&orgResponse)
 
 	if err != nil {

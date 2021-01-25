@@ -95,8 +95,7 @@ func TestDo(t *testing.T) {
 			defer res.Body.Close()
 
 			if tt.v != nil {
-				decoder := json.NewDecoder(res.Body)
-				err = decoder.Decode(&tt.v)
+				err = json.NewDecoder(res.Body).Decode(&tt.v)
 
 				if err != nil {
 					t.Fatal(err)

@@ -30,7 +30,9 @@ func TestDatabaseBranches_Create(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.DatabaseBranches.Create(ctx, org, name, &CreateDatabaseBranchRequest{
+	db, err := client.DatabaseBranches.Create(ctx, &CreateDatabaseBranchRequest{
+		Organization: org,
+		Database:     name,
 		Branch: &DatabaseBranch{
 			Name:  testBranch,
 			Notes: notes,
@@ -66,7 +68,10 @@ func TestDatabaseBranches_List(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.DatabaseBranches.List(ctx, org, name)
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchRequest{
+		Organization: org,
+		Database:     name,
+	})
 
 	want := []*DatabaseBranch{{
 		Name:      testBranch,
@@ -96,7 +101,10 @@ func TestDatabaseBranches_ListEmpty(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.List(ctx, org, name)
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchRequest{
+		Organization: org,
+		Database:     name,
+	})
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.HasLen, 0)
@@ -120,7 +128,9 @@ func TestDatabaseBranches_Get(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.DatabaseBranches.Get(ctx, org, name, testBranch)
+	db, err := client.DatabaseBranches.Get(ctx, &GetDatabaseBranchRequest{
+		Organization: org,
+		Database:     name})
 
 	want := &DatabaseBranch{
 		Name:      testBranch,
@@ -162,7 +172,11 @@ func TestDatabaseBranches_Status(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.Status(ctx, org, name, testBranch)
+	db, err := client.DatabaseBranches.Status(ctx, &DatabaseBranchStatusRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       testBranch,
+	})
 
 	want := &DatabaseBranchStatus{
 		DeployPhase: "deployed",

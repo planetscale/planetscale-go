@@ -71,7 +71,8 @@ func TestIntegration_Databases_List(t *testing.T) {
 
 	dbName := "planetscale-go-test-db"
 
-	_, err = client.Databases.Create(ctx, org, &CreateDatabaseRequest{
+	_, err = client.Databases.Create(ctx, &CreateDatabaseRequest{
+		Organization: org,
 		Database: &Database{
 			Name:  dbName,
 			Notes: "This is a test DB created from the planetscale-go API library",
@@ -84,7 +85,9 @@ func TestIntegration_Databases_List(t *testing.T) {
 	// poor mans polling, remove once we have an API to poll the status of the DB
 	time.Sleep(time.Second * 2)
 
-	dbs, err := client.Databases.List(ctx, org)
+	dbs, err := client.Databases.List(ctx, &ListDatabaseRequest{
+		Organization: org,
+	})
 	if err != nil {
 		t.Fatalf("list database failed: %s", err)
 	}
@@ -97,7 +100,10 @@ func TestIntegration_Databases_List(t *testing.T) {
 		fmt.Printf("Notes: %q\n", db.Notes)
 	}
 
-	_, err = client.Databases.Delete(ctx, org, dbName)
+	_, err = client.Databases.Delete(ctx, &DeleteDatabaseRequest{
+		Organization: org,
+		Database:     dbName,
+	})
 	if err != nil {
 		t.Fatalf("delete database failed: %s", err)
 	}

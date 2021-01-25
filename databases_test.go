@@ -28,7 +28,8 @@ func TestDatabases_Create(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.Databases.Create(ctx, org, &CreateDatabaseRequest{
+	db, err := client.Databases.Create(ctx, &CreateDatabaseRequest{
+		Organization: org,
 		Database: &Database{
 			Name:  name,
 			Notes: notes,
@@ -64,7 +65,10 @@ func TestDatabases_Get(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.Databases.Get(ctx, org, name)
+	db, err := client.Databases.Get(ctx, &GetDatabaseRequest{
+		Organization: org,
+		Database:     name,
+	})
 
 	want := &Database{
 		Name:      name,
@@ -95,7 +99,9 @@ func TestDatabases_List(t *testing.T) {
 	name := "planetscale-go-test-db"
 	notes := "This is a test DB created from the planetscale-go API library"
 
-	db, err := client.Databases.List(ctx, org)
+	db, err := client.Databases.List(ctx, &ListDatabaseRequest{
+		Organization: org,
+	})
 
 	want := []*Database{{
 		Name:      name,
@@ -124,7 +130,9 @@ func TestDatabases_Empty(t *testing.T) {
 	ctx := context.Background()
 	org := "my-org"
 
-	db, err := client.Databases.List(ctx, org)
+	db, err := client.Databases.List(ctx, &ListDatabaseRequest{
+		Organization: org,
+	})
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.HasLen, 0)

@@ -12,10 +12,16 @@ import (
 
 const organizationsAPIPath = "v1/organizations"
 
+// GetOrganizationsRequest encapsulates the request for getting a single
+// organization.
+type GetOrganizationsRequest struct {
+	Organization string
+}
+
 // OrganizationsService is an interface for communicating with the PlanetScale
 // Organizations API endpoints.
 type OrganizationsService interface {
-	Get(context.Context, string) (*Organization, error)
+	Get(context.Context, *GetOrganizationsRequest) (*Organization, error)
 	List(context.Context) ([]*Organization, error)
 }
 
@@ -43,8 +49,8 @@ func NewOrganizationsService(client *Client) *organizationsService {
 }
 
 // Get fetches a single organization by name.
-func (o *organizationsService) Get(ctx context.Context, org string) (*Organization, error) {
-	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, org), nil)
+func (o *organizationsService) Get(ctx context.Context, getReq *GetOrganizationsRequest) (*Organization, error) {
+	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, getReq.Organization), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get organization")
 	}

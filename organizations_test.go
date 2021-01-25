@@ -20,11 +20,9 @@ func TestOrganizations_List(t *testing.T) {
     {
       "id": "my-cool-org",
       "type": "organization",
-      "attributes": {
-        "name": "my-cool-org",
-        "created_at": "2021-01-14T10:19:23.000Z",
-        "updated_at": "2021-01-14T10:19:23.000Z"
-      }
+	  "name": "my-cool-org",
+	  "created_at": "2021-01-14T10:19:23.000Z",
+	  "updated_at": "2021-01-14T10:19:23.000Z"
     }
   ]
 }`
@@ -58,15 +56,11 @@ func TestOrganizations_Get(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		out := `{
-  "data": {
       "id": "my-cool-org",
       "type": "organization",
-      "attributes": {
-        "name": "my-cool-org",
-        "created_at": "2021-01-14T10:19:23.000Z",
-        "updated_at": "2021-01-14T10:19:23.000Z"
-      }
-    }
+      "name": "my-cool-org",
+      "created_at": "2021-01-14T10:19:23.000Z",
+      "updated_at": "2021-01-14T10:19:23.000Z"
 }`
 
 		_, err := w.Write([]byte(out))

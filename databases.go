@@ -149,10 +149,6 @@ func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabas
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode == http.StatusNotFound {
-		return errors.New("database not found")
-	}
-
 	return nil
 }
 

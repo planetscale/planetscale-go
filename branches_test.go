@@ -99,7 +99,7 @@ func TestDatabaseBranches_ListEmpty(t *testing.T) {
 	db, err := client.DatabaseBranches.List(ctx, org, name)
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(db, qt.DeepEquals, []*DatabaseBranch{})
+	c.Assert(db, qt.HasLen, 0)
 }
 
 func TestDatabaseBranches_Get(t *testing.T) {

@@ -127,5 +127,5 @@ func TestDatabases_Empty(t *testing.T) {
 	db, err := client.Databases.List(ctx, org)
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(db, qt.DeepEquals, []*Database{})
+	c.Assert(db, qt.HasLen, 0)
 }

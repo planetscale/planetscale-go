@@ -107,3 +107,25 @@ func TestDatabases_List(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.DeepEquals, want)
 }
+
+func TestDatabases_Empty(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"data":[]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+
+	db, err := client.Databases.List(ctx, org)
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, []*Database{})
+}

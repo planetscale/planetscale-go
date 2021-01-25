@@ -20,7 +20,7 @@ type DatabaseBranch struct {
 	Status       string    `json:"status,omitempty"`
 }
 
-type DatabaseBranches struct {
+type databaseBranchesResponse struct {
 	Branches []*DatabaseBranch `json:"data"`
 }
 
@@ -76,8 +76,7 @@ func (ds *databaseBranchesService) Create(ctx context.Context, org, db string, c
 	defer res.Body.Close()
 
 	dbBranch := &DatabaseBranch{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&dbBranch)
+	err = json.NewDecoder(res.Body).Decode(&dbBranch)
 
 	if err != nil {
 		return nil, err
@@ -101,8 +100,7 @@ func (ds *databaseBranchesService) Get(ctx context.Context, org, db, branch stri
 	defer res.Body.Close()
 
 	dbBranch := &DatabaseBranch{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&dbBranch)
+	err = json.NewDecoder(res.Body).Decode(&dbBranch)
 
 	if err != nil {
 		return nil, err
@@ -125,9 +123,8 @@ func (ds *databaseBranchesService) List(ctx context.Context, org, db string) ([]
 	}
 	defer res.Body.Close()
 
-	dbBranches := &DatabaseBranches{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&dbBranches)
+	dbBranches := &databaseBranchesResponse{}
+	err = json.NewDecoder(res.Body).Decode(&dbBranches)
 
 	if err != nil {
 		return nil, err
@@ -171,8 +168,7 @@ func (ds *databaseBranchesService) Status(ctx context.Context, org, db, branch s
 	}
 
 	status := &DatabaseBranchStatus{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&status)
+	err = json.NewDecoder(res.Body).Decode(&status)
 
 	if err != nil {
 		return nil, err

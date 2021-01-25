@@ -33,8 +33,8 @@ type Database struct {
 }
 
 // Database represents a list of PlanetScale databases
-type Databases struct {
-	Data []*Database `json:"data"`
+type databasesResponse struct {
+	Databases []*Database `json:"data"`
 }
 
 type databasesService struct {
@@ -61,15 +61,14 @@ func (ds *databasesService) List(ctx context.Context, org string) ([]*Database, 
 	}
 	defer res.Body.Close()
 
-	databases := Databases{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&databases)
+	dbResponse := databasesResponse{}
+	err = json.NewDecoder(res.Body).Decode(&dbResponse)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return databases.Data, nil
+	return dbResponse.Databases, nil
 }
 
 func (ds *databasesService) Create(ctx context.Context, org string, createReq *CreateDatabaseRequest) (*Database, error) {
@@ -85,8 +84,8 @@ func (ds *databasesService) Create(ctx context.Context, org string, createReq *C
 	defer res.Body.Close()
 
 	db := &Database{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&db)
+	err = json.NewDecoder(res.Body).Decode(&db)
+
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +107,8 @@ func (ds *databasesService) Get(ctx context.Context, org string, name string) (*
 	defer res.Body.Close()
 
 	db := &Database{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&db)
+	err = json.NewDecoder(res.Body).Decode(&db)
+
 	if err != nil {
 		return nil, err
 	}

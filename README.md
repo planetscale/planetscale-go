@@ -6,7 +6,7 @@ Go package to access the PlanetScale API.
 ## Install
 
 ```bash
-go get github.com/planetscale/planetscale-go
+go get github.com/planetscale/planetscale-go/planetscale
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/planetscale/planetscale-go"
+	"github.com/planetscale/planetscale-go/planetscale"
 )
 
 func main() {

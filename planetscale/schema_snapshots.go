@@ -126,9 +126,9 @@ func (s *schemaSnapshotsService) Get(ctx context.Context, getReq *GetSchemaSnaps
 }
 
 func schemaSnapshotsAPIPath(org, database, branch string) string {
-	return fmt.Sprintf("/organizations/%s/databases/%s/branches/%s/schema-snapshots", org, database, branch)
+	return fmt.Sprintf("%s/%s/schema-snapshots", databaseBranchesAPIPath(org, database), branch)
 }
 
 func schemaSnapshotAPIPath(id string) string {
-	return fmt.Sprintf("/schema-snapshots/%s", id)
+	return fmt.Sprintf("/v1/schema-snapshots/%s", id)
 }

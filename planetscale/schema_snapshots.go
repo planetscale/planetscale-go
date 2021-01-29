@@ -32,6 +32,7 @@ type GetSchemaSnapshotRequest struct {
 type SchemaSnapshot struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
+	URL       string    `json:"url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

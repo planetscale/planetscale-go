@@ -63,9 +63,9 @@ type GetDatabaseBranchStatusRequest struct {
 	Branch       string
 }
 
-// ListDeployRequestsRequest gets the deploy requests for a specific database
+// DeployRequestsRequest gets the deploy requests for a specific database
 // branch.
-type ListDeployRequestsRequest struct {
+type DeployRequestsRequest struct {
 	Organization string
 	Database     string
 	Branch       string
@@ -83,7 +83,7 @@ type DatabaseBranchesService interface {
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
-	ListDeployRequests(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
+	DeployRequests(context.Context, *DeployRequestsRequest) ([]*DeployRequest, error)
 }
 
 type databaseBranchesService struct {
@@ -220,7 +220,7 @@ func (ds *databaseBranchesService) GetStatus(ctx context.Context, statusReq *Get
 	return status, nil
 }
 
-func (ds *databaseBranchesService) ListDeployRequests(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
+func (ds *databaseBranchesService) DeployRequests(ctx context.Context, listReq *DeployRequestsRequest) ([]*DeployRequest, error) {
 	path := fmt.Sprintf("%s/deploy-requests", databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {

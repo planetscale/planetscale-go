@@ -195,6 +195,7 @@ func (ds *databaseBranchesService) GetStatus(ctx context.Context, statusReq *Get
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	status := &DatabaseBranchStatus{}
 	err = json.NewDecoder(res.Body).Decode(&status)

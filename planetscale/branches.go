@@ -231,9 +231,10 @@ func (ds *databaseBranchesService) ListDeployRequests(ctx context.Context, listR
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
-	deployRequestsResponse := deployRequestsResponse{}
-	err = json.NewDecoder(res.Body).Decode(&deployRequestsResponse)
+	deployRequestsResponse := &deployRequestsResponse{}
+	err = json.NewDecoder(res.Body).Decode(deployRequestsResponse)
 	if err != nil {
 		return nil, err
 	}

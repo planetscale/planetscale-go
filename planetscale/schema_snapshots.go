@@ -18,17 +18,21 @@ type CreateSchemaSnapshotRequest struct {
 	Branch       string `json:"-"`
 }
 
-// ListSchemaSnapshotsRequest contains
+// ListSchemaSnapshotsRequest reflects the request for listing schema snapshots.
 type ListSchemaSnapshotsRequest struct {
 	Organization string
 	Database     string
 	Branch       string
 }
 
+// GetSchemaSnapshotRequest reflects the request for getting a single schema
+// snapshot.
 type GetSchemaSnapshotRequest struct {
 	ID string `json:"-"`
 }
 
+// SchemaSnapshot reflects the data model for a schema snapshot of a database
+// branch.
 type SchemaSnapshot struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
@@ -38,6 +42,7 @@ type SchemaSnapshot struct {
 }
 
 // SchemaSnapshotsService is an interface for	communicating with the PlanetScale
+// Schema Snapshots API.
 type SchemaSnapshotsService interface {
 	Create(context.Context, *CreateSchemaSnapshotRequest) (*SchemaSnapshot, error)
 	List(context.Context, *ListSchemaSnapshotsRequest) ([]*SchemaSnapshot, error)

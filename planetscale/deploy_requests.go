@@ -57,13 +57,13 @@ func NewDeployRequestsService(client *Client) *deployRequestsService {
 }
 
 // Get fetches a single deploy request.
-func (drs *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequestRequest) (*DeployRequest, error) {
-	req, err := drs.client.newRequest(http.MethodGet, deployRequestAPIPath(getReq.ID), nil)
+func (d *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequestRequest) (*DeployRequest, error) {
+	req, err := d.client.newRequest(http.MethodGet, deployRequestAPIPath(getReq.ID), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	res, err := drs.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -79,14 +79,14 @@ func (drs *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequ
 }
 
 // Deploy approves and executes a specific deploy request.
-func (drs *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDeployRequest) (*DeployRequest, error) {
+func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDeployRequest) (*DeployRequest, error) {
 	path := fmt.Sprintf("%s/deploy", deployRequestAPIPath(deployReq.ID))
-	req, err := drs.client.newRequest(http.MethodPost, path, deployReq)
+	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	res, err := drs.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}

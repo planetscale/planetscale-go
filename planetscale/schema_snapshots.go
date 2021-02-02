@@ -46,7 +46,7 @@ type SchemaSnapshot struct {
 type SchemaSnapshotRequestDeployRequest struct {
 	SchemaSnapshotID string `json:"-"`
 	IntoBranch       string `json:"into_branch,omitempty"`
-	Notes            string `json:"notes,omitempty"`
+	Notes            string `json:"notes"`
 }
 
 // SchemaSnapshotsService is an interface for	communicating with the PlanetScale

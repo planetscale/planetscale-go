@@ -119,14 +119,14 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 }
 
 // Create creates a new branch for an organization's database.
-func (ds *databaseBranchesService) Create(ctx context.Context, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
+func (d *databaseBranchesService) Create(ctx context.Context, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
 
-	req, err := ds.client.newRequest(http.MethodPost, path, createReq)
+	req, err := d.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch database")
 	}
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -143,14 +143,14 @@ func (ds *databaseBranchesService) Create(ctx context.Context, createReq *Create
 }
 
 // Get returns a database branch for an organization's database.
-func (ds *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBranchRequest) (*DatabaseBranch, error) {
+func (d *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
-	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -168,13 +168,13 @@ func (ds *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseB
 
 // List returns all of the branches for an organization's
 // database.
-func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error) {
-	req, err := ds.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
+func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error) {
+	req, err := d.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -191,14 +191,14 @@ func (ds *databaseBranchesService) List(ctx context.Context, listReq *ListDataba
 }
 
 // Delete deletes a database branch from an organization's database.
-func (ds *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchRequest) error {
+func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchRequest) error {
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
-	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
+	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return errors.Wrap(err, "error creating request for delete branch")
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -208,14 +208,14 @@ func (ds *databaseBranchesService) Delete(ctx context.Context, deleteReq *Delete
 }
 
 // Status returns the status of a specific database branch
-func (ds *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
+func (d *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
 	path := fmt.Sprintf("%s/%s/status", databaseBranchesAPIPath(statusReq.Organization, statusReq.Database), statusReq.Branch)
-	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch status")
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -231,14 +231,14 @@ func (ds *databaseBranchesService) GetStatus(ctx context.Context, statusReq *Get
 	return status, nil
 }
 
-func (ds *databaseBranchesService) ListDeployRequests(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
+func (d *databaseBranchesService) ListDeployRequests(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
 	path := fmt.Sprintf("%s/deploy-requests", databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
-	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -254,14 +254,14 @@ func (ds *databaseBranchesService) ListDeployRequests(ctx context.Context, listR
 }
 
 // RequestDeploy requests a deploy for a specific database branch.
-func (ds *databaseBranchesService) RequestDeploy(ctx context.Context, deployReq *DatabaseBranchRequestDeployRequest) (*DeployRequest, error) {
+func (d *databaseBranchesService) RequestDeploy(ctx context.Context, deployReq *DatabaseBranchRequestDeployRequest) (*DeployRequest, error) {
 	path := branchDeployRequestsAPIPath(deployReq.Organization, deployReq.Database, deployReq.Branch)
-	req, err := ds.client.newRequest(http.MethodPost, path, deployReq)
+	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := ds.client.Do(ctx, req)
+	res, err := d.client.Do(ctx, req)
 	if err != nil {
 		return nil, err
 	}

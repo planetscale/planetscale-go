@@ -58,7 +58,7 @@ func NewDeployRequestsService(client *Client) *deployRequestsService {
 
 // Get fetches a single deploy request.
 func (drs *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequestRequest) (*DeployRequest, error) {
-	req, err := drs.client.newRequest(http.MethodGet, deployRequestsAPIPath(), nil)
+	req, err := drs.client.newRequest(http.MethodGet, deployRequestAPIPath(getReq.ID), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

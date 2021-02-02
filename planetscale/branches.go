@@ -232,7 +232,7 @@ func (d *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetD
 }
 
 func (d *databaseBranchesService) ListDeployRequests(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
-	path := fmt.Sprintf("%s/deploy-requests", databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
+	path := branchDeployRequestsAPIPath(listReq.Organization, listReq.Database, listReq.Branch)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

@@ -77,8 +77,8 @@ type DatabaseBranchRequestDeployRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
-	IntoBranch   string `json:"into_branch"`
-	Notes        string `json:"notes"`
+	IntoBranch   string `json:"into_branch,omitempty"`
+	Notes        string `json:"notes,omitempty"`
 }
 
 type deployRequestsResponse struct {

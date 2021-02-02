@@ -190,7 +190,7 @@ func TestDatabaseBranches_Status(t *testing.T) {
 	c.Assert(db, qt.DeepEquals, want)
 }
 
-func TestDatabaseBranches_DeployRequests(t *testing.T) {
+func TestDatabaseBranches_ListDeployRequests(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +205,7 @@ func TestDatabaseBranches_DeployRequests(t *testing.T) {
 
 	ctx := context.Background()
 
-	requests, err := client.DatabaseBranches.DeployRequests(ctx, &DeployRequestsRequest{
+	requests, err := client.DatabaseBranches.ListDeployRequests(ctx, &ListDeployRequestsRequest{
 		Organization: testOrg,
 		Database:     testDatabase,
 		Branch:       testBranch,

@@ -10,6 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const deployRequestsAPIPath = "v1/deploy-requests"
+
 // PerformDeployRequest is a request for approving and deploying a deploy request.
 // NOTE: We deviate from naming convention here because we have a data model
 // named DeployRequest already.
@@ -101,10 +103,7 @@ func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDe
 	return dr, nil
 }
 
-func deployRequestsAPIPath() string {
-	return "v1/deploy-requests"
-}
-
+// deployRequestAPIPath gets the base path for accessing a single deploy request
 func deployRequestAPIPath(id string) string {
-	return fmt.Sprintf("%s/%s", deployRequestsAPIPath(), id)
+	return fmt.Sprintf("%s/%s", deployRequestsAPIPath, id)
 }

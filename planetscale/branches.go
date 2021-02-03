@@ -273,7 +273,7 @@ func (d *databaseBranchesService) RequestDeploy(ctx context.Context, deployReq *
 		return nil, err
 	}
 
-	return dr, err
+	return dr, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

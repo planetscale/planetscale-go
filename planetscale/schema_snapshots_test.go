@@ -122,7 +122,7 @@ func TestSchemaSnapshots_RequestDeploy(t *testing.T) {
 
 	ctx := context.Background()
 
-	dr, err := client.SchemaSnapshots.RequestDeploy(ctx, &RequestDeployRequest{
+	dr, err := client.SchemaSnapshots.RequestDeploy(ctx, &SchemaSnapshotRequestDeployRequest{
 		SchemaSnapshotID: "test-snapshot-id",
 		IntoBranch:       "some-branch",
 		Notes:            "",

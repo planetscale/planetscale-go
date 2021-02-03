@@ -71,8 +71,8 @@ type ListDeployRequestsRequest struct {
 	Branch       string
 }
 
-// DatabaseBranchRequestDeployRequest encapsulates the request
-// branch.
+// DatabaseBranchRequestDeployRequest encapsulates the request for requesting a
+// deploy of a database branch.
 type DatabaseBranchRequestDeployRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`

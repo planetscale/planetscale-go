@@ -27,9 +27,9 @@ type databaseBranchesResponse struct {
 // CreateDatabaseBranchRequest encapsulates the request for creating a new
 // database branch
 type CreateDatabaseBranchRequest struct {
-	Organization string
-	Database     string
-	Branch       *DatabaseBranch `json:"branch"`
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       *DatabaseBranch
 }
 
 // ListDatabaseBranchesRequest encapsulates the request for listing the branches
@@ -122,7 +122,7 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 func (d *databaseBranchesService) Create(ctx context.Context, createReq *CreateDatabaseBranchRequest) (*DatabaseBranch, error) {
 	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
 
-	req, err := d.client.newRequest(http.MethodPost, path, createReq)
+	req, err := d.client.newRequest(http.MethodPost, path, createReq.Branch)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch database")
 	}

@@ -38,10 +38,8 @@ func main() {
 
 	// create a new database
 	_, err := client.Databases.Create(ctx, "my-org", &planetscale.CreateDatabaseRequest{
-		Database: &planetscale.Database{
 			Name:  "my-awesome-database",
 			Notes: "This is a test DB created via the planetscale-go API library",
-		},
 	})
 
 	// list all databases for the given organization

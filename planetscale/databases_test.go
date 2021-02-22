@@ -30,10 +30,8 @@ func TestDatabases_Create(t *testing.T) {
 
 	db, err := client.Databases.Create(ctx, &CreateDatabaseRequest{
 		Organization: org,
-		Database: &Database{
-			Name:  name,
-			Notes: notes,
-		},
+		Name:         name,
+		Notes:        notes,
 	})
 
 	want := &Database{

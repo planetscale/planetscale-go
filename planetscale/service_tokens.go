@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// ServiceTokenService is an interface for	communicating with the PlanetScale
+// ServiceTokenService is an interface for communicating with the PlanetScale
 // Service Token API.
 type ServiceTokenService interface {
 	Create(context.Context, *CreateServiceTokenRequest) (*ServiceToken, error)
@@ -55,11 +55,11 @@ func (s *serviceTokenService) List(ctx context.Context, listReq *ListServiceToke
 
 	defer res.Body.Close()
 
-	tokenListResposne := serviceTokensResponse{}
-	if err := json.NewDecoder(res.Body).Decode(&tokenListResposne); err != nil {
+	tokenListResponse := serviceTokensResponse{}
+	if err := json.NewDecoder(res.Body).Decode(&tokenListResponse); err != nil {
 		return nil, err
 	}
-	return tokenListResposne.ServiceTokens, nil
+	return tokenListResponse.ServiceTokens, nil
 }
 
 func (s *serviceTokenService) Delete(ctx context.Context, delReq *DeleteServiceTokenRequest) error {

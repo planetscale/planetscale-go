@@ -12,6 +12,7 @@ import (
 type ServiceTokenService interface {
 	Create(context.Context, *CreateServiceTokenRequest) (*ServiceToken, error)
 	List(context.Context, *ListServiceTokensRequest) ([]*ServiceToken, error)
+	Delete(context.Context, *DeleteServiceTokenRequest) error
 	GetAccess(context.Context, *GetServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
 	AddAccess(context.Context, *AddServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
 	DeleteAccess(context.Context, *DeleteServiceTokenAccessRequest) error
@@ -59,6 +60,20 @@ func (s *serviceTokenService) List(ctx context.Context, listReq *ListServiceToke
 		return nil, err
 	}
 	return tokenListResposne.ServiceTokens, nil
+}
+
+func (s *serviceTokenService) Delete(ctx context.Context, delReq *DeleteServiceTokenRequest) error {
+	req, err := s.client.newRequest(http.MethodDelete, serviceTokenAPIPath(delReq.Organization, delReq.ID), nil)
+	if err != nil {
+		return err
+	}
+
+	res, err := s.client.Do(ctx, req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	return nil
 }
 
 func (s *serviceTokenService) GetAccess(ctx context.Context, accessReq *GetServiceTokenAccessRequest) ([]*ServiceTokenAccess, error) {
@@ -122,6 +137,11 @@ type CreateServiceTokenRequest struct {
 	Organization string `json:"-"`
 }
 
+type DeleteServiceTokenRequest struct {
+	Organization string `json:"-"`
+	ID           string `json:"-"`
+}
+
 type ListServiceTokensRequest struct {
 	Organization string `json:"-"`
 }
@@ -172,4 +192,8 @@ func serviceTokenAccessAPIPath(org, id string) string {
 
 func serviceTokensAPIPath(org string) string {
 	return fmt.Sprintf("v1/organizations/%s/service-tokens", org)
+}
+
+func serviceTokenAPIPath(org, id string) string {
+	return fmt.Sprintf("%s/%s", serviceTokensAPIPath(org), id)
 }

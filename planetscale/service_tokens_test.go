@@ -68,6 +68,29 @@ func TestServiceTokens_List(t *testing.T) {
 	c.Assert(snapshot, qt.DeepEquals, want)
 }
 
+func TestServiceTokens_Delete(t *testing.T) {
+	c := qt.New(t)
+
+	wantURL := "/v1/organizations/my-org/service-tokens/1234"
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		c.Assert(r.URL.String(), qt.DeepEquals, wantURL)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.ServiceTokens.Delete(ctx, &DeleteServiceTokenRequest{
+		Organization: testOrg,
+		ID:           "1234",
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
 func TestServiceTokens_GetAccess(t *testing.T) {
 	c := qt.New(t)
 

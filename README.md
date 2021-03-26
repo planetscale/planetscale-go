@@ -12,7 +12,7 @@ go get github.com/planetscale/planetscale-go/planetscale
 ## Usage
 
 Here is an example usage of the PlanetScale Go client. Please make sure to
-handler errors in your production application.
+handle errors in your production application.
 
 
 ```go

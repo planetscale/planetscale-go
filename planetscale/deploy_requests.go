@@ -43,9 +43,10 @@ type DeployRequest struct {
 
 	DeployabilityErrors string `json:"deployability_errors"`
 	DeploymentState     string `json:"deployment_state"`
-	Ready               bool   `json:"ready"`
-	Approved            bool   `json:"approved"`
-	Deployed            bool   `json:"deployed"`
+
+	Ready    bool `json:"ready"`
+	Approved bool `json:"approved"`
+	Deployed bool `json:"deployed"`
 
 	Branch     string `json:"branch"`
 	IntoBranch string `json:"into_branch"`

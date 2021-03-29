@@ -214,7 +214,3 @@ func databaseBranchesAPIPath(org, db string) string {
 func databaseBranchAPIPath(org, db, branch string) string {
 	return fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
 }
-
-func branchDeployRequestsAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/deploy-requests", databaseBranchAPIPath(org, db, branch))
-}

@@ -63,10 +63,19 @@ type CancelDeployRequest struct {
 	Number       uint64 `json:"-"`
 }
 
+type CreateDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"branch"`
+	IntoBranch   string `json:"into_branch"`
+	Notes        string `json:"notes"`
+}
+
 // DeployRequestsService is an interface for communicating with the PlanetScale
 // deploy requests API.
 type DeployRequestsService interface {
 	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
+	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequest) (*DeployRequest, error)
@@ -131,6 +140,28 @@ func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDe
 
 type deployRequestsResponse struct {
 	DeployRequests []*DeployRequest `json:"data"`
+}
+
+func (d *deployRequestsService) Create(ctx context.Context, createReq *CreateDeployRequestRequest) (*DeployRequest, error) {
+	path := deployRequestsAPIPath(createReq.Organization, createReq.Database)
+	req, err := d.client.newRequest(http.MethodPost, path, createReq)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := d.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	dr := &DeployRequest{}
+	err = json.NewDecoder(res.Body).Decode(dr)
+	if err != nil {
+		return nil, err
+	}
+
+	return dr, nil
 }
 
 // CancelDeploy approves and executes a specific deploy request.

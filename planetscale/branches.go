@@ -81,7 +81,6 @@ type DatabaseBranchesService interface {
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
-	RequestDeploy(context.Context, *DatabaseBranchRequestDeployRequest) (*DeployRequest, error)
 }
 
 type databaseBranchesService struct {
@@ -216,29 +215,6 @@ func (d *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetD
 	}
 
 	return status, nil
-}
-
-// RequestDeploy requests a deploy for a specific database branch.
-func (d *databaseBranchesService) RequestDeploy(ctx context.Context, deployReq *DatabaseBranchRequestDeployRequest) (*DeployRequest, error) {
-	path := branchDeployRequestsAPIPath(deployReq.Organization, deployReq.Database, deployReq.Branch)
-	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := d.client.Do(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	dr := &DeployRequest{}
-	err = json.NewDecoder(res.Body).Decode(dr)
-	if err != nil {
-		return nil, err
-	}
-
-	return dr, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

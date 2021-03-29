@@ -150,14 +150,16 @@ func TestDatabaseBranches_Status(t *testing.T) {
 		w.WriteHeader(200)
 		out := `{
     "id": "development",
-	"type": "database_branch_status",
-	"deploy_phase": "deployed",
+	"type": "BranchStatus",
+	"ready": true,
 	"created_at": "2021-01-14T10:19:23.000Z",
 	"updated_at": "2021-01-14T10:19:23.000Z",
-	"mysql_gateway_host": "test-host",
-	"mysql_gateway_port": 3306,
-	"mysql_gateway_user": "root",
-	"mysql_gateway_pass": "password"
+	"credentials": {
+		"mysql_gateway_host": "test-host",
+		"mysql_gateway_port": 3306,
+		"mysql_gateway_user": "root",
+		"mysql_gateway_pass": "password"
+	}
 }`
 
 		_, err := w.Write([]byte(out))
@@ -179,11 +181,13 @@ func TestDatabaseBranches_Status(t *testing.T) {
 	})
 
 	want := &DatabaseBranchStatus{
-		DeployPhase: "deployed",
-		GatewayHost: "test-host",
-		GatewayPort: 3306,
-		User:        "root",
-		Password:    "password",
+		Ready: true,
+		Credentials: DatabaseBranchCredentials{
+			GatewayHost: "test-host",
+			GatewayPort: 3306,
+			User:        "root",
+			Password:    "password",
+		},
 	}
 
 	c.Assert(err, qt.IsNil)

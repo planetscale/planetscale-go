@@ -63,14 +63,6 @@ type GetDatabaseBranchStatusRequest struct {
 	Branch       string
 }
 
-// ListDeployRequestsRequest gets the deploy requests for a specific database
-// branch.
-type ListDeployRequestsRequest struct {
-	Organization string
-	Database     string
-	Branch       string
-}
-
 // DatabaseBranchRequestDeployRequest encapsulates the request for requesting a
 // deploy of a database branch.
 type DatabaseBranchRequestDeployRequest struct {
@@ -81,10 +73,6 @@ type DatabaseBranchRequestDeployRequest struct {
 	Notes        string `json:"notes"`
 }
 
-type deployRequestsResponse struct {
-	DeployRequests []*DeployRequest `json:"data"`
-}
-
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
@@ -93,7 +81,6 @@ type DatabaseBranchesService interface {
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
-	ListDeployRequests(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
 	RequestDeploy(context.Context, *DatabaseBranchRequestDeployRequest) (*DeployRequest, error)
 }
 
@@ -229,28 +216,6 @@ func (d *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetD
 	}
 
 	return status, nil
-}
-
-func (d *databaseBranchesService) ListDeployRequests(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
-	path := branchDeployRequestsAPIPath(listReq.Organization, listReq.Database, listReq.Branch)
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
-	}
-
-	res, err := d.client.Do(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	deployRequestsResponse := &deployRequestsResponse{}
-	err = json.NewDecoder(res.Body).Decode(deployRequestsResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return deployRequestsResponse.DeployRequests, nil
 }
 
 // RequestDeploy requests a deploy for a specific database branch.

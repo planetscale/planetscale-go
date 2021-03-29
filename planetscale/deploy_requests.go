@@ -80,6 +80,13 @@ type DeployRequestsService interface {
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequest) (*DeployRequest, error)
+	Close(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
+}
+
+type CloseDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
 }
 
 type deployRequestsService struct {
@@ -97,6 +104,36 @@ func NewDeployRequestsService(client *Client) *deployRequestsService {
 // Get fetches a single deploy request.
 func (d *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequestRequest) (*DeployRequest, error) {
 	req, err := d.client.newRequest(http.MethodGet, deployRequestAPIPath(getReq.Organization, getReq.Database, getReq.Number), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	res, err := d.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	dr := &DeployRequest{}
+	err = json.NewDecoder(res.Body).Decode(dr)
+	if err != nil {
+		return nil, err
+	}
+
+	return dr, nil
+}
+
+type CloseRequest struct {
+	State string `json:"state"`
+}
+
+// Close closes a deploy request
+func (d *deployRequestsService) Close(ctx context.Context, closeReq *CloseDeployRequestRequest) (*DeployRequest, error) {
+	updateReq := &CloseRequest{
+		State: "closed",
+	}
+
+	req, err := d.client.newRequest(http.MethodPatch, deployRequestAPIPath(closeReq.Organization, closeReq.Database, closeReq.Number), updateReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

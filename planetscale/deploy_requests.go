@@ -34,7 +34,8 @@ type ListDeployRequestsRequest struct {
 	Database     string
 }
 
-// DeployRequest encapsulates a requested deploy of a schema snapshot.
+// DeployRequest encapsulates the request to deploy a database branch's schema
+// to a production branch
 type DeployRequest struct {
 	ID string `json:"id"`
 

@@ -63,16 +63,6 @@ type GetDatabaseBranchStatusRequest struct {
 	Branch       string
 }
 
-// DatabaseBranchRequestDeployRequest encapsulates the request for requesting a
-// deploy of a database branch.
-type DatabaseBranchRequestDeployRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-	IntoBranch   string `json:"into_branch,omitempty"`
-	Notes        string `json:"notes"`
-}
-
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {

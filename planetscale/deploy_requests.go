@@ -10,6 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DeployRequestReview posts a review to a deploy request.
+type DeployRequestReview struct {
+	ID    string `json:"id"`
+	Body  string `json:"body"`
+	State string `json:"state"`
+}
+
 // PerformDeployRequest is a request for approving and deploying a deploy request.
 // NOTE: We deviate from naming convention here because we have a data model
 // named DeployRequest already.
@@ -39,17 +46,19 @@ type ListDeployRequestsRequest struct {
 type DeployRequest struct {
 	ID string `json:"id"`
 
+	Branch     string `json:"branch"`
+	IntoBranch string `json:"into_branch"`
+
 	Number uint64 `json:"number"`
 
 	DeployabilityErrors string `json:"deployability_errors"`
 	DeploymentState     string `json:"deployment_state"`
 
+	State string `json:"state"`
+
 	Ready    bool `json:"ready"`
 	Approved bool `json:"approved"`
 	Deployed bool `json:"deployed"`
-
-	Branch     string `json:"branch"`
-	IntoBranch string `json:"into_branch"`
 
 	Notes string `json:"notes"`
 
@@ -72,6 +81,14 @@ type CreateDeployRequestRequest struct {
 	Notes        string `json:"notes"`
 }
 
+type ReviewDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+	Body         string `json:"body"`
+	State        string `json:"state"`
+}
+
 // DeployRequestsService is an interface for communicating with the PlanetScale
 // deploy requests API.
 type DeployRequestsService interface {
@@ -81,6 +98,7 @@ type DeployRequestsService interface {
 	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequest) (*DeployRequest, error)
 	Close(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
+	CreateReview(context.Context, *ReviewDeployRequestRequest) (*DeployRequestReview, error)
 }
 
 type CloseDeployRequestRequest struct {
@@ -247,6 +265,27 @@ func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployReq
 	return deployRequests.DeployRequests, nil
 }
 
+func (d *deployRequestsService) CreateReview(ctx context.Context, reviewReq *ReviewDeployRequestRequest) (*DeployRequestReview, error) {
+	req, err := d.client.newRequest(http.MethodGet, deployRequestActionAPIPath(reviewReq.Organization, reviewReq.Database, reviewReq.Number, "reviews"), reviewReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	res, err := d.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	drr := &DeployRequestReview{}
+	err = json.NewDecoder(res.Body).Decode(drr)
+	if err != nil {
+		return nil, err
+	}
+
+	return drr, nil
+}
+
 func deployRequestsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/deploy-requests", databasesAPIPath(org), db)
 }
@@ -254,4 +293,8 @@ func deployRequestsAPIPath(org, db string) string {
 // deployRequestAPIPath gets the base path for accessing a single deploy request
 func deployRequestAPIPath(org string, db string, number uint64) string {
 	return fmt.Sprintf("%s/%s/deploy-requests/%d", databasesAPIPath(org), db, number)
+}
+
+func deployRequestActionAPIPath(org string, db string, number uint64, path string) string {
+	return fmt.Sprintf("%s/%s", deployRequestAPIPath(org, db, number), path)
 }

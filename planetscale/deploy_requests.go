@@ -243,6 +243,46 @@ func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *Can
 	return dr, nil
 }
 
+// Diff returns the diff for a database deploy request
+type Diff struct {
+	Name string `json:"name"`
+	Raw  string `json:"raw"`
+	HTML string `json:"html"`
+}
+
+type diffResponse struct {
+	Diffs []*Diff `json:"data"`
+}
+
+type DiffRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+}
+
+// Diff returns a diff
+func (d *deployRequestsService) Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error) {
+	req, err := d.client.newRequest(http.MethodGet, deployRequestActionAPIPath(diffReq.Organization, diffReq.Database, diffReq.Number, "diff"), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	res, err := d.client.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	diffs := &diffResponse{}
+	err = json.NewDecoder(res.Body).Decode(&diffs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return diffs.Diffs, nil
+}
+
 func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
 	req, err := d.client.newRequest(http.MethodGet, deployRequestsAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {

@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://api.planetscaledb.io/"
+	DefaultBaseURL = "https://api.planetscale.com/"
 	jsonMediaType  = "application/json"
 )
 
@@ -26,12 +26,14 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
+	Backups          BackupsService
 	Databases        DatabasesService
 	Certificates     CertificatesService
 	DatabaseBranches DatabaseBranchesService
 	Organizations    OrganizationsService
 	SchemaSnapshots  SchemaSnapshotsService
 	DeployRequests   DeployRequestsService
+	ServiceTokens    ServiceTokenService
 }
 
 // ClientOption provides a variadic option for configuring the client
@@ -117,12 +119,14 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		}
 	}
 
+	c.Backups = &backupsService{client: c}
 	c.Databases = &databasesService{client: c}
 	c.Certificates = &certificatesService{client: c}
 	c.DatabaseBranches = &databaseBranchesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.SchemaSnapshots = &schemaSnapshotsService{client: c}
 	c.DeployRequests = &deployRequestsService{client: c}
+	c.ServiceTokens = &serviceTokenService{client: c}
 
 	return c, nil
 }

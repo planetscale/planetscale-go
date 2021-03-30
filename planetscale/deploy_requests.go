@@ -58,7 +58,6 @@ type DeployRequest struct {
 
 	Ready    bool `json:"ready"`
 	Approved bool `json:"approved"`
-	Deployed bool `json:"deployed"`
 
 	Notes string `json:"notes"`
 

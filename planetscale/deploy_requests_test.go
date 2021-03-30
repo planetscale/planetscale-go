@@ -204,6 +204,42 @@ func TestDeployRequests_Create(t *testing.T) {
 	c.Assert(requests, qt.DeepEquals, want)
 }
 
+func TestDeployRequests_Review(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id": "test-review-id","type": "DeployRequestReview","body": "test body","html_body": "","state": "approved","created_at": "2021-01-14T10:19:23.000Z","updated_at": "2021-01-14T10:19:23.000Z"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	requests, err := client.DeployRequests.CreateReview(ctx, &ReviewDeployRequestRequest{
+		Organization: testOrg,
+		Database:     testDatabase,
+		Body:         "test body",
+		State:        "approved",
+	})
+
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+
+	want := &DeployRequestReview{
+		ID:        "test-review-id",
+		Body:      "test body",
+		State:     "approved",
+		CreatedAt: testTime,
+		UpdatedAt: testTime,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(requests, qt.DeepEquals, want)
+}
+
 func TestDeployRequests_List(t *testing.T) {
 	c := qt.New(t)
 

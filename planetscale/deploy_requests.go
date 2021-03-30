@@ -12,9 +12,11 @@ import (
 
 // DeployRequestReview posts a review to a deploy request.
 type DeployRequestReview struct {
-	ID    string `json:"id"`
-	Body  string `json:"body"`
-	State string `json:"state"`
+	ID        string    `json:"id"`
+	Body      string    `json:"body"`
+	State     string    `json:"state"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // PerformDeployRequest is a request for approving and deploying a deploy request.

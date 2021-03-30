@@ -173,7 +173,7 @@ func (d *deployRequestsService) Close(ctx context.Context, closeReq *CloseDeploy
 
 // Deploy approves and executes a specific deploy request.
 func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDeployRequest) (*DeployRequest, error) {
-	path := fmt.Sprintf("%s/deploy", deployRequestAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number))
+	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "deploy")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
@@ -220,9 +220,9 @@ func (d *deployRequestsService) Create(ctx context.Context, createReq *CreateDep
 	return dr, nil
 }
 
-// CancelDeploy approves and executes a specific deploy request.
+// CancelDeploy cancels a queued deploy request.
 func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *CancelDeployRequest) (*DeployRequest, error) {
-	path := fmt.Sprintf("%s/cancel", deployRequestAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number))
+	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "cancel")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

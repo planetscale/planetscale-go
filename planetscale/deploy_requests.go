@@ -66,7 +66,7 @@ type DeployRequest struct {
 	ClosedAt  *time.Time `json:"closed_at"`
 }
 
-type CancelDeployRequest struct {
+type CancelDeployRequestRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
@@ -95,7 +95,7 @@ type DeployRequestsService interface {
 	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
-	CancelDeploy(context.Context, *CancelDeployRequest) (*DeployRequest, error)
+	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
 	Close(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
 	CreateReview(context.Context, *ReviewDeployRequestRequest) (*DeployRequestReview, error)
 }
@@ -220,7 +220,7 @@ func (d *deployRequestsService) Create(ctx context.Context, createReq *CreateDep
 }
 
 // CancelDeploy cancels a queued deploy request.
-func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *CancelDeployRequest) (*DeployRequest, error) {
+func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *CancelDeployRequestRequest) (*DeployRequest, error) {
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "cancel")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {

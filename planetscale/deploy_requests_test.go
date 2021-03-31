@@ -222,8 +222,8 @@ func TestDeployRequests_Review(t *testing.T) {
 	requests, err := client.DeployRequests.CreateReview(ctx, &ReviewDeployRequestRequest{
 		Organization: testOrg,
 		Database:     testDatabase,
-		Body:         "test body",
-		State:        "approved",
+		CommentText:  "test body",
+		ReviewAction: ReviewApprove,
 	})
 
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)

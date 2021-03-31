@@ -10,6 +10,25 @@ import (
 	"github.com/pkg/errors"
 )
 
+type deployRequestsService struct {
+	client *Client
+}
+
+var _ DeployRequestsService = (*deployRequestsService)(nil)
+
+// DeployRequestsService is an interface for communicating with the PlanetScale
+// deploy requests API.
+type DeployRequestsService interface {
+	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
+	CloseDeploy(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
+	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
+	CreateReview(context.Context, *ReviewDeployRequestRequest) (*DeployRequestReview, error)
+	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
+	Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error)
+	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
+	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
+}
+
 // DeployRequestReview posts a review to a deploy request.
 type DeployRequestReview struct {
 	ID        string    `json:"id"`
@@ -90,29 +109,11 @@ type ReviewDeployRequestRequest struct {
 	State        string `json:"state"`
 }
 
-// DeployRequestsService is an interface for communicating with the PlanetScale
-// deploy requests API.
-type DeployRequestsService interface {
-	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
-	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
-	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
-	Deploy(context.Context, *PerformDeployRequest) (*DeployRequest, error)
-	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
-	Close(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
-	CreateReview(context.Context, *ReviewDeployRequestRequest) (*DeployRequestReview, error)
-}
-
 type CloseDeployRequestRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
 }
-
-type deployRequestsService struct {
-	client *Client
-}
-
-var _ DeployRequestsService = &deployRequestsService{}
 
 func NewDeployRequestsService(client *Client) *deployRequestsService {
 	return &deployRequestsService{
@@ -146,8 +147,8 @@ type CloseRequest struct {
 	State string `json:"state"`
 }
 
-// Close closes a deploy request
-func (d *deployRequestsService) Close(ctx context.Context, closeReq *CloseDeployRequestRequest) (*DeployRequest, error) {
+// CloseDeploy closes a deploy request
+func (d *deployRequestsService) CloseDeploy(ctx context.Context, closeReq *CloseDeployRequestRequest) (*DeployRequest, error) {
 	updateReq := &CloseRequest{
 		State: "closed",
 	}
@@ -263,7 +264,11 @@ type DiffRequest struct {
 
 // Diff returns a diff
 func (d *deployRequestsService) Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error) {
-	req, err := d.client.newRequest(http.MethodGet, deployRequestActionAPIPath(diffReq.Organization, diffReq.Database, diffReq.Number, "diff"), nil)
+	req, err := d.client.newRequest(
+		http.MethodGet,
+		deployRequestActionAPIPath(diffReq.Organization, diffReq.Database, diffReq.Number, "diff"),
+		nil,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}
@@ -276,7 +281,6 @@ func (d *deployRequestsService) Diff(ctx context.Context, diffReq *DiffRequest) 
 
 	diffs := &diffResponse{}
 	err = json.NewDecoder(res.Body).Decode(&diffs)
-
 	if err != nil {
 		return nil, err
 	}

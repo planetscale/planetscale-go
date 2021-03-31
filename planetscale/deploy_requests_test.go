@@ -142,7 +142,7 @@ func TestDeployRequests_Close(t *testing.T) {
 
 	ctx := context.Background()
 
-	dr, err := client.DeployRequests.Close(ctx, &CloseDeployRequestRequest{
+	dr, err := client.DeployRequests.CloseDeploy(ctx, &CloseDeployRequestRequest{
 		Organization: "test-organization",
 		Database:     "test-database",
 		Number:       1337,

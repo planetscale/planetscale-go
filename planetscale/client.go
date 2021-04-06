@@ -157,7 +157,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, v interface{}) error
 
 // handleResponse makes an HTTP request and populates the given struct v from
 // the response.  This is meant for internal testing and shouldn't be used
-// direclt. Instead please use `Client.do`.
+// directly. Instead please use `Client.do`.
 func (c *Client) handleResponse(ctx context.Context, res *http.Response, v interface{}) error {
 	out, err := ioutil.ReadAll(res.Body)
 	if err != nil {

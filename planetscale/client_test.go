@@ -1,7 +1,7 @@
 package planetscale
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,6 +61,7 @@ func TestDo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
+			ctx := context.Background()
 			c := qt.New(t)
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
@@ -83,25 +84,22 @@ func TestDo(t *testing.T) {
 			}
 
 			res, err := client.client.Do(req)
-			if err != nil && tt.expectedError == nil {
-				if tt.expectedError != nil {
-					c.Assert(tt.expectedError, qt.ErrorMatches, err)
-					c.Assert(err, qt.IsNil)
-				}
-			}
+			c.Assert(err, qt.IsNil)
 			defer res.Body.Close()
 
-			if tt.v != nil {
-				err = json.NewDecoder(res.Body).Decode(&tt.v)
-
-				if err != nil {
-					t.Fatal(err)
+			err = client.handleResponse(ctx, res, &tt.v)
+			if err != nil {
+				if tt.expectedError != nil {
+					c.Assert(tt.expectedError.Error(), qt.Equals, err.Error())
 				}
 			}
 
 			c.Assert(res, qt.Not(qt.IsNil))
 			c.Assert(res.StatusCode, qt.Equals, tt.statusCode)
-			c.Assert(tt.want, qt.DeepEquals, tt.v)
+
+			if tt.v != nil && tt.want != nil {
+				c.Assert(tt.want, qt.DeepEquals, tt.v)
+			}
 		})
 	}
 }

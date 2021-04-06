@@ -1,7 +1,6 @@
 package planetscale
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -35,9 +34,9 @@ func TestDo(t *testing.T) {
 				"code": "not_found",
 				"message": "Not Found"
 			}`,
-			expectedError: &ErrorResponse{
-				Code:    "not_found",
-				Message: "Not Found",
+			expectedError: &Error{
+				msg:  "Not Found",
+				Code: ErrNotFound,
 			},
 		},
 		{
@@ -83,14 +82,12 @@ func TestDo(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			res, err := client.Do(context.Background(), req)
+			res, err := client.client.Do(req)
 			if err != nil && tt.expectedError == nil {
 				if tt.expectedError != nil {
-					c.Assert(tt.expectedError, qt.DeepEquals, err)
-				} else {
+					c.Assert(tt.expectedError, qt.ErrorMatches, err)
 					c.Assert(err, qt.IsNil)
 				}
-
 			}
 			defer res.Body.Close()
 
@@ -102,7 +99,6 @@ func TestDo(t *testing.T) {
 				}
 			}
 
-			c.Assert(tt.expectedError, qt.DeepEquals, err)
 			c.Assert(res, qt.Not(qt.IsNil))
 			c.Assert(res.StatusCode, qt.Equals, tt.statusCode)
 			c.Assert(tt.want, qt.DeepEquals, tt.v)

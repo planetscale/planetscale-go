@@ -40,6 +40,16 @@ func TestDo(t *testing.T) {
 			},
 		},
 		{
+			desc:       "returns ErrorResponse for 5xx errors",
+			statusCode: http.StatusInternalServerError,
+			method:     http.MethodGet,
+			response:   `{}`,
+			expectedError: &Error{
+				msg:  "internal error, please open an issue to github.com/planetscale/planetscale-go",
+				Code: ErrInternal,
+			},
+		},
+		{
 			desc:       "returns an HTTP response 200 when posting a request",
 			statusCode: http.StatusOK,
 			response: `

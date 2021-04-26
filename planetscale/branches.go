@@ -69,8 +69,8 @@ type DiffBranchRequest struct {
 	Branch       string `json:"-"`
 }
 
-// SchemaBranchRequest encapsulates a request for getting a branch's schema.
-type SchemaBranchRequest struct {
+// BranchSchemaRequest encapsulates a request for getting a branch's schema.
+type BranchSchemaRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
@@ -85,7 +85,7 @@ type DatabaseBranchesService interface {
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
-	Schema(context.Context, *SchemaBranchRequest) (*Diff, error)
+	Schema(context.Context, *BranchSchemaRequest) (*Diff, error)
 }
 
 type databaseBranchesService struct {
@@ -128,7 +128,7 @@ func (d *databaseBranchesService) Diff(ctx context.Context, diffReq *DiffBranchR
 	return diffs.Diffs, nil
 }
 
-func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *SchemaBranchRequest) (*Diff, error) {
+func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchSchemaRequest) (*Diff, error) {
 	path := fmt.Sprintf("%s/schema", databaseBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {

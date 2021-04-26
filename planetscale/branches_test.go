@@ -229,7 +229,7 @@ func TestBranches_Schema(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"name": "foo"}`
+		out := `{"data":[{"name": "foo"}, {"name": "bar"}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -239,16 +239,17 @@ func TestBranches_Schema(t *testing.T) {
 
 	ctx := context.Background()
 
-	diffs, err := client.DatabaseBranches.Schema(ctx, &BranchSchemaRequest{
+	schemas, err := client.DatabaseBranches.Schema(ctx, &BranchSchemaRequest{
 		Organization: "foo",
 		Database:     "bar",
 		Branch:       "baz",
 	})
 
-	want := &Diff{
-		Name: "foo",
+	want := []*Diff{
+		{Name: "foo"},
+		{Name: "bar"},
 	}
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(diffs, qt.DeepEquals, want)
+	c.Assert(schemas, qt.DeepEquals, want)
 }

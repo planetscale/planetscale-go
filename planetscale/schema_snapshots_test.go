@@ -105,3 +105,31 @@ func TestSchemaSnapshots_List(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(snapshots, qt.DeepEquals, want)
 }
+
+func TestSchemaSnapshots_Diff(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"data":[{"name": "foo"}, {"name": "bar"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	diffs, err := client.SchemaSnapshots.Diff(ctx, &DiffSchemaSnapshotRequest{
+		ID: "test-id",
+	})
+
+	want := []*Diff{
+		{Name: "foo"},
+		{Name: "bar"},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(diffs, qt.DeepEquals, want)
+}

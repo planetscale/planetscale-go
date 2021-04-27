@@ -1,9 +1,9 @@
-# github.com/frankban/quicktest v1.11.3
+# github.com/frankban/quicktest v1.12.0
 ## explicit
 github.com/frankban/quicktest
 # github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
-# github.com/google/go-cmp v0.5.4
+# github.com/google/go-cmp v0.5.5
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/cmpopts
 github.com/google/go-cmp/cmp/internal/diff

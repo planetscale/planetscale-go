@@ -2,8 +2,10 @@ package planetscale
 
 import (
 	"context"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -131,13 +133,18 @@ func TestDeployRequests_CancelDeploy(t *testing.T) {
 	c.Assert(dr, qt.DeepEquals, want)
 }
 
+func loadFixture(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filepath.Join("testdata", filename))
+
+}
+
 func TestDeployRequests_Close(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "pending" }, "number": 1337}`
-		_, err := w.Write([]byte(out))
+		out, err := loadFixture("closed_deploy_request.json")
+		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 
@@ -157,10 +164,18 @@ func TestDeployRequests_Close(t *testing.T) {
 	want := &DeployRequest{
 		ID:     "test-deploy-request-id",
 		Branch: "development",
+		State:  "closed",
 		Deployment: &Deployment{
-			State: "pending",
+			ID:                   "test-deployment-id",
+			IntoBranch:           "main",
+			PrecedingDeployments: []*QueuedDeployment{},
+			DeployRequestNumber:  1337,
+			Deployable:           true,
+			State:                "pending",
+			CreatedAt:            testTime,
+			UpdatedAt:            testTime,
 		},
-		IntoBranch: "some-branch",
+		IntoBranch: "main",
 		Number:     1337,
 		Notes:      "",
 		CreatedAt:  testTime,

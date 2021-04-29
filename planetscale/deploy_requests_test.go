@@ -53,7 +53,7 @@ func TestDeployRequests_Deploy(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment_state": "queued", "number": 1337}`
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "queued"}, "number": 1337}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -73,15 +73,17 @@ func TestDeployRequests_Deploy(t *testing.T) {
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
 
 	want := &DeployRequest{
-		ID:              "test-deploy-request-id",
-		Branch:          "development",
-		IntoBranch:      "some-branch",
-		Number:          1337,
-		DeploymentState: "queued",
-		Notes:           "",
-		CreatedAt:       testTime,
-		UpdatedAt:       testTime,
-		ClosedAt:        &testTime,
+		ID:         "test-deploy-request-id",
+		Branch:     "development",
+		IntoBranch: "some-branch",
+		Number:     1337,
+		Deployment: &Deployment{
+			State: "queued",
+		},
+		Notes:     "",
+		CreatedAt: testTime,
+		UpdatedAt: testTime,
+		ClosedAt:  &testTime,
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -93,7 +95,7 @@ func TestDeployRequests_CancelDeploy(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment_state": "pending", "number": 1337}`
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "pending" }, "number": 1337}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -112,15 +114,17 @@ func TestDeployRequests_CancelDeploy(t *testing.T) {
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
 
 	want := &DeployRequest{
-		ID:              "test-deploy-request-id",
-		Branch:          "development",
-		DeploymentState: "pending",
-		IntoBranch:      "some-branch",
-		Number:          1337,
-		Notes:           "",
-		CreatedAt:       testTime,
-		UpdatedAt:       testTime,
-		ClosedAt:        &testTime,
+		ID:     "test-deploy-request-id",
+		Branch: "development",
+		Deployment: &Deployment{
+			State: "pending",
+		},
+		IntoBranch: "some-branch",
+		Number:     1337,
+		Notes:      "",
+		CreatedAt:  testTime,
+		UpdatedAt:  testTime,
+		ClosedAt:   &testTime,
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -132,7 +136,7 @@ func TestDeployRequests_Close(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment_state": "pending", "number": 1337}`
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "pending" }, "number": 1337}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -151,15 +155,17 @@ func TestDeployRequests_Close(t *testing.T) {
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
 
 	want := &DeployRequest{
-		ID:              "test-deploy-request-id",
-		Branch:          "development",
-		DeploymentState: "pending",
-		IntoBranch:      "some-branch",
-		Number:          1337,
-		Notes:           "",
-		CreatedAt:       testTime,
-		UpdatedAt:       testTime,
-		ClosedAt:        &testTime,
+		ID:     "test-deploy-request-id",
+		Branch: "development",
+		Deployment: &Deployment{
+			State: "pending",
+		},
+		IntoBranch: "some-branch",
+		Number:     1337,
+		Notes:      "",
+		CreatedAt:  testTime,
+		UpdatedAt:  testTime,
+		ClosedAt:   &testTime,
 	}
 
 	c.Assert(err, qt.IsNil)

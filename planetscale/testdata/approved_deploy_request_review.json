@@ -1,0 +1,9 @@
+{
+    "id": "test-review-id",
+    "type": "DeployRequestReview",
+    "body": "test body",
+    "html_body": "",
+    "state": "approved",
+    "created_at": "2021-01-14T10:19:23.000Z",
+    "updated_at": "2021-01-14T10:19:23.000Z"
+}

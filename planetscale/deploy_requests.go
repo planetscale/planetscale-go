@@ -117,7 +117,6 @@ type DeployRequest struct {
 
 	State string `json:"state"`
 
-	Ready    bool `json:"ready"`
 	Approved bool `json:"approved"`
 
 	Notes string `json:"notes"`

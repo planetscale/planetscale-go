@@ -10,6 +10,11 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
+const (
+	testOrg      = "my-org"
+	testDatabase = "planetscale-go-test-db"
+)
+
 func TestDatabases_Create(t *testing.T) {
 	c := qt.New(t)
 

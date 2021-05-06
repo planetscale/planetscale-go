@@ -253,3 +253,25 @@ func TestBranches_Schema(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(schemas, qt.DeepEquals, want)
 }
+
+func TestBranches_RefreshSchema(t *testing.T) {
+	c := qt.New(t)
+
+	wantURL := "/v1/organizations/my-org/databases/planetscale-go-test-db/branches/planetscale-go-test-db-branch/refresh-schema"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+		c.Assert(r.URL.String(), qt.DeepEquals, wantURL)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.DatabaseBranches.RefreshSchema(ctx, &RefreshSchemaRequest{
+		Organization: testOrg,
+		Database:     testDatabase,
+		Branch:       testBranch,
+	})
+	c.Assert(err, qt.IsNil)
+}

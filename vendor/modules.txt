@@ -1,4 +1,4 @@
-# github.com/frankban/quicktest v1.12.1
+# github.com/frankban/quicktest v1.13.0
 ## explicit
 github.com/frankban/quicktest
 # github.com/golang/protobuf v1.4.2

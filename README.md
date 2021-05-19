@@ -1,4 +1,4 @@
-# planetscale-go
+# planetscale-go [![Build status](https://badge.buildkite.com/82dafa9518fe94b3fed75db71bcfc3836faeec49816e400f2e.svg?branch=main)](https://buildkite.com/planetscale/planetscale-go)
 
 Go package to access the PlanetScale API.
 

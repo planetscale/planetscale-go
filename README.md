@@ -37,13 +37,16 @@ func main() {
 	)
 
 	// create a new database
-	_, err := client.Databases.Create(ctx, "my-org", &planetscale.CreateDatabaseRequest{
-			Name:  "my-awesome-database",
-			Notes: "This is a test DB created via the planetscale-go API library",
+	_, err := client.Databases.Create(ctx, &planetscale.CreateDatabaseRequest{
+		Organization: "my-org",
+		Name:         "my-awesome-database",
+		Notes:        "This is a test DB created via the planetscale-go API library",
 	})
 
 	// list all databases for the given organization
-	databases, _ := client.Databases.List(ctx, "my-org")
+	databases, _ := client.Databases.List(ctx, &planetscale.ListDatabasesRequest{
+		Organization: "my-org",
+	})
 	fmt.Printf("Found %d databases\n", len(databases))
 	for _, db := range databases {
 		fmt.Printf("Name: %q\n", db.Name)
@@ -51,7 +54,10 @@ func main() {
 	}
 
 	// delete a database
-	_, _ = client.Databases.Delete(ctx, "my-org", "my-awesome-database")
+	_ = client.Databases.Delete(ctx, &planetscale.DeleteDatabaseRequest{
+		Organization: "my-org",
+		Database:     "my-awesome-database",
+	})
 }
 ```
 
@@ -73,4 +79,3 @@ client, _ := planetscale.NewClient(
 	planetscale.WithAccessToken(token),
 )
 ```
-

@@ -30,6 +30,12 @@ type DialConfig struct {
 	// Client defines a PlanetScale client. Use planetscale.NewClient() to
 	// create a new instance.
 	Client *ps.Client
+
+	// MySQLConfig is optional and can be used to pass MySQL driver
+	// specific options. Note that some configuration fields
+	// will always be overwritten in order to properly connect
+	// to PlanetScale.
+	MySQLConfig *mysql.Config
 }
 
 // Dial creates a secure connection to a PlanetScale database with the given
@@ -54,7 +60,11 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	mysqlCfg := mysql.NewConfig()
+
+	mysqlCfg := cfg.MySQLConfig
+	if mysqlCfg == nil {
+		mysqlCfg = mysql.NewConfig()
+	}
 	mysqlCfg.Addr = remoteAddr
 	mysqlCfg.Net = "tcp"
 	mysqlCfg.TLSConfig = key

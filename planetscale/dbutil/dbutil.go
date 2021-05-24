@@ -59,7 +59,6 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 	mysqlCfg.Net = "tcp"
 	mysqlCfg.TLSConfig = key
 
-	fmt.Println("==> connecting to the db ...")
 	db, err := sql.Open("mysql", mysqlCfg.FormatDSN())
 	if err == nil {
 		err = db.PingContext(ctx)

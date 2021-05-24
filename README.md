@@ -82,8 +82,7 @@ client, _ := planetscale.NewClient(
 
 ## Connecting to a PlanetScale Database
 
-The `planetscale-go` packge provides a helper method to simplify connecting to a PlanetScale database. Here is an example you can use (_Please make sure to handle errors in your production application._):
-
+The `planetscale-go` package provides a helper method to simplify connecting to a PlanetScale database. Here is an example you can use (_Please make sure to handle errors in your production application._):
 
 
 ```go
@@ -108,7 +107,7 @@ func main() {
 	)
 
 	// create the Dial config
-	dialCfg := &DialConfig{
+	dialCfg := &dbutil.DialConfig{
 		Organization: "my-org",
 		Database:     "my-awesome-database",
 		Branch:       "my-branch",

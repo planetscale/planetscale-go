@@ -79,3 +79,50 @@ client, _ := planetscale.NewClient(
 	planetscale.WithAccessToken(token),
 )
 ```
+
+## Connecting to a PlanetScale Database
+
+The `planetscale-go` packge provides a helper method to simplify connecting to a PlanetScale database. Here is an example you can use (_Please make sure to handle errors in your production application._):
+
+
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/planetscale/planetscale-go/planetscale"
+	"github.com/planetscale/planetscale-go/planetscale/dbutil"
+)
+
+func main() {
+	token := os.Getenv("PLANETSCALE_TOKEN")
+	ctx := context.Background()
+
+	// create a new PlanetScale API client with the given access token
+	client, _ := planetscale.NewClient(
+		planetscale.WithAccessToken(token),
+	)
+
+	// create the Dial config
+	dialCfg := &DialConfig{
+		Organization: "my-org",
+		Database:     "my-awesome-database",
+		Branch:       "my-branch",
+		Client:       client,
+	}
+
+	// dbutil.Dial returns a ready to use *sql.DB instance.
+	db, _ := dbutil.Dial(ctx, dialCfg)
+
+	// make a query
+	var version string
+	_ = db.QueryRow("SELECT VERSION()").Scan(&version)
+
+	// prints 'MySQL version: 8.0.23'
+	fmt.Println("MySQL version:", version)
+}
+```

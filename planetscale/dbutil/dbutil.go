@@ -61,7 +61,7 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 		return nil, err
 	}
 
-	mysqlCfg := cfg.MySQLConfig
+	mysqlCfg := *cfg.MySQLConfig
 	if mysqlCfg == nil {
 		mysqlCfg = mysql.NewConfig()
 	}

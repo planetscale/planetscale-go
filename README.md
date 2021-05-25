@@ -62,6 +62,23 @@ func main() {
 ```
 
 
+## Using a Service Token 
+
+To use a `service token`, instead of an `access token`, use the
+`planetscale.WithServiceToken()` option function:
+
+```go
+// create a new PlanetScale API client with the given service token. 
+client, _ := planetscale.NewClient(
+	planetscale.WithServiceToken(name, token),
+)
+```
+
+You can create and manage your service tokens via our [pscale
+CLI](https://github.com/planetscale/cli) with the `pscale service-token`
+subcommand.
+
+
 ## Use a custom HTTP Client
 
 You can use a custom HTTP Client with the `planetscale.WithHTTPClient()` option

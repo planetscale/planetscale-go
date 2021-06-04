@@ -58,6 +58,7 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 	mysqlCfg.Addr = remoteAddr
 	mysqlCfg.Net = "tcp"
 	mysqlCfg.TLSConfig = key
+	mysqlCfg.ParseTime = true
 
 	db, err := sql.Open("mysql", mysqlCfg.FormatDSN())
 	if err == nil {

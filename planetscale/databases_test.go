@@ -140,7 +140,7 @@ func TestDatabases_List_malformed_response(t *testing.T) {
 	})
 
 	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err, qt.ErrorMatches, `malformed response body received`)
+	c.Assert(err, qt.ErrorMatches, `malformed error response body received`)
 }
 
 func TestDatabases_Empty(t *testing.T) {

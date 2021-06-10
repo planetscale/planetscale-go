@@ -28,6 +28,7 @@ type databaseBranchesResponse struct {
 type CreateDatabaseBranchRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
+	Region       string `json:"region,omitempty"`
 	Branch       *DatabaseBranch
 }
 

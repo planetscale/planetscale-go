@@ -20,7 +20,7 @@ func TestDatabases_Create(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
+		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": { "slug": "us-west", "display_name": "US West" }}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -35,13 +35,18 @@ func TestDatabases_Create(t *testing.T) {
 
 	db, err := client.Databases.Create(ctx, &CreateDatabaseRequest{
 		Organization: org,
+		Region:       "us-west",
 		Name:         name,
 		Notes:        notes,
 	})
 
 	want := &Database{
-		Name:      name,
-		Notes:     notes,
+		Name:  name,
+		Notes: notes,
+		Region: Region{
+			Slug: "us-west",
+			Name: "US West",
+		},
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 	}

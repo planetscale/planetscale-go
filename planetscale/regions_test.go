@@ -15,14 +15,14 @@ func TestRegions_List(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		out := `{
-  "data": [
-    {
-      "id": "my-cool-org",
-      "type": "Region",
+"data": [
+		{
+			"id": "my-cool-org",
+			"type": "Region",
 			"slug": "us-east",
 			"display_name": "US East"
-    }
-  ]
+		}
+	]
 }`
 
 		_, err := w.Write([]byte(out))

@@ -34,7 +34,7 @@ func TestRegions_List(t *testing.T) {
 
 	ctx := context.Background()
 
-	orgs, err := client.Regions.List(ctx)
+	orgs, err := client.Regions.List(ctx, &ListRegionsRequest{})
 
 	c.Assert(err, qt.IsNil)
 	want := []*Region{

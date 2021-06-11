@@ -33,10 +33,8 @@ func TestDatabaseBranches_Create(t *testing.T) {
 	db, err := client.DatabaseBranches.Create(ctx, &CreateDatabaseBranchRequest{
 		Organization: org,
 		Database:     name,
-		Branch: &DatabaseBranch{
-			Name:  testBranch,
-			Notes: notes,
-		},
+		Name:         testBranch,
+		Notes:        notes,
 	})
 
 	want := &DatabaseBranch{

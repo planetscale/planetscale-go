@@ -18,8 +18,10 @@ type regionsResponse struct {
 	Regions []*Region `json:"data"`
 }
 
+type ListRegionsRequest struct{}
+
 type RegionsService interface {
-	List(ctx context.Context) ([]*Region, error)
+	List(ctx context.Context, req *ListRegionsRequest) ([]*Region, error)
 }
 
 type regionsService struct {
@@ -34,7 +36,7 @@ func NewRegionsSevice(client *Client) *regionsService {
 	}
 }
 
-func (r *regionsService) List(ctx context.Context) ([]*Region, error) {
+func (r *regionsService) List(ctx context.Context, listReq *ListRegionsRequest) ([]*Region, error) {
 	req, err := r.client.newRequest(http.MethodGet, regionsAPIPath, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for list regions")

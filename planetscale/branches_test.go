@@ -34,10 +34,8 @@ func TestDatabaseBranches_Create(t *testing.T) {
 		Organization: org,
 		Database:     name,
 		Region:       "us-west",
-		Branch: &DatabaseBranch{
-			Name:  testBranch,
-			Notes: notes,
-		},
+		Name:         testBranch,
+		Notes:        notes,
 	})
 
 	want := &DatabaseBranch{

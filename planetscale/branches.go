@@ -14,6 +14,7 @@ type DatabaseBranch struct {
 	Name         string    `json:"name"`
 	Notes        string    `json:"notes"`
 	ParentBranch string    `json:"parent_branch"`
+	Region       Region    `json:"region"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	Status       string    `json:"status,omitempty"`
@@ -28,6 +29,7 @@ type databaseBranchesResponse struct {
 type CreateDatabaseBranchRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
+	Region       string `json:"region,omitempty"`
 	Name         string `json:"name"`
 	Notes        string `json:"notes"`
 	ParentBranch string `json:"parent_branch"`

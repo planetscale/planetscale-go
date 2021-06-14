@@ -14,6 +14,7 @@ type CreateDatabaseRequest struct {
 	Organization string
 	Name         string `json:"name"`
 	Notes        string `json:"notes"`
+	Region       string `json:"region,omitempty"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

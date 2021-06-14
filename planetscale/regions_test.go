@@ -20,7 +20,8 @@ func TestRegions_List(t *testing.T) {
 			"id": "my-cool-org",
 			"type": "Region",
 			"slug": "us-east",
-			"display_name": "US East"
+			"display_name": "US East",
+			"enabled": true
 		}
 	]
 }`
@@ -39,8 +40,9 @@ func TestRegions_List(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	want := []*Region{
 		{
-			Name: "US East",
-			Slug: "us-east",
+			Name:    "US East",
+			Slug:    "us-east",
+			Enabled: true,
 		},
 	}
 

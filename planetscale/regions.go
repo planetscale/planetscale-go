@@ -10,8 +10,9 @@ import (
 const regionsAPIPath = "v1/regions"
 
 type Region struct {
-	Slug string `json:"slug"`
-	Name string `json:"display_name"`
+	Slug    string `json:"slug"`
+	Name    string `json:"display_name"`
+	Enabled bool   `json:"enabled"`
 }
 
 type regionsResponse struct {

@@ -12,7 +12,6 @@ import (
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
 	Name         string    `json:"name"`
-	Notes        string    `json:"notes"`
 	ParentBranch string    `json:"parent_branch"`
 	Region       Region    `json:"region"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -31,7 +30,6 @@ type CreateDatabaseBranchRequest struct {
 	Database     string `json:"-"`
 	Region       string `json:"region,omitempty"`
 	Name         string `json:"name"`
-	Notes        string `json:"notes"`
 	ParentBranch string `json:"parent_branch"`
 }
 

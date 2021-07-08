@@ -1,3 +1,5 @@
+agents:
+  queue: "public"
 steps:
 - name: "Go build and test %n"
   command: make

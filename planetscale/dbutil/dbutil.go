@@ -2,6 +2,7 @@ package dbutil
 
 import (
 	"context"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -38,6 +39,14 @@ type DialConfig struct {
 	MySQLConfig *mysql.Config
 }
 
+func generateKey() (crypto.PrivateKey, error) {
+	pkey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, err
+	}
+	return &pkey, nil
+}
+
 // Dial creates a secure connection to a PlanetScale database with the given
 // configuration.
 func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
@@ -45,7 +54,7 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 		return nil, errors.New("planetscale Client is not set")
 	}
 
-	pkey, err := rsa.GenerateKey(rand.Reader, 2048)
+	pkey, err := generateKey()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't generate private key: %s", err)
 	}
@@ -84,7 +93,7 @@ func Dial(ctx context.Context, cfg *DialConfig) (*sql.DB, error) {
 func createTLSConfig(
 	ctx context.Context,
 	cfg *DialConfig,
-	pkey *rsa.PrivateKey,
+	pkey crypto.PrivateKey,
 	certService ps.CertificatesService,
 ) (string, *tls.Config, error) {
 	if cfg.Organization == "" {

@@ -3,6 +3,8 @@ package planetscale
 import (
 	"bytes"
 	"context"
+	"crypto"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -19,8 +21,8 @@ type CreateCertificateRequest struct {
 	DatabaseName string
 	Branch       string
 
-	// PrivateKey is used to sign the Certificate Sign Request (CSR).
-	PrivateKey *rsa.PrivateKey
+	// PrivateKey is used to generate the Certificate Sign Request (CSR).
+	PrivateKey crypto.PrivateKey
 }
 
 type CertificatesService interface {
@@ -57,10 +59,20 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 		CommonName: cn,
 	}
 
+	var signatureAlgorithm x509.SignatureAlgorithm
+	switch r.PrivateKey.(type) {
+	case *rsa.PrivateKey:
+		signatureAlgorithm = x509.SHA256WithRSA
+	case *ecdsa.PrivateKey:
+		signatureAlgorithm = x509.ECDSAWithSHA256
+	default:
+		return nil, fmt.Errorf("unsupported key type, only supports ECDSA & RSA private keys")
+	}
+
 	template := x509.CertificateRequest{
 		Version:            1,
 		Subject:            subj,
-		SignatureAlgorithm: x509.SHA256WithRSA,
+		SignatureAlgorithm: signatureAlgorithm,
 	}
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, r.PrivateKey)
@@ -110,10 +122,15 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 		return nil, fmt.Errorf("parsing certificate chain failed: %s", err)
 	}
 
+	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(r.PrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal private key: %s", err)
+	}
+
 	privateKey := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(r.PrivateKey),
+			Type:  "PRIVATE KEY",
+			Bytes: privateKeyBytes,
 		},
 	)
 

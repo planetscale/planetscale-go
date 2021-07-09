@@ -59,11 +59,11 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 		CommonName: cn,
 	}
 
-	switch r.PrivateKey.(type) {
+	switch priv := r.PrivateKey.(type) {
 	case *rsa.PrivateKey:
 	case *ecdsa.PrivateKey:
 	default:
-		return nil, fmt.Errorf("unsupported key type: %T, only supports ECDSA and RSA private keys", r.PrivateKey)
+		return nil, fmt.Errorf("unsupported key type: %T, only supports ECDSA and RSA private keys", priv)
 	}
 
 	template := x509.CertificateRequest{

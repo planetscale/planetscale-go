@@ -59,20 +59,16 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 		CommonName: cn,
 	}
 
-	var signatureAlgorithm x509.SignatureAlgorithm
 	switch r.PrivateKey.(type) {
 	case *rsa.PrivateKey:
-		signatureAlgorithm = x509.SHA256WithRSA
 	case *ecdsa.PrivateKey:
-		signatureAlgorithm = x509.ECDSAWithSHA256
 	default:
-		return nil, fmt.Errorf("unsupported key type, only supports ECDSA & RSA private keys")
+		return nil, fmt.Errorf("unsupported key type: %T, only supports ECDSA and RSA private keys", r.PrivateKey)
 	}
 
 	template := x509.CertificateRequest{
-		Version:            1,
-		Subject:            subj,
-		SignatureAlgorithm: signatureAlgorithm,
+		Version: 1,
+		Subject: subj,
 	}
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, r.PrivateKey)

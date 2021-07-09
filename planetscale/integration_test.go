@@ -4,8 +4,9 @@ package planetscale
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
 	"fmt"
 	"os"
 	"testing"
@@ -35,7 +36,7 @@ func TestIntegration_Certificate_Create(t *testing.T) {
 	)
 	c.Assert(err, qt.IsNil)
 
-	pkey, err := rsa.GenerateKey(rand.Reader, 2048)
+	pkey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	c.Assert(err, qt.IsNil)
 
 	cert, err := client.Certificates.Create(ctx, &CreateCertificateRequest{

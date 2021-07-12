@@ -127,6 +127,7 @@ func createTLSConfig(
 
 	return remoteAddr, &tls.Config{
 		RootCAs:      rootCertPool,
+		MinVersion:   tls.VersionTLS12,
 		Certificates: []tls.Certificate{cert.ClientCert},
 		ServerName:   serverName,
 		// We need to set InsecureSkipVerify to true due to

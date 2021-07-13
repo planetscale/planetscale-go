@@ -120,7 +120,7 @@ func TestCreateTLSConfig(t *testing.T) {
 
 			return &planetscale.Cert{
 				ClientCert: clientCert,
-				CACert:     caCert,
+				CACerts:    []*x509.Certificate{caCert},
 				RemoteAddr: remoteAddr,
 				Ports: planetscale.RemotePorts{
 					MySQL: port,

@@ -11,7 +11,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"net/http"
 )
@@ -31,7 +30,7 @@ type CertificatesService interface {
 
 type Cert struct {
 	ClientCert tls.Certificate
-	CACert     *x509.Certificate
+	CACerts    []*x509.Certificate
 	RemoteAddr string
 	Ports      RemotePorts
 }
@@ -113,7 +112,7 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 		return nil, err
 	}
 
-	caCert, err := parseCert(cr.CertificateChain)
+	caCerts, err := parseCerts(cr.CertificateChain)
 	if err != nil {
 		return nil, fmt.Errorf("parsing certificate chain failed: %s", err)
 	}
@@ -137,7 +136,7 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 
 	return &Cert{
 		ClientCert: clientCert,
-		CACert:     caCert,
+		CACerts:    caCerts,
 		RemoteAddr: cr.RemoteAddr,
 		Ports: RemotePorts{
 			Proxy: cr.Ports["proxy"],
@@ -146,10 +145,22 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 	}, nil
 }
 
-func parseCert(pemCert string) (*x509.Certificate, error) {
-	bl, _ := pem.Decode([]byte(pemCert))
-	if bl == nil {
-		return nil, errors.New("invalid PEM: " + pemCert)
+func parseCerts(pemCert string) ([]*x509.Certificate, error) {
+	perCertBlock := []byte(pemCert)
+	var certs []*x509.Certificate
+
+	for {
+		var certBlock *pem.Block
+		certBlock, perCertBlock = pem.Decode(perCertBlock)
+		if certBlock == nil {
+			break
+		}
+		cert, err := x509.ParseCertificate(certBlock.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		certs = append(certs, cert)
 	}
-	return x509.ParseCertificate(bl.Bytes)
+	return certs, nil
 }

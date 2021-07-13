@@ -120,7 +120,9 @@ func createTLSConfig(
 	}
 
 	rootCertPool := x509.NewCertPool()
-	rootCertPool.AddCert(cert.CACert)
+	for _, caCert := range cert.CACerts {
+		rootCertPool.AddCert(caCert)
+	}
 
 	serverName := fmt.Sprintf("%s.%s.%s.%s", cfg.Branch, cfg.Database, cfg.Organization, cert.RemoteAddr)
 	remoteAddr := net.JoinHostPort(serverName, strconv.Itoa(cert.Ports.MySQL))

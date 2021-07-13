@@ -127,7 +127,7 @@ func TestCertificates_Create(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	c.Assert(cert.RemoteAddr, qt.Equals, remoteAddr)
-	c.Assert(cert.CACert, qt.Not(qt.IsNil))
+	c.Assert(cert.CACerts, qt.HasLen, 1)
 	c.Assert(cert.ClientCert, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.PrivateKey, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.Certificate, qt.HasLen, 1)
@@ -136,7 +136,7 @@ func TestCertificates_Create(t *testing.T) {
 	ct, err := x509.ParseCertificate(ccert)
 	c.Assert(err, qt.IsNil)
 	c.Assert(ct.Subject.CommonName, qt.Equals, "org-foo/db-foo/branch-foo")
-	c.Assert(ct.Issuer.CommonName, qt.Equals, cert.CACert.Issuer.CommonName)
+	c.Assert(ct.Issuer.CommonName, qt.Equals, cert.CACerts[0].Issuer.CommonName)
 
 	c.Assert(cert.Ports.MySQL, qt.Equals, 3306)
 	c.Assert(cert.Ports.Proxy, qt.Equals, 3307)

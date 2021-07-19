@@ -140,7 +140,7 @@ type serviceTokensResponse struct {
 }
 
 type ServiceTokenAccess struct {
-	ID       int      `json:"id"`
+	ID       string   `json:"id"`
 	Access   string   `json:"access"`
 	Type     string   `json:"type"`
 	Resource Database `json:"resource"`

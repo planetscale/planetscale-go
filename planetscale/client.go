@@ -38,6 +38,7 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
+	AuditLogs        AuditLogsService
 	Backups          BackupsService
 	Databases        DatabasesService
 	Certificates     CertificatesService
@@ -131,6 +132,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		}
 	}
 
+	c.AuditLogs = &auditlogsService{client: c}
 	c.Backups = &backupsService{client: c}
 	c.Databases = &databasesService{client: c}
 	c.Certificates = &certificatesService{client: c}

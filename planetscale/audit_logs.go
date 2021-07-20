@@ -4,9 +4,39 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
+)
+
+// AuditLogEvent represents an audit log's event type
+type AuditLogEvent string
+
+const (
+	AuditLogEventBranchCreated                 AuditLogEvent = "branch.created"
+	AuditLogEventBranchDeleted                 AuditLogEvent = "branch.deleted"
+	AuditLogEventDatabaseCreated               AuditLogEvent = "database.created"
+	AuditLogEventDatabaseDeleted               AuditLogEvent = "database.deleted"
+	AuditLogEventDeployRequestApproved         AuditLogEvent = "deploy_request.approved"
+	AuditLogEventDeployRequestClosed           AuditLogEvent = "deploy_request.closed"
+	AuditLogEventDeployRequestCreated          AuditLogEvent = "deploy_request.created"
+	AuditLogEventDeployRequestDeleted          AuditLogEvent = "deploy_request.deleted"
+	AuditLogEventDeployRequestQueued           AuditLogEvent = "deploy_request.queued"
+	AuditLogEventDeployRequestUnqueued         AuditLogEvent = "deploy_request.unqueued"
+	AuditLogEventIntegrationCreated            AuditLogEvent = "integration.created"
+	AuditLogEventIntegrationDeleted            AuditLogEvent = "integration.deleted"
+	AuditLogEventOrganizationInvitationCreated AuditLogEvent = "organization_invitation.created"
+	AuditLogEventOrganizationInvitationDeleted AuditLogEvent = "organization_invitation.deleted"
+	AuditLogEventOrganizationMembershipCreated AuditLogEvent = "organization_membership.created"
+	AuditLogEventOrganizationJoined            AuditLogEvent = "organization.joined"
+	AuditLogEventOrganizationRemovedMember     AuditLogEvent = "organization.removed_member"
+	AuditLogEventOrganizationDisabledSSO       AuditLogEvent = "organization.disabled_sso"
+	AuditLogEventOrganizationEnabledSSO        AuditLogEvent = "organization.enabled_sso"
+	AuditLogEventOrganizationUpdatedRole       AuditLogEvent = "organization.updated_role"
+	AuditLogEventServiceTokenCreated           AuditLogEvent = "service_token.created"
+	AuditLogEventServiceTokenDeleted           AuditLogEvent = "service_token.deleted"
+	AuditLogEventServiceTokenGrantedAccess     AuditLogEvent = "service_token.granted_access"
 )
 
 var _ AuditLogsService = &auditlogsService{}
@@ -21,6 +51,9 @@ type AuditLogsService interface {
 // an organization.
 type ListAuditLogsRequest struct {
 	Organization string
+
+	// Events can be used to filter out only the given audit log events.
+	Events []AuditLogEvent
 }
 
 // AuditLog represents a PlanetScale audit log.
@@ -68,7 +101,24 @@ func NewAuditLogsService(client *Client) *auditlogsService {
 
 // List returns the audit logs for an organization.
 func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest) ([]*AuditLog, error) {
-	req, err := o.client.newRequest(http.MethodGet, auditlogsAPIPath(listReq.Organization), nil)
+	if listReq.Organization == "" {
+		return nil, errors.New("organization is not set")
+	}
+
+	path := auditlogsAPIPath(listReq.Organization)
+
+	v := url.Values{}
+	if len(listReq.Events) != 0 {
+		for _, action := range listReq.Events {
+			v.Add("filters[]", fmt.Sprintf("audit_action:%s", action))
+		}
+	}
+
+	if vals := v.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
+	req, err := o.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for listing audit logs")
 	}

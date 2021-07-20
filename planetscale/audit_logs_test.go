@@ -56,6 +56,10 @@ func TestAuditLogs_List(t *testing.T) {
 
 	auditLogs, err := client.AuditLogs.List(ctx, &ListAuditLogsRequest{
 		Organization: testOrg,
+		Events: []AuditLogEvent{
+			AuditLogEventBranchDeleted,
+			AuditLogEventOrganizationJoined,
+		},
 	})
 
 	want := []*AuditLog{

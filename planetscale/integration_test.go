@@ -129,13 +129,17 @@ func TestIntegration_AuditLogs_List(t *testing.T) {
 
 	auditLogs, err := client.AuditLogs.List(ctx, &ListAuditLogsRequest{
 		Organization: org,
+		Events: []AuditLogEvent{
+			AuditLogEventBranchDeleted,
+			AuditLogEventOrganizationJoined,
+		},
 	})
 	if err != nil {
 		t.Fatalf("get audit logs failed: %s", err)
 	}
 
 	for _, l := range auditLogs {
-		fmt.Printf("l = %+v\n", l)
+		fmt.Printf("l. = %+v\n", l.AuditAction)
 	}
 	fmt.Printf("len(auditLogs) = %+v\n", len(auditLogs))
 }

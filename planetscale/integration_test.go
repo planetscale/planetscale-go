@@ -74,10 +74,7 @@ func TestIntegration_Databases_List(t *testing.T) {
 
 	_, err = client.Databases.Create(ctx, &CreateDatabaseRequest{
 		Organization: org,
-		Database: &Database{
-			Name:  dbName,
-			Notes: "This is a test DB created from the planetscale-go API library",
-		},
+		Name:         dbName,
 	})
 	if err != nil {
 		t.Fatalf("create database failed: %s", err)
@@ -101,11 +98,44 @@ func TestIntegration_Databases_List(t *testing.T) {
 		fmt.Printf("Notes: %q\n", db.Notes)
 	}
 
-	_, err = client.Databases.Delete(ctx, &DeleteDatabaseRequest{
+	err = client.Databases.Delete(ctx, &DeleteDatabaseRequest{
 		Organization: org,
 		Database:     dbName,
 	})
 	if err != nil {
 		t.Fatalf("delete database failed: %s", err)
 	}
+}
+
+func TestIntegration_AuditLogs_List(t *testing.T) {
+	token := os.Getenv("PLANETSCALE_TOKEN")
+	if token == "" {
+		t.Fatalf("PLANETSCALE_TOKEN is not set")
+	}
+
+	org := os.Getenv("PLANETSCALE_ORG")
+	if org == "" {
+		t.Fatalf("PLANETSCALE_ORG is not set")
+	}
+
+	ctx := context.Background()
+
+	client, err := NewClient(
+		WithAccessToken(token),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	auditLogs, err := client.AuditLogs.List(ctx, &ListAuditLogsRequest{
+		Organization: org,
+	})
+	if err != nil {
+		t.Fatalf("get audit logs failed: %s", err)
+	}
+
+	for _, l := range auditLogs {
+		fmt.Printf("l = %+v\n", l)
+	}
+	fmt.Printf("len(auditLogs) = %+v\n", len(auditLogs))
 }

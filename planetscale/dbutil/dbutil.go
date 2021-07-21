@@ -41,11 +41,7 @@ type DialConfig struct {
 }
 
 func generateKey() (crypto.PrivateKey, error) {
-	pkey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return nil, err
-	}
-	return &pkey, nil
+	return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 }
 
 // Dial creates a secure connection to a PlanetScale database with the given

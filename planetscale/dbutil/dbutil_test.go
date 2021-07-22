@@ -2,6 +2,7 @@ package dbutil
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
@@ -171,4 +172,17 @@ func parseCert(pemCert string) (*x509.Certificate, error) {
 		return nil, errors.New("invalid PEM: " + pemCert)
 	}
 	return x509.ParseCertificate(bl.Bytes)
+}
+
+func TestGenerateKey(t *testing.T) {
+	key, err := generateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, ok := key.(*ecdsa.PrivateKey)
+
+	if !ok {
+		t.Fatal("generated key is not an ECDSA private key")
+	}
 }

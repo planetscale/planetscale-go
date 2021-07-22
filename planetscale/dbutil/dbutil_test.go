@@ -3,7 +3,6 @@ package dbutil
 import (
 	"context"
 	"crypto/ecdsa"
-	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
@@ -175,12 +174,15 @@ func parseCert(pemCert string) (*x509.Certificate, error) {
 	return x509.ParseCertificate(bl.Bytes)
 }
 
-func Test_generateKey(t *testing.T) {
-	key, _ := generateKey()
-	switch key.(type) {
-	case *rsa.PrivateKey:
-	case *ecdsa.PrivateKey:
-	default:
-		t.Fatal("generated key is not one of ECDSA or RSA private keys")
+func TestGenerateKey(t *testing.T) {
+	key, err := generateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, ok := key.(*ecdsa.PrivateKey)
+
+	if !ok {
+		t.Fatal("generated key is not an ECDSA private key")
 	}
 }

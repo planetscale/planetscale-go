@@ -22,6 +22,13 @@ type GetOrganizationRequest struct {
 type OrganizationsService interface {
 	Get(context.Context, *GetOrganizationRequest) (*Organization, error)
 	List(context.Context) ([]*Organization, error)
+	ListRegions(context.Context, *ListOrganizationRegionsRequest) ([]*Region, error)
+}
+
+// ListRegionsRequest encapsulates the request for getting a list of regions for
+// an organization.
+type ListOrganizationRegionsRequest struct {
+	Organization string
 }
 
 // Organization represents a PlanetScale organization.
@@ -75,4 +82,22 @@ func (o *organizationsService) List(ctx context.Context) ([]*Organization, error
 	}
 
 	return orgResponse.Organizations, nil
+}
+
+type listRegionsResponse struct {
+	Regions []*Region `json:"data"`
+}
+
+func (o *organizationsService) ListRegions(ctx context.Context, listReq *ListOrganizationRegionsRequest) ([]*Region, error) {
+	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s/regions", organizationsAPIPath, listReq.Organization), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	listResponse := &listRegionsResponse{}
+	if err := o.client.do(ctx, req, &listResponse); err != nil {
+		return nil, err
+	}
+
+	return listResponse.Regions, nil
 }

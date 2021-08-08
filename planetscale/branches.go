@@ -11,12 +11,13 @@ import (
 
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
-	Name         string    `json:"name"`
-	ParentBranch string    `json:"parent_branch"`
-	Region       Region    `json:"region"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	Status       string    `json:"status,omitempty"`
+	Name          string    `json:"name"`
+	ParentBranch  string    `json:"parent_branch"`
+	Region        Region    `json:"region"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	AccessHostUrl string    `json:"access_host_url"`
+	Status        string    `json:"status,omitempty"`
 }
 
 type databaseBranchesResponse struct {

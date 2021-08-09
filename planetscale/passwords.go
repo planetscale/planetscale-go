@@ -10,12 +10,13 @@ import (
 )
 
 type DatabaseBranchPassword struct {
-	Name      string         `json:"name"`
+	Name      string         `json:"display_name"`
+	UserName  string         `json:"username"`
 	Role      string         `json:"role"`
 	Branch    DatabaseBranch `json:"database_branch"`
-	PlainText string         `json:"plain_text"`
 	CreatedAt time.Time      `json:"created_at"`
 	DeletedAt time.Time      `json:"deleted_at"`
+	PlainText string         `json:"plain_text"`
 }
 
 // DatabaseBranchPasswordRequest encapsulates the request for creating/getting/deleting a
@@ -23,7 +24,6 @@ type DatabaseBranchPassword struct {
 type DatabaseBranchPasswordRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
-	Region       string `json:"-"`
 	Branch       string `json:"-"`
 	DisplayName  string `json:"display_name"`
 }
@@ -31,10 +31,16 @@ type DatabaseBranchPasswordRequest struct {
 // ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
 // for a given database branch.
 type ListDatabaseBranchPasswordRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Region       string `json:"-"`
-	Branch       string `json:"-"`
+	Organization string
+	Database     string
+	Branch       string
+}
+
+// ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
+// for a given database branch.
+type GetDatabaseBranchPasswordRequest struct {
+	DatabaseBranchPasswordRequest
+	PasswordId string
 }
 
 // DatabaseBranchPasswordsService is an interface for communicating with the PlanetScale
@@ -42,7 +48,7 @@ type ListDatabaseBranchPasswordRequest struct {
 type DatabaseBranchPasswordsService interface {
 	Create(context.Context, *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	List(context.Context, *ListDatabaseBranchPasswordRequest) ([]*DatabaseBranchPassword, error)
-	Get(context.Context, *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
+	Get(context.Context, *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	Delete(context.Context, *DatabaseBranchPasswordRequest) error
 }
 
@@ -92,8 +98,8 @@ func (d *passwordsService) Delete(ctx context.Context, deleteReq *DatabaseBranch
 }
 
 // Get an existing password for a branch.
-func (d *passwordsService) Get(ctx context.Context, getReq *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error) {
-	path := passwordAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.DisplayName)
+func (d *passwordsService) Get(ctx context.Context, getReq *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error) {
+	path := passwordAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

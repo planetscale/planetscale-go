@@ -36,6 +36,14 @@ type DeleteDatabaseRequest struct {
 	Database     string
 }
 
+// PromoteBranchRequest encapsulates the request for promoting a branch to
+// production.
+type PromoteBranchRequest struct {
+	Organization string
+	Database     string
+	Branch       string `json:"branch"`
+}
+
 // DatabaseService is an interface for communicating with the PlanetScale
 // Databases API endpoint.
 type DatabasesService interface {
@@ -43,6 +51,7 @@ type DatabasesService interface {
 	Get(context.Context, *GetDatabaseRequest) (*Database, error)
 	List(context.Context, *ListDatabasesRequest) ([]*Database, error)
 	Delete(context.Context, *DeleteDatabaseRequest) error
+	PromoteBranch(context.Context, *PromoteBranchRequest) (*DatabaseBranch, error)
 }
 
 // Database represents a PlanetScale database
@@ -126,6 +135,24 @@ func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabas
 
 	err = ds.client.do(ctx, req, nil)
 	return err
+}
+
+// PromoteBranch promotes a database's branch from a development branch to a
+// production branch.
+func (ds *databasesService) PromoteBranch(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/%s/promote-branch", databasesAPIPath(promoteReq.Organization), promoteReq.Database)
+	req, err := ds.client.newRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch promotion")
+	}
+
+	branch := &DatabaseBranch{}
+	err = ds.client.do(ctx, req, &branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return branch, nil
 }
 
 func databasesAPIPath(org string) string {

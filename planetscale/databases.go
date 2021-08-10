@@ -39,8 +39,8 @@ type DeleteDatabaseRequest struct {
 // PromoteBranchRequest encapsulates the request for promoting a branch to
 // production.
 type PromoteBranchRequest struct {
-	Organization string
-	Database     string
+	Organization string `json:"-"`
+	Database     string `json:"-"`
 	Branch       string `json:"branch"`
 }
 
@@ -141,7 +141,7 @@ func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabas
 // production branch.
 func (ds *databasesService) PromoteBranch(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/%s/promote-branch", databasesAPIPath(promoteReq.Organization), promoteReq.Database)
-	req, err := ds.client.newRequest(http.MethodPost, path, nil)
+	req, err := ds.client.newRequest(http.MethodPost, path, promoteReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch promotion")
 	}

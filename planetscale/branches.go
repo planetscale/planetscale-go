@@ -14,6 +14,7 @@ type DatabaseBranch struct {
 	Name         string    `json:"name"`
 	ParentBranch string    `json:"parent_branch"`
 	Region       Region    `json:"region"`
+	Production   bool      `json:"production"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	Status       string    `json:"status,omitempty"`

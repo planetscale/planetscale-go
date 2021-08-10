@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -128,8 +129,15 @@ func TestDatabases_PromoteBranch(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(http.MethodPost, qt.Equals, r.Method)
 		w.WriteHeader(200)
+
+		payload := make(map[string]interface{})
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&payload)
+
+		c.Assert(payload["branch"], qt.Equals, "planetscale-go-test-db-branch")
+
 		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
-		_, err := w.Write([]byte(out))
+		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 

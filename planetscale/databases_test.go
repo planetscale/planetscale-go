@@ -133,6 +133,7 @@ func TestDatabases_PromoteBranch(t *testing.T) {
 		payload := make(map[string]interface{})
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&payload)
+		c.Assert(err, qt.IsNil)
 
 		c.Assert(payload["branch"], qt.Equals, "planetscale-go-test-db-branch")
 

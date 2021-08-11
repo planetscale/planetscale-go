@@ -2,7 +2,6 @@ package planetscale
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -118,48 +117,6 @@ func TestDatabases_List(t *testing.T) {
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 	}}
-
-	c.Assert(err, qt.IsNil)
-	c.Assert(db, qt.DeepEquals, want)
-}
-
-func TestDatabases_PromoteBranch(t *testing.T) {
-	c := qt.New(t)
-
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(http.MethodPost, qt.Equals, r.Method)
-		w.WriteHeader(200)
-
-		payload := make(map[string]interface{})
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&payload)
-		c.Assert(err, qt.IsNil)
-
-		c.Assert(payload["branch"], qt.Equals, "planetscale-go-test-db-branch")
-
-		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
-		_, err = w.Write([]byte(out))
-		c.Assert(err, qt.IsNil)
-	}))
-
-	client, err := NewClient(WithBaseURL(ts.URL))
-	c.Assert(err, qt.IsNil)
-
-	ctx := context.Background()
-	org := "my-org"
-	name := "planetscale-go-test-db"
-
-	db, err := client.Databases.PromoteBranch(ctx, &PromoteBranchRequest{
-		Organization: org,
-		Database:     name,
-		Branch:       "planetscale-go-test-db-branch",
-	})
-
-	want := &DatabaseBranch{
-		Name:      testBranch,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-	}
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.DeepEquals, want)

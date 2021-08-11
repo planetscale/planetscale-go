@@ -14,6 +14,7 @@ type DatabaseBranch struct {
 	Name         string    `json:"name"`
 	ParentBranch string    `json:"parent_branch"`
 	Region       Region    `json:"region"`
+	Production   bool      `json:"production"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	Status       string    `json:"status,omitempty"`
@@ -86,6 +87,14 @@ type RefreshSchemaRequest struct {
 	Branch       string `json:"-"`
 }
 
+// PromoteBranchRequest encapsulates the request for promoting a branch to
+// production.
+type PromoteBranchRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"branch"`
+}
+
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
@@ -97,6 +106,7 @@ type DatabaseBranchesService interface {
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
+	Promote(context.Context, *PromoteBranchRequest) (*DatabaseBranch, error)
 }
 
 type databaseBranchesService struct {
@@ -241,6 +251,24 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 	}
 
 	return nil
+}
+
+// PromoteBranch promotes a database's branch from a development branch to a
+// production branch.
+func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/%s/promote-branch", databasesAPIPath(promoteReq.Organization), promoteReq.Database)
+	req, err := d.client.newRequest(http.MethodPost, path, promoteReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch promotion")
+	}
+
+	branch := &DatabaseBranch{}
+	err = d.client.do(ctx, req, &branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return branch, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

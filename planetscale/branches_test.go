@@ -261,7 +261,7 @@ func TestBranches_RefreshSchema(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 }
 
-func TestBranches_PromoteBranch(t *testing.T) {
+func TestBranches_Promote(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -287,7 +287,7 @@ func TestBranches_PromoteBranch(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.PromoteBranch(ctx, &PromoteBranchRequest{
+	db, err := client.DatabaseBranches.Promote(ctx, &PromoteBranchRequest{
 		Organization: org,
 		Database:     name,
 		Branch:       "planetscale-go-test-db-branch",

@@ -106,7 +106,7 @@ type DatabaseBranchesService interface {
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
-	PromoteBranch(context.Context, *PromoteBranchRequest) (*DatabaseBranch, error)
+	Promote(context.Context, *PromoteBranchRequest) (*DatabaseBranch, error)
 }
 
 type databaseBranchesService struct {
@@ -255,7 +255,7 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 
 // PromoteBranch promotes a database's branch from a development branch to a
 // production branch.
-func (d *databaseBranchesService) PromoteBranch(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
+func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/%s/promote-branch", databasesAPIPath(promoteReq.Organization), promoteReq.Database)
 	req, err := d.client.newRequest(http.MethodPost, path, promoteReq)
 	if err != nil {

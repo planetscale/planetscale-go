@@ -31,7 +31,7 @@ type CertificatesService interface {
 type Cert struct {
 	ClientCert tls.Certificate
 	CACerts    []*x509.Certificate
-	RemoteAddr string
+	AccessHost string
 	Ports      RemotePorts
 }
 
@@ -103,7 +103,7 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 	var cr struct {
 		Certificate      string         `json:"certificate"`
 		CertificateChain string         `json:"certificate_chain"`
-		RemoteAddr       string         `json:"remote_addr"`
+		AccessHost       string         `json:"access_host"`
 		Ports            map[string]int `json:"ports"`
 	}
 
@@ -137,7 +137,7 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 	return &Cert{
 		ClientCert: clientCert,
 		CACerts:    caCerts,
-		RemoteAddr: cr.RemoteAddr,
+		AccessHost: cr.AccessHost,
 		Ports: RemotePorts{
 			Proxy: cr.Ports["proxy"],
 			MySQL: cr.Ports["mysql-tls"],

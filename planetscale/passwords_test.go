@@ -24,7 +24,7 @@ func TestPasswords_Create(t *testing.T) {
     "role": "writer",
     "plain_text": "%s",
     "display_name": "planetscale-go-test-password",
-    "created_at": "2021-01-14T10:19:23.000Z",
+    "created_at": "2021-01-14T10:19:23.000Z"
 }`, testPasswordID, testPasswordID, plainText)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -46,6 +46,7 @@ func TestPasswords_Create(t *testing.T) {
 
 	want := &DatabaseBranchPassword{
 		Name:     testPasswordID,
+		PublicID: testPasswordID,
 		UserName: testPasswordID,
 
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
@@ -92,6 +93,7 @@ func TestPasswords_List(t *testing.T) {
 
 	want := []*DatabaseBranchPassword{{
 		Name:      testPasswordID,
+		PublicID:  testPasswordID,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 	}}
 
@@ -137,7 +139,7 @@ func TestPasswords_Get(t *testing.T) {
     "username": "%s",
     "role": "writer",
     "display_name": "planetscale-go-test-password",
-    "created_at": "2021-01-14T10:19:23.000Z",
+    "created_at": "2021-01-14T10:19:23.000Z"
 }`, testPasswordID, testPasswordID)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -152,16 +154,19 @@ func TestPasswords_Get(t *testing.T) {
 	branch := "my-branch"
 
 	password, err := client.Passwords.Get(ctx, &GetDatabaseBranchPasswordRequest{
-		Organization: org,
-		Database:     db,
-		Branch:       branch,
-		Password:     testPasswordID,
+		DatabaseBranchPasswordRequest: DatabaseBranchPasswordRequest{
+			Organization: org,
+			Database:     db,
+			Branch:       branch,
+		},
+
+		PasswordId: testPasswordID,
 	})
 
 	want := &DatabaseBranchPassword{
-		Name:     testPasswordID,
-		UserName: testPasswordID,
-
+		Name:      testPasswordID,
+		UserName:  testPasswordID,
+		PublicID:  testPasswordID,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		Role:      "writer",
 	}

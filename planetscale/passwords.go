@@ -9,14 +9,28 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ConnectionStrings struct {
+	DotNet   string `json:"dotnet"`
+	General  string `json:"general"`
+	MySQLCLI string `json:"mysqlcli"`
+	PHP      string `json:"php"`
+	Prisma   string `json:"prisma"`
+	Rails    string `json:"rails"`
+	GoLang   string `json:"go"`
+	Java     string `json:"java"`
+	Rust     string `json:"rust"`
+}
+
 type DatabaseBranchPassword struct {
-	Name      string         `json:"display_name"`
-	UserName  string         `json:"username"`
-	Role      string         `json:"role"`
-	Branch    DatabaseBranch `json:"database_branch"`
-	CreatedAt time.Time      `json:"created_at"`
-	DeletedAt time.Time      `json:"deleted_at"`
-	PlainText string         `json:"plain_text"`
+	PublicID          string            `json:"id"`
+	Name              string            `json:"display_name"`
+	UserName          string            `json:"username"`
+	Role              string            `json:"role"`
+	Branch            DatabaseBranch    `json:"database_branch"`
+	CreatedAt         time.Time         `json:"created_at"`
+	DeletedAt         time.Time         `json:"deleted_at"`
+	PlainText         string            `json:"plain_text"`
+	ConnectionStrings ConnectionStrings `json:"connection_strings"`
 }
 
 // DatabaseBranchPasswordRequest encapsulates the request for creating/getting/deleting a
@@ -36,9 +50,16 @@ type ListDatabaseBranchPasswordRequest struct {
 	Branch       string
 }
 
-// ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
+// GetDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
 // for a given database branch.
 type GetDatabaseBranchPasswordRequest struct {
+	DatabaseBranchPasswordRequest
+	PasswordId string
+}
+
+// DeleteDatabaseBranchPasswordRequest encapsulates the request for deleting a password
+// for a given database branch.
+type DeleteDatabaseBranchPasswordRequest struct {
 	DatabaseBranchPasswordRequest
 	PasswordId string
 }
@@ -49,7 +70,7 @@ type DatabaseBranchPasswordsService interface {
 	Create(context.Context, *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	List(context.Context, *ListDatabaseBranchPasswordRequest) ([]*DatabaseBranchPassword, error)
 	Get(context.Context, *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
-	Delete(context.Context, *DatabaseBranchPasswordRequest) error
+	Delete(context.Context, *DeleteDatabaseBranchPasswordRequest) error
 }
 
 type passwordsService struct {
@@ -85,8 +106,8 @@ func (d *passwordsService) Create(ctx context.Context, createReq *DatabaseBranch
 }
 
 // Delete an existing password for a branch.
-func (d *passwordsService) Delete(ctx context.Context, deleteReq *DatabaseBranchPasswordRequest) error {
-	path := passwordAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.DisplayName)
+func (d *passwordsService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchPasswordRequest) error {
+	path := passwordAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return errors.Wrap(err, "error creating http request")

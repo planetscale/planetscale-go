@@ -44,7 +44,7 @@ type Client struct {
 	Certificates     CertificatesService
 	DatabaseBranches DatabaseBranchesService
 	Organizations    OrganizationsService
-	Passwords        DatabaseBranchPasswordsService
+	Passwords        PasswordsService
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService

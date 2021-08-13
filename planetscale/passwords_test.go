@@ -154,13 +154,10 @@ func TestPasswords_Get(t *testing.T) {
 	branch := "my-branch"
 
 	password, err := client.Passwords.Get(ctx, &GetDatabaseBranchPasswordRequest{
-		DatabaseBranchPasswordRequest: DatabaseBranchPasswordRequest{
-			Organization: org,
-			Database:     db,
-			Branch:       branch,
-		},
-
-		PasswordId: testPasswordID,
+		Organization: org,
+		Database:     db,
+		Branch:       branch,
+		PasswordId:   testPasswordID,
 	})
 
 	want := &DatabaseBranchPassword{

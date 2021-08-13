@@ -16,7 +16,7 @@ type ConnectionStrings struct {
 	PHP      string `json:"php"`
 	Prisma   string `json:"prisma"`
 	Rails    string `json:"rails"`
-	GoLang   string `json:"go"`
+	Go       string `json:"go"`
 	Java     string `json:"java"`
 	Rust     string `json:"rust"`
 }
@@ -53,20 +53,26 @@ type ListDatabaseBranchPasswordRequest struct {
 // GetDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
 // for a given database branch.
 type GetDatabaseBranchPasswordRequest struct {
-	DatabaseBranchPasswordRequest
-	PasswordId string
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	DisplayName  string `json:"display_name"`
+	PasswordId   string
 }
 
 // DeleteDatabaseBranchPasswordRequest encapsulates the request for deleting a password
 // for a given database branch.
 type DeleteDatabaseBranchPasswordRequest struct {
-	DatabaseBranchPasswordRequest
-	PasswordId string
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	DisplayName  string `json:"display_name"`
+	PasswordId   string
 }
 
 // DatabaseBranchPasswordsService is an interface for communicating with the PlanetScale
 // Database Branch Passwords API endpoint.
-type DatabaseBranchPasswordsService interface {
+type PasswordsService interface {
 	Create(context.Context, *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	List(context.Context, *ListDatabaseBranchPasswordRequest) ([]*DatabaseBranchPassword, error)
 	Get(context.Context, *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
@@ -81,7 +87,7 @@ type passwordsResponse struct {
 	Passwords []*DatabaseBranchPassword `json:"data"`
 }
 
-var _ DatabaseBranchPasswordsService = &passwordsService{}
+var _ PasswordsService = &passwordsService{}
 
 func NewPasswordsService(client *Client) *passwordsService {
 	return &passwordsService{

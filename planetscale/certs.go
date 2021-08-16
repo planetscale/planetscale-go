@@ -30,7 +30,6 @@ type CertificatesService interface {
 
 type Cert struct {
 	ClientCert tls.Certificate
-	CACerts    []*x509.Certificate
 	AccessHost string
 	Ports      RemotePorts
 }
@@ -101,20 +100,14 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 	}
 
 	var cr struct {
-		Certificate      string         `json:"certificate"`
-		CertificateChain string         `json:"certificate_chain"`
-		AccessHost       string         `json:"access_host"`
-		Ports            map[string]int `json:"ports"`
+		Certificate string         `json:"certificate"`
+		AccessHost  string         `json:"access_host"`
+		Ports       map[string]int `json:"ports"`
 	}
 
 	err = c.client.do(ctx, req, &cr)
 	if err != nil {
 		return nil, err
-	}
-
-	caCerts, err := parseCerts(cr.CertificateChain)
-	if err != nil {
-		return nil, fmt.Errorf("parsing certificate chain failed: %s", err)
 	}
 
 	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(r.PrivateKey)
@@ -136,31 +129,10 @@ func (c *certificatesService) Create(ctx context.Context, r *CreateCertificateRe
 
 	return &Cert{
 		ClientCert: clientCert,
-		CACerts:    caCerts,
 		AccessHost: cr.AccessHost,
 		Ports: RemotePorts{
 			Proxy: cr.Ports["proxy"],
 			MySQL: cr.Ports["mysql-tls"],
 		},
 	}, nil
-}
-
-func parseCerts(pemCert string) ([]*x509.Certificate, error) {
-	perCertBlock := []byte(pemCert)
-	var certs []*x509.Certificate
-
-	for {
-		var certBlock *pem.Block
-		certBlock, perCertBlock = pem.Decode(perCertBlock)
-		if certBlock == nil {
-			break
-		}
-		cert, err := x509.ParseCertificate(certBlock.Bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		certs = append(certs, cert)
-	}
-	return certs, nil
 }

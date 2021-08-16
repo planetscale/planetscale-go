@@ -95,14 +95,12 @@ func TestCertificates_Create(t *testing.T) {
 		w.WriteHeader(200)
 
 		var out = struct {
-			Certificate      string         `json:"certificate"`
-			CertificateChain string         `json:"certificate_chain"`
-			AccessHost       string         `json:"access_host"`
-			Ports            map[string]int `json:"ports"`
+			Certificate string         `json:"certificate"`
+			AccessHost  string         `json:"access_host"`
+			Ports       map[string]int `json:"ports"`
 		}{
-			Certificate:      testSignedPublicKey,
-			CertificateChain: testCACert,
-			AccessHost:       accessHost,
+			Certificate: testSignedPublicKey,
+			AccessHost:  accessHost,
 			Ports: map[string]int{
 				"mysql-tls": 3306,
 				"proxy":     3307,
@@ -127,7 +125,6 @@ func TestCertificates_Create(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	c.Assert(cert.AccessHost, qt.Equals, accessHost)
-	c.Assert(cert.CACerts, qt.HasLen, 1)
 	c.Assert(cert.ClientCert, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.PrivateKey, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.Certificate, qt.HasLen, 1)
@@ -135,8 +132,14 @@ func TestCertificates_Create(t *testing.T) {
 	ccert := cert.ClientCert.Certificate[0]
 	ct, err := x509.ParseCertificate(ccert)
 	c.Assert(err, qt.IsNil)
+
+	caBlock, _ := pem.Decode([]byte(testCACert))
+	c.Assert(caBlock, qt.IsNotNil)
+	ca, err := x509.ParseCertificate(caBlock.Bytes)
+	c.Assert(err, qt.IsNil)
+
 	c.Assert(ct.Subject.CommonName, qt.Equals, "org-foo/db-foo/branch-foo")
-	c.Assert(ct.Issuer.CommonName, qt.Equals, cert.CACerts[0].Issuer.CommonName)
+	c.Assert(ct.Issuer.CommonName, qt.Equals, ca.Subject.CommonName)
 
 	c.Assert(cert.Ports.MySQL, qt.Equals, 3306)
 	c.Assert(cert.Ports.Proxy, qt.Equals, 3307)

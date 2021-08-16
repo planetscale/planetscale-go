@@ -89,7 +89,7 @@ func TestCertificates_Create(t *testing.T) {
 	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	c.Assert(err, qt.IsNil)
 
-	remoteAddr := "foo.example.com"
+	accessHost := "db.foo.example.com"
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -97,12 +97,12 @@ func TestCertificates_Create(t *testing.T) {
 		var out = struct {
 			Certificate      string         `json:"certificate"`
 			CertificateChain string         `json:"certificate_chain"`
-			RemoteAddr       string         `json:"remote_addr"`
+			AccessHost       string         `json:"access_host"`
 			Ports            map[string]int `json:"ports"`
 		}{
 			Certificate:      testSignedPublicKey,
 			CertificateChain: testCACert,
-			RemoteAddr:       remoteAddr,
+			AccessHost:       accessHost,
 			Ports: map[string]int{
 				"mysql-tls": 3306,
 				"proxy":     3307,
@@ -126,7 +126,7 @@ func TestCertificates_Create(t *testing.T) {
 	})
 	c.Assert(err, qt.IsNil)
 
-	c.Assert(cert.RemoteAddr, qt.Equals, remoteAddr)
+	c.Assert(cert.AccessHost, qt.Equals, accessHost)
 	c.Assert(cert.CACerts, qt.HasLen, 1)
 	c.Assert(cert.ClientCert, qt.Not(qt.IsNil))
 	c.Assert(cert.ClientCert.PrivateKey, qt.Not(qt.IsNil))

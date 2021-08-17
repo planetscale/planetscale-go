@@ -97,7 +97,7 @@ func NewPasswordsService(client *Client) *passwordsService {
 
 // Creates a new password for a branch.
 func (d *passwordsService) Create(ctx context.Context, createReq *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error) {
-	path := passwordsAPIPath(createReq.Organization, createReq.Database, createReq.Branch)
+	path := passwordsBranchAPIPath(createReq.Organization, createReq.Database, createReq.Branch)
 	req, err := d.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
@@ -113,7 +113,7 @@ func (d *passwordsService) Create(ctx context.Context, createReq *DatabaseBranch
 
 // Delete an existing password for a branch.
 func (d *passwordsService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchPasswordRequest) error {
-	path := passwordAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.PasswordId)
+	path := passwordBranchAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return errors.Wrap(err, "error creating http request")
@@ -126,7 +126,7 @@ func (d *passwordsService) Delete(ctx context.Context, deleteReq *DeleteDatabase
 
 // Get an existing password for a branch.
 func (d *passwordsService) Get(ctx context.Context, getReq *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error) {
-	path := passwordAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.PasswordId)
+	path := passwordBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
@@ -141,9 +141,15 @@ func (d *passwordsService) Get(ctx context.Context, getReq *GetDatabaseBranchPas
 
 }
 
-// List all existing passwords for a branch.
+// List all existing passwords. If req.Branch is set, all passwords for that
+// branch will be listed.
 func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranchPasswordRequest) ([]*DatabaseBranchPassword, error) {
-	req, err := d.client.newRequest(http.MethodGet, passwordsAPIPath(listReq.Organization, listReq.Database, listReq.Branch), nil)
+	path := passwordsAPIPath(listReq.Organization, listReq.Database)
+	if listReq.Branch != "" {
+		path = passwordBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch, "")
+	}
+
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request to list passwords")
 	}
@@ -156,10 +162,14 @@ func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranch
 	return passwordsResp.Passwords, nil
 }
 
-func passwordAPIPath(org, db, branch, password string) string {
-	return fmt.Sprintf("%s/%s", passwordsAPIPath(org, db, branch), password)
+func passwordBranchAPIPath(org, db, branch, password string) string {
+	return fmt.Sprintf("%s/%s", passwordsBranchAPIPath(org, db, branch), password)
 }
 
-func passwordsAPIPath(org, db, branch string) string {
+func passwordsBranchAPIPath(org, db, branch string) string {
 	return fmt.Sprintf("%s/passwords", databaseBranchAPIPath(org, db, branch))
+}
+
+func passwordsAPIPath(org, db string) string {
+	return fmt.Sprintf("%s/%s/passwords", databasesAPIPath(org), db)
 }

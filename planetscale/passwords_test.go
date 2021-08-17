@@ -83,6 +83,52 @@ func TestPasswords_List(t *testing.T) {
 	ctx := context.Background()
 	org := "my-org"
 	db := "planetscale-go-test-db"
+
+	passwords, err := client.Passwords.List(ctx, &ListDatabaseBranchPasswordRequest{
+		Organization: org,
+		Database:     db,
+	})
+
+	want := []*DatabaseBranchPassword{
+		{
+			Name:      testPasswordID,
+			PublicID:  testPasswordID,
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(passwords, qt.DeepEquals, want)
+}
+
+func TestPasswords_ListBranch(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{
+    "data":
+    [
+        {
+            "id": "planetscale-go-test-password",
+            "display_name": "planetscale-go-test-password",
+            "database_branch": {
+			  "name": "my-branch"
+			},
+            "created_at": "2021-01-14T10:19:23.000Z"
+        }
+    ]
+}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "planetscale-go-test-db"
 	branch := "my-branch"
 
 	passwords, err := client.Passwords.List(ctx, &ListDatabaseBranchPasswordRequest{
@@ -91,11 +137,16 @@ func TestPasswords_List(t *testing.T) {
 		Branch:       branch,
 	})
 
-	want := []*DatabaseBranchPassword{{
-		Name:      testPasswordID,
-		PublicID:  testPasswordID,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-	}}
+	want := []*DatabaseBranchPassword{
+		{
+			Name: testPasswordID,
+			Branch: DatabaseBranch{
+				Name: branch,
+			},
+			PublicID:  testPasswordID,
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		},
+	}
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(passwords, qt.DeepEquals, want)
@@ -117,12 +168,10 @@ func TestPasswords_ListEmpty(t *testing.T) {
 	ctx := context.Background()
 	org := "my-org"
 	db := "planetscale-go-test-db"
-	branch := "my-branch"
 
 	passwords, err := client.Passwords.List(ctx, &ListDatabaseBranchPasswordRequest{
 		Organization: org,
 		Database:     db,
-		Branch:       branch,
 	})
 
 	c.Assert(err, qt.IsNil)

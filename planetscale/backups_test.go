@@ -37,6 +37,7 @@ func TestBackups_Create(t *testing.T) {
 	})
 
 	want := &Backup{
+		PublicID:  "planetscale-go-test-backup",
 		Name:      testBackup,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
@@ -71,6 +72,7 @@ func TestBackups_List(t *testing.T) {
 	})
 
 	want := []*Backup{{
+		PublicID:  "planetscale-go-test-backup",
 		Name:      testBackup,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
@@ -134,6 +136,7 @@ func TestBackups_Get(t *testing.T) {
 	})
 
 	want := &Backup{
+		PublicID:  "planetscale-go-test-backup",
 		Name:      testBackup,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),

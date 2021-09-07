@@ -10,6 +10,7 @@ import (
 )
 
 type Backup struct {
+	PublicID    string    `json:"id"`
 	Name        string    `json:"name"`
 	State       string    `json:"state"`
 	Size        int64     `json:"size"`

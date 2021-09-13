@@ -258,7 +258,7 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 // PromoteBranch promotes a database's branch from a development branch to a
 // production branch.
 func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteBranchRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/%s/promote-branch", databasesAPIPath(promoteReq.Organization), promoteReq.Database)
+	path := fmt.Sprintf("%s/promotion-request", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, promoteReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch promotion")

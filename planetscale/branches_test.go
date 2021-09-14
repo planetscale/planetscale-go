@@ -2,7 +2,6 @@ package planetscale
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -262,21 +261,39 @@ func TestBranches_RefreshSchema(t *testing.T) {
 }
 
 func TestBranches_Promote(t *testing.T) {
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(http.MethodPost, qt.Equals, r.Method)
 		w.WriteHeader(200)
 
-		payload := make(map[string]interface{})
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&payload)
-		c.Assert(err, qt.IsNil)
+		out := `
+{
+"id": "test-promotion-branch",
+"type": "BranchPromotionRequest",
+"state": "promoted",
+"created_at": "2021-01-14T10:19:23.000Z",
+"updated_at": "2021-01-14T10:19:23.000Z",
+"started_at": "2021-01-14T10:19:23.000Z",
+"finished_at": "2021-01-14T10:19:23.000Z",
+"lint_errors": null,
+"branch": "main",
+"actor": {
+"id": "test-promotion-branch",
+"type": "User",
+"display_name": "Test User",
+"name": "Test User",
+"nickname": null,
+"email": "test@example.com",
+"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
+"created_at": "2021-08-25T21:22:20.150Z",
+"updated_at": "2021-08-26T20:08:14.725Z",
+"two_factor_auth_configured": false
+}
+}`
 
-		c.Assert(payload["branch"], qt.Equals, "planetscale-go-test-db-branch")
-
-		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
-		_, err = w.Write([]byte(out))
+		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 
@@ -287,16 +304,86 @@ func TestBranches_Promote(t *testing.T) {
 	org := "my-org"
 	name := "planetscale-go-test-db"
 
-	db, err := client.DatabaseBranches.Promote(ctx, &PromoteBranchRequest{
+	db, err := client.DatabaseBranches.Promote(ctx, &PromoteRequest{
 		Organization: org,
 		Database:     name,
 		Branch:       "planetscale-go-test-db-branch",
 	})
 
-	want := &DatabaseBranch{
-		Name:      testBranch,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+	want := &BranchPromotionRequest{
+		ID:         "test-promotion-branch",
+		State:      "promoted",
+		Branch:     "main",
+		LintErrors: nil,
+		CreatedAt:  testTime,
+		UpdatedAt:  testTime,
+		StartedAt:  &testTime,
+		FinishedAt: &testTime,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
+func TestBranches_GetPromotionRequest(t *testing.T) {
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(http.MethodGet, qt.Equals, r.Method)
+		w.WriteHeader(200)
+
+		out := `
+{
+"id": "test-promotion-branch",
+"type": "BranchPromotionRequest",
+"state": "promoted",
+"created_at": "2021-01-14T10:19:23.000Z",
+"updated_at": "2021-01-14T10:19:23.000Z",
+"started_at": "2021-01-14T10:19:23.000Z",
+"finished_at": "2021-01-14T10:19:23.000Z",
+"lint_errors": null,
+"branch": "main",
+"actor": {
+"id": "test-promotion-branch",
+"type": "User",
+"display_name": "Test User",
+"name": "Test User",
+"nickname": null,
+"email": "test@example.com",
+"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
+"created_at": "2021-08-25T21:22:20.150Z",
+"updated_at": "2021-08-26T20:08:14.725Z",
+"two_factor_auth_configured": false
+}
+}`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.GetPromotionRequest(ctx, &GetPromotionRequestRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       "planetscale-go-test-db-branch",
+	})
+
+	want := &BranchPromotionRequest{
+		ID:         "test-promotion-branch",
+		State:      "promoted",
+		Branch:     "main",
+		LintErrors: nil,
+		CreatedAt:  testTime,
+		UpdatedAt:  testTime,
+		StartedAt:  &testTime,
+		FinishedAt: &testTime,
 	}
 
 	c.Assert(err, qt.IsNil)

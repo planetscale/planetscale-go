@@ -107,7 +107,7 @@ type GetPromotionRequestRequest struct {
 type BranchPromotionRequest struct {
 	ID         string     `json:"id"`
 	Branch     string     `json:"branch"`
-	LintErrors *string    `json:"lint_errors"`
+	LintErrors string     `json:"lint_errors"`
 	State      string     `json:"state"`
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

@@ -296,7 +296,7 @@ func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getRe
 	path := fmt.Sprintf("%s/promotion-request", databaseBranchAPIPath(getReg.Organization, getReg.Database, getReg.Branch))
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting branch promotion request")
+		return nil, errors.Wrap(err, "error creating request for getting branch promotion request")
 	}
 
 	promotionReq := &BranchPromotionRequest{}

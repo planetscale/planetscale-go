@@ -270,27 +270,28 @@ func TestBranches_Promote(t *testing.T) {
 
 		out := `
 {
-"id": "test-promotion-branch",
-"type": "BranchPromotionRequest",
-"state": "promoted",
-"created_at": "2021-01-14T10:19:23.000Z",
-"updated_at": "2021-01-14T10:19:23.000Z",
-"started_at": "2021-01-14T10:19:23.000Z",
-"finished_at": "2021-01-14T10:19:23.000Z",
-"lint_errors": null,
-"branch": "main",
-"actor": {
-"id": "test-promotion-branch",
-"type": "User",
-"display_name": "Test User",
-"name": "Test User",
-"nickname": null,
-"email": "test@example.com",
-"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
-"created_at": "2021-08-25T21:22:20.150Z",
-"updated_at": "2021-08-26T20:08:14.725Z",
-"two_factor_auth_configured": false
-}
+	"id": "test-promotion-branch",
+	"type": "BranchPromotionRequest",
+	"state": "promoted",
+	"created_at": "2021-01-14T10:19:23.000Z",
+	"updated_at": "2021-01-14T10:19:23.000Z",
+	"started_at": "2021-01-14T10:19:23.000Z",
+	"finished_at": "2021-01-14T10:19:23.000Z",
+	"lint_errors": null,
+	"branch": "main",
+		"actor": {
+			"id": "test-promotion-branch",
+			"type": "User",
+			"display_name": "Test User",
+			"name": "Test User",
+			"nickname": null,
+			"email": "test@example.com",
+			"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
+			"created_at": "2021-08-25T21:22:20.150Z",
+			"updated_at": "2021-08-26T20:08:14.725Z",
+			"two_factor_auth_configured": false
+		}
+
 }`
 
 		_, err := w.Write([]byte(out))
@@ -335,27 +336,27 @@ func TestBranches_GetPromotionRequest(t *testing.T) {
 
 		out := `
 {
-"id": "test-promotion-branch",
-"type": "BranchPromotionRequest",
-"state": "promoted",
-"created_at": "2021-01-14T10:19:23.000Z",
-"updated_at": "2021-01-14T10:19:23.000Z",
-"started_at": "2021-01-14T10:19:23.000Z",
-"finished_at": "2021-01-14T10:19:23.000Z",
-"lint_errors": null,
-"branch": "main",
-"actor": {
-"id": "test-promotion-branch",
-"type": "User",
-"display_name": "Test User",
-"name": "Test User",
-"nickname": null,
-"email": "test@example.com",
-"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
-"created_at": "2021-08-25T21:22:20.150Z",
-"updated_at": "2021-08-26T20:08:14.725Z",
-"two_factor_auth_configured": false
-}
+	"id": "test-promotion-branch",
+	"type": "BranchPromotionRequest",
+	"state": "promoted",
+	"created_at": "2021-01-14T10:19:23.000Z",
+	"updated_at": "2021-01-14T10:19:23.000Z",
+	"started_at": "2021-01-14T10:19:23.000Z",
+	"finished_at": "2021-01-14T10:19:23.000Z",
+	"lint_errors": null,
+	"branch": "main",
+		"actor": {
+			"id": "test-promotion-branch",
+			"type": "User",
+			"display_name": "Test User",
+			"name": "Test User",
+			"nickname": null,
+			"email": "test@example.com",
+			"avatar_url": "https://www.gravatar.com/avatar/4c97310eb2f0e43f486380f040398a02?d=https%3A%2F%2Fapp.planetscale.com%2Fgravatar-fallback.png&s=64",
+			"created_at": "2021-08-25T21:22:20.150Z",
+			"updated_at": "2021-08-26T20:08:14.725Z",
+			"two_factor_auth_configured": false
+		}
 }`
 
 		_, err := w.Write([]byte(out))

@@ -79,7 +79,7 @@ type AuditLog struct {
 	TargetType        string `json:"target_type"`
 	TargetDisplayName string `json:"target_display_name"`
 
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]interface{} `json:"metadata"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

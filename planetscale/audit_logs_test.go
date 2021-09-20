@@ -74,7 +74,7 @@ func TestAuditLogs_List(t *testing.T) {
 			TargetType:        "Database",
 			Location:          "Chicago, IL",
 			TargetDisplayName: "planetscale",
-			Metadata: map[string]string{
+			Metadata: map[string]interface{}{
 				"from": "add-name-to-service-tokens",
 				"into": "main",
 			},

@@ -139,45 +139,6 @@ func TestDatabaseBranches_Get(t *testing.T) {
 	c.Assert(db, qt.DeepEquals, want)
 }
 
-func TestDatabaseBranches_Status(t *testing.T) {
-	c := qt.New(t)
-
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		out := `{
-    "id": "development",
-	"type": "BranchStatus",
-	"ready": true,
-	"created_at": "2021-01-14T10:19:23.000Z",
-	"updated_at": "2021-01-14T10:19:23.000Z"
-}`
-
-		_, err := w.Write([]byte(out))
-		c.Assert(err, qt.IsNil)
-
-	}))
-
-	client, err := NewClient(WithBaseURL(ts.URL))
-	c.Assert(err, qt.IsNil)
-
-	ctx := context.Background()
-	org := "my-org"
-	name := "planetscale-go-test-db"
-
-	db, err := client.DatabaseBranches.GetStatus(ctx, &GetDatabaseBranchStatusRequest{
-		Organization: org,
-		Database:     name,
-		Branch:       testBranch,
-	})
-
-	want := &DatabaseBranchStatus{
-		Ready: true,
-	}
-
-	c.Assert(err, qt.IsNil)
-	c.Assert(db, qt.DeepEquals, want)
-}
-
 func TestBranches_Diff(t *testing.T) {
 	c := qt.New(t)
 

@@ -14,11 +14,11 @@ type DatabaseBranch struct {
 	Name          string    `json:"name"`
 	ParentBranch  string    `json:"parent_branch"`
 	Region        Region    `json:"region"`
+	Ready         bool      `json:"ready"`
 	Production    bool      `json:"production"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 	AccessHostURL string    `json:"access_host_url"`
-	Status        string    `json:"status,omitempty"`
 }
 
 type databaseBranchesResponse struct {
@@ -54,14 +54,6 @@ type GetDatabaseBranchRequest struct {
 // DeleteDatabaseRequest encapsulates the request for deleting a database branch
 // from a database.
 type DeleteDatabaseBranchRequest struct {
-	Organization string
-	Database     string
-	Branch       string
-}
-
-// GetDatabaseBranchStatusRequest encapsulates the request for getting the status
-// of a specific database branch.
-type GetDatabaseBranchStatusRequest struct {
 	Organization string
 	Database     string
 	Branch       string
@@ -122,7 +114,6 @@ type DatabaseBranchesService interface {
 	List(context.Context, *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error)
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
-	GetStatus(context.Context, *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error)
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
@@ -132,11 +123,6 @@ type DatabaseBranchesService interface {
 
 type databaseBranchesService struct {
 	client *Client
-}
-
-// DatabaseBranchStatus represents the status of a PlanetScale database branch.
-type DatabaseBranchStatus struct {
-	Ready bool `json:"ready"`
 }
 
 var _ DatabaseBranchesService = &databaseBranchesService{}
@@ -241,22 +227,6 @@ func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteD
 
 	err = d.client.do(ctx, req, nil)
 	return err
-}
-
-// Status returns the status of a specific database branch
-func (d *databaseBranchesService) GetStatus(ctx context.Context, statusReq *GetDatabaseBranchStatusRequest) (*DatabaseBranchStatus, error) {
-	path := fmt.Sprintf("%s/%s/status", databaseBranchesAPIPath(statusReq.Organization, statusReq.Database), statusReq.Branch)
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for branch status")
-	}
-
-	status := &DatabaseBranchStatus{}
-	if err := d.client.do(ctx, req, &status); err != nil {
-		return nil, err
-	}
-
-	return status, nil
 }
 
 // RefreshSchema refreshes the schema for a

@@ -94,6 +94,7 @@ type Deployment struct {
 	ID                   string              `json:"id"`
 	State                string              `json:"state"`
 	Deployable           bool                `json:"deployable"`
+	DeployCheckErrors    string              `json:"deploy_check_errors"`
 	DeployRequestNumber  uint64              `json:"deploy_request_number"`
 	IntoBranch           string              `json:"into_branch"`
 	PrecedingDeployments []*QueuedDeployment `json:"preceding_deployments"`

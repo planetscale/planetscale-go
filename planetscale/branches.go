@@ -95,21 +95,27 @@ type GetPromotionRequestRequest struct {
 	Branch       string `json:"-"`
 }
 
-type PromotionRequestError struct {
-	Message string `json:"message"`
-	DocsUrl string `json:"docs_url"`
+// PromotionRequestLintError represents an error that occurs during branch
+// promotion.
+type PromotionRequestLintError struct {
+	LintError        string `json:"lint_error"`
+	Keyspace         string `json:"keyspace_name"`
+	Table            string `json:"table_name"`
+	SubjectType      string `json:"subject_type"`
+	ErrorDescription string `json:"error_description"`
+	DocsUrl          string `json:"docs_url"`
 }
 
 // BranchPromotionRequest represents a promotion request for a branch.
 type BranchPromotionRequest struct {
-	ID                    string                 `json:"id"`
-	Branch                string                 `json:"branch"`
-	PromotionRequestError *PromotionRequestError `json:"promotion_request_error"`
-	State                 string                 `json:"state"`
-	CreatedAt             time.Time              `json:"created_at"`
-	UpdatedAt             time.Time              `json:"updated_at"`
-	StartedAt             *time.Time             `json:"started_at"`
-	FinishedAt            *time.Time             `json:"finished_at"`
+	ID         string                       `json:"id"`
+	Branch     string                       `json:"branch"`
+	LintErrors []*PromotionRequestLintError `json:"lint_errors"`
+	State      string                       `json:"state"`
+	CreatedAt  time.Time                    `json:"created_at"`
+	UpdatedAt  time.Time                    `json:"updated_at"`
+	StartedAt  *time.Time                   `json:"started_at"`
+	FinishedAt *time.Time                   `json:"finished_at"`
 }
 
 // DatabaseBranchesService is an interface for communicating with the PlanetScale

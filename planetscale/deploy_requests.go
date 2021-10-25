@@ -89,15 +89,26 @@ type QueuedDeployment struct {
 	FinishedAt *time.Time `json:"finished_at"`
 }
 
+// DeploymentLintError represents an error that occurs during the deployment
+// flow.
+type DeploymentLintError struct {
+	LintError        string `json:"lint_error"`
+	Keyspace         string `json:"keyspace_name"`
+	Table            string `json:"table_name"`
+	SubjectType      string `json:"subject_type"`
+	ErrorDescription string `json:"error_description"`
+	DocsUrl          string `json:"docs_url"`
+}
+
 // Deployment encapsulates a deployment for a deploy request.
 type Deployment struct {
-	ID                   string              `json:"id"`
-	State                string              `json:"state"`
-	Deployable           bool                `json:"deployable"`
-	DeployCheckErrors    string              `json:"deploy_check_errors"`
-	DeployRequestNumber  uint64              `json:"deploy_request_number"`
-	IntoBranch           string              `json:"into_branch"`
-	PrecedingDeployments []*QueuedDeployment `json:"preceding_deployments"`
+	ID                   string                 `json:"id"`
+	State                string                 `json:"state"`
+	Deployable           bool                   `json:"deployable"`
+	LintErrors           []*DeploymentLintError `json:"lint_errors"`
+	DeployRequestNumber  uint64                 `json:"deploy_request_number"`
+	IntoBranch           string                 `json:"into_branch"`
+	PrecedingDeployments []*QueuedDeployment    `json:"preceding_deployments"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

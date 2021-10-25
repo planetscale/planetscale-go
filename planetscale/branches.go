@@ -113,15 +113,15 @@ type PromotionRequestError struct {
 
 // BranchPromotionRequest represents a promotion request for a branch.
 type BranchPromotionRequest struct {
-	ID                    string                   `json:"id"`
-	Branch                string                   `json:"branch"`
-	PromotionRequestError *PromotionRequestError   `json:"promotion_request_error"`
-	LintErrors            []*PromotionRequestError `json:"lint_errors"`
-	State                 string                   `json:"state"`
-	CreatedAt             time.Time                `json:"created_at"`
-	UpdatedAt             time.Time                `json:"updated_at"`
-	StartedAt             *time.Time               `json:"started_at"`
-	FinishedAt            *time.Time               `json:"finished_at"`
+	ID                    string                       `json:"id"`
+	Branch                string                       `json:"branch"`
+	PromotionRequestError *PromotionRequestError       `json:"promotion_request_error"`
+	LintErrors            []*PromotionRequestLintError `json:"lint_errors"`
+	State                 string                       `json:"state"`
+	CreatedAt             time.Time                    `json:"created_at"`
+	UpdatedAt             time.Time                    `json:"updated_at"`
+	StartedAt             *time.Time                   `json:"started_at"`
+	FinishedAt            *time.Time                   `json:"finished_at"`
 }
 
 // DatabaseBranchesService is an interface for communicating with the PlanetScale

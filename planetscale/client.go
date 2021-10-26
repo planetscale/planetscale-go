@@ -41,10 +41,10 @@ type Client struct {
 	AuditLogs        AuditLogsService
 	Backups          BackupsService
 	Databases        DatabasesService
-	Certificates     CertificatesService
 	DatabaseBranches DatabaseBranchesService
 	Organizations    OrganizationsService
 	Passwords        PasswordsService
+	Certificates     CertificatesService
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
@@ -136,10 +136,10 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.AuditLogs = &auditlogsService{client: c}
 	c.Backups = &backupsService{client: c}
 	c.Databases = &databasesService{client: c}
-	c.Certificates = &certificatesService{client: c}
 	c.DatabaseBranches = &databaseBranchesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
+	c.Certificates = &certificatesService{client: c}
 	c.Regions = &regionsService{client: c}
 	c.DeployRequests = &deployRequestsService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}

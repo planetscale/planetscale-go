@@ -11,7 +11,7 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
-const testPasswordID = "4rwwvrxk2o99"
+const testPasswordID = "4rwwvrxk2o99" // #nosec G101 - Not a password but a password identifier.
 
 func TestPasswords_Create(t *testing.T) {
 	c := qt.New(t)

@@ -82,7 +82,7 @@ type GetDatabaseBranchCertificateRequest struct {
 	PasswordId   string
 }
 
-// DatabaseBranchPasswordsService is an interface for communicating with the PlanetScale
+// CertificatesService is an interface for communicating with the PlanetScale
 // Database Branch Passwords API endpoint.
 type CertificatesService interface {
 	Create(context.Context, *DatabaseBranchCertificateRequest) (*DatabaseBranchCertificate, error)
@@ -176,7 +176,7 @@ func (d *certificatesService) List(ctx context.Context, listReq *ListDatabaseBra
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request to list passwords")
+		return nil, errors.Wrap(err, "error creating http request to list certificates")
 	}
 
 	certificatesResp := &certificatesResponse{}

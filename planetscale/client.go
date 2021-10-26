@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
 
@@ -41,10 +41,10 @@ type Client struct {
 	AuditLogs        AuditLogsService
 	Backups          BackupsService
 	Databases        DatabasesService
-	Certificates     CertificatesService
 	DatabaseBranches DatabaseBranchesService
 	Organizations    OrganizationsService
 	Passwords        PasswordsService
+	Certificates     CertificatesService
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
@@ -136,10 +136,10 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.AuditLogs = &auditlogsService{client: c}
 	c.Backups = &backupsService{client: c}
 	c.Databases = &databasesService{client: c}
-	c.Certificates = &certificatesService{client: c}
 	c.DatabaseBranches = &databaseBranchesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
+	c.Certificates = &certificatesService{client: c}
 	c.Regions = &regionsService{client: c}
 	c.DeployRequests = &deployRequestsService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}
@@ -178,13 +178,14 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 		errorRes := &errorResponse{}
 		err = json.Unmarshal(out, errorRes)
 		if err != nil {
-			if _, ok := err.(*json.SyntaxError); ok {
+			var jsonErr *json.SyntaxError
+			if errors.As(err, &jsonErr) {
 				return &Error{
 					msg:  "malformed error response body received",
 					Code: ErrResponseMalformed,
 					Meta: map[string]string{
 						"body":        string(out),
-						"err":         err.Error(),
+						"err":         jsonErr.Error(),
 						"http_status": http.StatusText(res.StatusCode),
 					},
 				}
@@ -234,7 +235,8 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 
 	err = json.Unmarshal(out, &v)
 	if err != nil {
-		if _, ok := err.(*json.SyntaxError); ok {
+		var jsonErr *json.SyntaxError
+		if errors.As(err, &jsonErr) {
 			return &Error{
 				msg:  "malformed response body received",
 				Code: ErrResponseMalformed,

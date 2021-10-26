@@ -11,7 +11,7 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
-const testPasswordID = "planetscale-go-test-password"
+const testPasswordID = "4rwwvrxk2o99" // #nosec G101 - Not a password but a password identifier.
 
 func TestPasswords_Create(t *testing.T) {
 	c := qt.New(t)
@@ -20,12 +20,11 @@ func TestPasswords_Create(t *testing.T) {
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
-    "username": "%s",
     "role": "writer",
     "plain_text": "%s",
     "display_name": "planetscale-go-test-password",
     "created_at": "2021-01-14T10:19:23.000Z"
-}`, testPasswordID, testPasswordID, plainText)
+}`, testPasswordID, plainText)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -45,9 +44,8 @@ func TestPasswords_Create(t *testing.T) {
 	})
 
 	want := &DatabaseBranchPassword{
-		Name:     testPasswordID,
+		Name:     "planetscale-go-test-password",
 		PublicID: testPasswordID,
-		UserName: testPasswordID,
 
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		Role:      "writer",
@@ -67,7 +65,7 @@ func TestPasswords_List(t *testing.T) {
     "data":
     [
         {
-            "id": "planetscale-go-test-password",
+            "id": "4rwwvrxk2o99",
             "display_name": "planetscale-go-test-password",
             "created_at": "2021-01-14T10:19:23.000Z"
         }
@@ -91,7 +89,7 @@ func TestPasswords_List(t *testing.T) {
 
 	want := []*DatabaseBranchPassword{
 		{
-			Name:      testPasswordID,
+			Name:      "planetscale-go-test-password",
 			PublicID:  testPasswordID,
 			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		},
@@ -110,7 +108,7 @@ func TestPasswords_ListBranch(t *testing.T) {
     "data":
     [
         {
-            "id": "planetscale-go-test-password",
+            "id": "4rwwvrxk2o99",
             "display_name": "planetscale-go-test-password",
             "database_branch": {
 			  "name": "my-branch"
@@ -139,7 +137,7 @@ func TestPasswords_ListBranch(t *testing.T) {
 
 	want := []*DatabaseBranchPassword{
 		{
-			Name: testPasswordID,
+			Name: "planetscale-go-test-password",
 			Branch: DatabaseBranch{
 				Name: branch,
 			},
@@ -185,11 +183,10 @@ func TestPasswords_Get(t *testing.T) {
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
-    "username": "%s",
     "role": "writer",
     "display_name": "planetscale-go-test-password",
     "created_at": "2021-01-14T10:19:23.000Z"
-}`, testPasswordID, testPasswordID)
+}`, testPasswordID)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -210,8 +207,7 @@ func TestPasswords_Get(t *testing.T) {
 	})
 
 	want := &DatabaseBranchPassword{
-		Name:      testPasswordID,
-		UserName:  testPasswordID,
+		Name:      "planetscale-go-test-password",
 		PublicID:  testPasswordID,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
 		Role:      "writer",

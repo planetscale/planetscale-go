@@ -1,0 +1,8 @@
+---
+linters:
+  enable:
+    - errorlint
+    - goerr113
+    - gosec
+    - noctx
+    - unconvert

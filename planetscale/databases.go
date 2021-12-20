@@ -45,13 +45,26 @@ type DatabasesService interface {
 	Delete(context.Context, *DeleteDatabaseRequest) error
 }
 
+// DatabaseState represents the state of a database
+type DatabaseState string
+
+const (
+	DatabasePending         DatabaseState = "pending"
+	DatabaseImporting       DatabaseState = "importing"
+	DatabaseAwakening       DatabaseState = "awakening"
+	DatabaseSleepInProgress DatabaseState = "sleep_in_progress"
+	DatabaseSleeping        DatabaseState = "sleeping"
+	DatabaseReady           DatabaseState = "ready"
+)
+
 // Database represents a PlanetScale database
 type Database struct {
-	Name      string    `json:"name"`
-	Notes     string    `json:"notes"`
-	Region    Region    `json:"region"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Name      string        `json:"name"`
+	Notes     string        `json:"notes"`
+	Region    Region        `json:"region"`
+	State     DatabaseState `json:"state"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 // Database represents a list of PlanetScale databases

@@ -43,7 +43,7 @@ func TestDatabases_Create(t *testing.T) {
 	want := &Database{
 		Name:  name,
 		Notes: notes,
-		State: "ready",
+		State: DatabaseReady,
 		Region: Region{
 			Slug: "us-west",
 			Name: "US West",

@@ -20,7 +20,7 @@ func TestPasswords_Create(t *testing.T) {
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
-    "role": "writer",
+    "role": "admin",
     "plain_text": "%s",
     "display_name": "planetscale-go-test-password",
     "created_at": "2021-01-14T10:19:23.000Z"
@@ -41,6 +41,7 @@ func TestPasswords_Create(t *testing.T) {
 		Organization: org,
 		Database:     db,
 		Branch:       branch,
+		Role:         "admin",
 	})
 
 	want := &DatabaseBranchPassword{
@@ -48,7 +49,7 @@ func TestPasswords_Create(t *testing.T) {
 		PublicID: testPasswordID,
 
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		Role:      "writer",
+		Role:      "admin",
 		PlainText: plainText,
 	}
 

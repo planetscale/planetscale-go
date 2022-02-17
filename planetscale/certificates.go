@@ -18,13 +18,13 @@ import (
 )
 
 type DatabaseBranchCertificate struct {
-	PublicID          string            `json:"id"`
-	Name              string            `json:"display_name"`
-	Role              string            `json:"role"`
-	Branch            DatabaseBranch    `json:"database_branch"`
-	Certificate       string            `json:"certificate"`
-	CreatedAt         time.Time         `json:"created_at"`
-	DeletedAt         time.Time         `json:"deleted_at"`
+	PublicID    string         `json:"id"`
+	Name        string         `json:"display_name"`
+	Role        string         `json:"role"`
+	Branch      DatabaseBranch `json:"database_branch"`
+	Certificate string         `json:"certificate"`
+	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   time.Time      `json:"deleted_at"`
 }
 
 func (c *DatabaseBranchCertificate) X509KeyPair(r *DatabaseBranchCertificateRequest) (tls.Certificate, error) {
@@ -57,6 +57,7 @@ type DatabaseBranchCertificateRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	DisplayName  string `json:"display_name"`
+	Role         string `json:"role"`
 	PrivateKey   crypto.PrivateKey
 }
 
@@ -128,10 +129,10 @@ func (c *certificatesService) Create(ctx context.Context, r *DatabaseBranchCerti
 	}
 
 	var certReq = struct {
-		CSR string `json:"csr"`
+		CSR         string `json:"csr"`
 		DisplayName string `json:"display_name"`
 	}{
-		CSR: buf.String(),
+		CSR:         buf.String(),
 		DisplayName: r.DisplayName,
 	}
 

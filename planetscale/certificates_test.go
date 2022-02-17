@@ -54,17 +54,17 @@ func TestCertificates_Create(t *testing.T) {
 		w.WriteHeader(200)
 
 		var out = struct {
-			ID string         `json:"id"`
+			ID          string `json:"id"`
 			Certificate string `json:"certificate"`
 			DisplayName string `json:"display_name"`
-			CreatedAt string `json:"created_at"`
-			Role string `json:"role"`
+			CreatedAt   string `json:"created_at"`
+			Role        string `json:"role"`
 		}{
-			ID: testCertificateID,
+			ID:          testCertificateID,
 			Certificate: testCert,
 			DisplayName: "planetscale-go-test-certificate",
-			CreatedAt: "2021-01-14T10:19:23.000Z",
-			Role: "writer",
+			CreatedAt:   "2021-01-14T10:19:23.000Z",
+			Role:        "writer",
 		}
 
 		err := json.NewEncoder(w).Encode(out)
@@ -88,15 +88,16 @@ func TestCertificates_Create(t *testing.T) {
 		Organization: org,
 		Database:     db,
 		Branch:       branch,
+		Role:         "writer",
 		PrivateKey:   privateKey,
 	}
 	certificate, err := client.Certificates.Create(ctx, req)
 
 	want := &DatabaseBranchCertificate{
-		Name:     "planetscale-go-test-certificate",
-		PublicID: testCertificateID,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		Role:      "writer",
+		Name:        "planetscale-go-test-certificate",
+		PublicID:    testCertificateID,
+		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		Role:        "writer",
 		Certificate: testCert,
 	}
 
@@ -116,20 +117,20 @@ func TestCertificates_List(t *testing.T) {
 		w.WriteHeader(200)
 
 		type entry struct {
-			ID string         `json:"id"`
+			ID          string `json:"id"`
 			Certificate string `json:"certificate"`
 			DisplayName string `json:"display_name"`
-			CreatedAt string `json:"created_at"`
-			Role string `json:"role"`
+			CreatedAt   string `json:"created_at"`
+			Role        string `json:"role"`
 		}
 		var out = struct {
-			Data []entry         `json:"data"`
+			Data []entry `json:"data"`
 		}{[]entry{{
-			ID: testCertificateID,
+			ID:          testCertificateID,
 			Certificate: testCert,
 			DisplayName: "planetscale-go-test-certificate",
-			CreatedAt: "2021-01-14T10:19:23.000Z",
-			Role: "writer",
+			CreatedAt:   "2021-01-14T10:19:23.000Z",
+			Role:        "writer",
 		}}}
 
 		err := json.NewEncoder(w).Encode(out)
@@ -152,11 +153,11 @@ func TestCertificates_List(t *testing.T) {
 
 	want := []*DatabaseBranchCertificate{
 		{
-			Name:          "planetscale-go-test-certificate",
-			PublicID:      testCertificateID,
-			CreatedAt:     time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-			Role:          "writer",
-			Certificate:   testCert,
+			Name:        "planetscale-go-test-certificate",
+			PublicID:    testCertificateID,
+			CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+			Role:        "writer",
+			Certificate: testCert,
 		},
 	}
 
@@ -185,7 +186,7 @@ func TestCertificates_ListEmpty(t *testing.T) {
 	certificates, err := client.Certificates.List(ctx, &ListDatabaseBranchCertificateRequest{
 		Organization: org,
 		Database:     db,
-		Branch: branch,
+		Branch:       branch,
 	})
 
 	c.Assert(err, qt.IsNil)
@@ -199,17 +200,17 @@ func TestCertificates_Get(t *testing.T) {
 		w.WriteHeader(200)
 
 		var out = struct {
-			ID string         `json:"id"`
+			ID          string `json:"id"`
 			Certificate string `json:"certificate"`
 			DisplayName string `json:"display_name"`
-			CreatedAt string `json:"created_at"`
-			Role string `json:"role"`
+			CreatedAt   string `json:"created_at"`
+			Role        string `json:"role"`
 		}{
-			ID: testCertificateID,
+			ID:          testCertificateID,
 			Certificate: testCert,
 			DisplayName: "planetscale-go-test-certificate",
-			CreatedAt: "2021-01-14T10:19:23.000Z",
-			Role: "writer",
+			CreatedAt:   "2021-01-14T10:19:23.000Z",
+			Role:        "writer",
 		}
 		err := json.NewEncoder(w).Encode(out)
 		c.Assert(err, qt.IsNil)
@@ -231,10 +232,10 @@ func TestCertificates_Get(t *testing.T) {
 	})
 
 	want := &DatabaseBranchCertificate{
-		Name:     "planetscale-go-test-certificate",
-		PublicID: testCertificateID,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		Role:      "writer",
+		Name:        "planetscale-go-test-certificate",
+		PublicID:    testCertificateID,
+		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		Role:        "writer",
 		Certificate: testCert,
 	}
 

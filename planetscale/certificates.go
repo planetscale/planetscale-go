@@ -130,9 +130,11 @@ func (c *certificatesService) Create(ctx context.Context, r *DatabaseBranchCerti
 
 	var certReq = struct {
 		CSR         string `json:"csr"`
+		Role        string `json:"role"`
 		DisplayName string `json:"display_name"`
 	}{
 		CSR:         buf.String(),
+		Role:        r.Role,
 		DisplayName: r.DisplayName,
 	}
 

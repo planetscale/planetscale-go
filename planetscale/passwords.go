@@ -38,7 +38,7 @@ type DatabaseBranchPasswordRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
-	Role         string `json:"role"`
+	Role         string `json:"role,omitempty"`
 	DisplayName  string `json:"display_name"`
 }
 

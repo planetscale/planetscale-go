@@ -13,7 +13,7 @@ import (
 type CreateDatabaseRequest struct {
 	Organization string
 	Name         string `json:"name"`
-	Notes        string `json:"notes"`
+	Notes        string `json:"notes,omitempty"`
 	Region       string `json:"region,omitempty"`
 }
 

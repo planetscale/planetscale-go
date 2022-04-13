@@ -63,6 +63,7 @@ type Database struct {
 	Notes     string        `json:"notes"`
 	Region    Region        `json:"region"`
 	State     DatabaseState `json:"state"`
+	HtmlURL   string        `json:"html_url"`
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`
 }

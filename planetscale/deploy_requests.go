@@ -135,6 +135,8 @@ type DeployRequest struct {
 
 	Deployment *Deployment `json:"deployment"`
 
+	HtmlURL string `json:"html_url"`
+
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	ClosedAt  *time.Time `json:"closed_at"`

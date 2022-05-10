@@ -59,13 +59,14 @@ const (
 
 // Database represents a PlanetScale database
 type Database struct {
-	Name      string        `json:"name"`
-	Notes     string        `json:"notes"`
-	Region    Region        `json:"region"`
-	State     DatabaseState `json:"state"`
-	HtmlURL   string        `json:"html_url"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+	Name       string        `json:"name"`
+	Notes      string        `json:"notes"`
+	Region     Region        `json:"region"`
+	State      DatabaseState `json:"state"`
+	HtmlURL    string        `json:"html_url"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
+	DataImport DataImport    `json:"data_import"`
 }
 
 // Database represents a list of PlanetScale databases

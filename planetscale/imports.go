@@ -105,40 +105,28 @@ func (di *DataImport) ParseState() {
 	switch di.State {
 	case "prepare_data_copy_pending":
 		di.ImportState = DataImportPreparingDataCopy
-		break
 	case "prepare_data_copy_error":
 		di.ImportState = DataImportPreparingDataCopyFailed
-		break
 	case "data_copy_pending":
 		di.ImportState = DataImportCopyingData
-		break
 	case "data_copy_error":
 		di.ImportState = DataImportPreparingDataCopyFailed
-		break
 	case "switch_traffic_workflow_pending":
 		di.ImportState = DataImportSwitchTrafficPending
-		break
 	case "switch_traffic_workflow_running":
 		di.ImportState = DataImportSwitchTrafficRunning
-		break
 	case "switch_traffic_workflow_error":
 		di.ImportState = DataImportSwitchTrafficError
-		break
 	case "reverse_traffic_workflow_running":
 		di.ImportState = DataImportReverseTrafficRunning
-		break
 	case "reverse_traffic_workflow_error":
 		di.ImportState = DataImportReverseTrafficError
-		break
 	case "cleanup_workflow_pending":
 		di.ImportState = DataImportSwitchTrafficCompleted
-		break
 	case "cleanup_workflow_running":
 		di.ImportState = DataImportDetachExternalDatabaseRunning
-		break
 	case "cleanup_workflow_error":
 		di.ImportState = DataImportDetachExternalDatabaseError
-		break
 	default:
 		di.ImportState = Ready
 	}

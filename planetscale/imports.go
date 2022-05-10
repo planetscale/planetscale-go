@@ -12,9 +12,35 @@ type DataImportSource struct {
 	HostName            string `json:"hostname"`
 	Database            string `json:"schema_name"`
 	Port                int    `json:"port"`
-	SSLVerificationMode string `json:"ssl_mode"`
+	SSLMode             string `json:"ssl_mode"`
+	SSLVerificationMode ExternalDataSourceSSLVerificationMode
 	UserName            string `json:"username"`
 	Password            string `json:"password"`
+}
+
+type ExternalDataSourceSSLVerificationMode int
+
+const (
+	SSLModeDisabled ExternalDataSourceSSLVerificationMode = iota
+	SSLModePreferred
+	SSLModeRequired
+	SSLModeVerifyCA
+	SSLModeVerifyIdentity
+)
+
+func (sm ExternalDataSourceSSLVerificationMode) String() string {
+	switch sm {
+	case SSLModeDisabled:
+		return "disabled"
+	case SSLModePreferred:
+		return "preferred"
+	case SSLModeRequired:
+		return "required"
+	case SSLModeVerifyCA:
+		return "verify_ca"
+	default:
+		return "verify_identity"
+	}
 }
 
 type DataImportState int
@@ -190,6 +216,7 @@ type dataImportsService struct {
 
 // TestDataImportSource will check an external database for compatibility with PlanetScale
 func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *TestDataImportSourceRequest) (*TestDataImportSourceResponse, error) {
+	request.Source.SSLMode = request.Source.SSLVerificationMode.String()
 	path := fmt.Sprintf("/v1/organizations/%s/data-imports/test-connection", request.Organization)
 	req, err := d.client.newRequest(http.MethodPost, path, request)
 	if err != nil {
@@ -205,6 +232,7 @@ func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *
 }
 
 func (d *dataImportsService) StartDataImport(ctx context.Context, request *StartDataImportRequest) (*DataImport, error) {
+	request.Source.SSLMode = request.Source.SSLVerificationMode.String()
 	path := fmt.Sprintf("/v1/organizations/%s/data-imports/new", request.Organization)
 	req, err := d.client.newRequest(http.MethodPost, path, request)
 	if err != nil {

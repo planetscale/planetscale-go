@@ -59,7 +59,7 @@ const (
 	DataImportReverseTrafficError
 	DataImportDetachExternalDatabaseRunning
 	DataImportDetachExternalDatabaseError
-	Ready
+	DataImportReady
 )
 
 func (d DataImportState) String() string {
@@ -110,7 +110,7 @@ func (di *DataImport) ParseState() {
 	case "data_copy_pending":
 		di.ImportState = DataImportCopyingData
 	case "data_copy_error":
-		di.ImportState = DataImportPreparingDataCopyFailed
+		di.ImportState = DataImportCopyingDataFailed
 	case "switch_traffic_workflow_pending":
 		di.ImportState = DataImportSwitchTrafficPending
 	case "switch_traffic_workflow_running":
@@ -128,7 +128,7 @@ func (di *DataImport) ParseState() {
 	case "cleanup_workflow_error":
 		di.ImportState = DataImportDetachExternalDatabaseError
 	default:
-		di.ImportState = Ready
+		di.ImportState = DataImportReady
 	}
 }
 

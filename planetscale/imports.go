@@ -3,9 +3,10 @@ package planetscale
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type DataImportSource struct {
@@ -98,7 +99,7 @@ type DataImport struct {
 	Errors      string    `json:"import_check_errors"`
 	StartedAt   time.Time `json:"started_at"`
 	FinishedAt  time.Time `json:"finished_at"`
-	DeleteddAt  time.Time `json:"deleted_at"`
+	DeletedAt   time.Time `json:"deleted_at"`
 }
 
 func (di *DataImport) ParseState() {
@@ -191,7 +192,7 @@ type CancelDataImportRequest struct {
 type DataImportsService interface {
 	TestDataImportSource(ctx context.Context, request *TestDataImportSourceRequest) (*TestDataImportSourceResponse, error)
 	StartDataImport(ctx context.Context, request *StartDataImportRequest) (*DataImport, error)
-	CancelDataImport(ctx context.Context, request *CancelDataImportRequest) (*DataImport, error)
+	CancelDataImport(ctx context.Context, request *CancelDataImportRequest) error
 	GetDataImportStatus(ctx context.Context, request *GetImportStatusRequest) (*DataImport, error)
 	MakePlanetScalePrimary(ctx context.Context, request *MakePlanetScalePrimaryRequest) (*DataImport, error)
 	MakePlanetScaleReplica(ctx context.Context, request *MakePlanetScaleReplicaRequest) (*DataImport, error)
@@ -256,19 +257,18 @@ func (d *dataImportsService) GetDataImportStatus(ctx context.Context, getReq *Ge
 	return &db.DataImport, nil
 }
 
-func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *CancelDataImportRequest) (*DataImport, error) {
+func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *CancelDataImportRequest) error {
 	path := fmt.Sprintf("%s/cancel", dataImportAPIPath(cancelReq.Organization, cancelReq.Database))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return errors.Wrap(err, "error creating http request")
 	}
 
-	resp := &DataImport{}
-	if err := d.client.do(ctx, req, &resp); err != nil {
-		return nil, err
+	if err := d.client.do(ctx, req, nil); err != nil {
+		return err
 	}
 
-	return resp, nil
+	return nil
 }
 func (d *dataImportsService) MakePlanetScalePrimary(ctx context.Context, request *MakePlanetScalePrimaryRequest) (*DataImport, error) {
 	path := fmt.Sprintf("%s/begin-switch-traffic", dataImportAPIPath(request.Organization, request.Database))

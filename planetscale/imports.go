@@ -93,13 +93,14 @@ func (d DataImportState) String() string {
 }
 
 type DataImport struct {
-	ID          string `json:"id"`
-	ImportState DataImportState
-	State       string    `json:"state"`
-	Errors      string    `json:"import_check_errors"`
-	StartedAt   time.Time `json:"started_at"`
-	FinishedAt  time.Time `json:"finished_at"`
-	DeletedAt   time.Time `json:"deleted_at"`
+	ID                 string `json:"id"`
+	ImportState        DataImportState
+	State              string           `json:"state"`
+	Errors             string           `json:"import_check_errors"`
+	StartedAt          time.Time        `json:"started_at"`
+	FinishedAt         time.Time        `json:"finished_at"`
+	DeletedAt          time.Time        `json:"deleted_at"`
+	ExternalDataSource DataImportSource `json:"data_source""`
 }
 
 func (di *DataImport) ParseState() {

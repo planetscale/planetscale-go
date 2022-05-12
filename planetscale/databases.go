@@ -66,7 +66,7 @@ type Database struct {
 	HtmlURL    string        `json:"html_url"`
 	CreatedAt  time.Time     `json:"created_at"`
 	UpdatedAt  time.Time     `json:"updated_at"`
-	DataImport DataImport    `json:"data_import"`
+	DataImport *DataImport    `json:"data_import"`
 }
 
 // Database represents a list of PlanetScale databases

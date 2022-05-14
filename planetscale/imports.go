@@ -63,33 +63,43 @@ const (
 	DataImportReady
 )
 
+var stateToImportStateMap = map[string]DataImportState{
+	"prepare_data_copy_pending":        DataImportPreparingDataCopy,
+	"prepare_data_copy_error":          DataImportPreparingDataCopyFailed,
+	"data_copy_pending":                DataImportCopyingData,
+	"data_copy_error":                  DataImportCopyingDataFailed,
+	"switch_traffic_workflow_pending":  DataImportSwitchTrafficPending,
+	"switch_traffic_workflow_running":  DataImportSwitchTrafficRunning,
+	"switch_traffic_workflow_error":    DataImportSwitchTrafficError,
+	"reverse_traffic_workflow_running": DataImportReverseTrafficRunning,
+	"reverse_traffic_workflow_error":   DataImportReverseTrafficError,
+	"cleanup_workflow_pending":         DataImportSwitchTrafficCompleted,
+	"cleanup_workflow_running":         DataImportDetachExternalDatabaseRunning,
+	"cleanup_workflow_error":           DataImportDetachExternalDatabaseError,
+	"ready":                            DataImportReady,
+}
+
+var importStateToDescMap = map[DataImportState]string{
+	DataImportPreparingDataCopy:             "Preparing to copy data from external database",
+	DataImportPreparingDataCopyFailed:       "Failed to copy data from external database",
+	DataImportCopyingData:                   "Copying data from external database",
+	DataImportCopyingDataFailed:             "Failed to copy data from external database",
+	DataImportSwitchTrafficPending:          "PlanetScale database is running in replica mode",
+	DataImportSwitchTrafficRunning:          "Switching PlanetScale database to primary mode",
+	DataImportSwitchTrafficError:            "Failed to switching PlanetScale database to primary mode",
+	DataImportReverseTrafficRunning:         "Switching PlanetScale database to replica mode",
+	DataImportReverseTrafficError:           "Failed to switching PlanetScale database to replica mode",
+	DataImportDetachExternalDatabaseRunning: "Detaching external database from  PlanetScale database",
+	DataImportDetachExternalDatabaseError:   "Failed to detach external database from  PlanetScale database",
+	DataImportReady:                         "Import has completed and your PlanetScale Database is now ready",
+}
+
 func (d DataImportState) String() string {
-	switch d {
-	case DataImportPreparingDataCopy:
-		return "preparing to copy data from external database"
-	case DataImportPreparingDataCopyFailed:
-		return "failed to copy data from external database"
-	case DataImportCopyingData:
-		return "copying data from external database"
-	case DataImportCopyingDataFailed:
-		return "failed to copy data from external database"
-	case DataImportSwitchTrafficPending:
-		return "PlanetScale database is running in replica mode"
-	case DataImportSwitchTrafficRunning:
-		return "switching PlanetScale database to primary mode"
-	case DataImportSwitchTrafficError:
-		return "failed to switching PlanetScale database to primary mode"
-	case DataImportReverseTrafficRunning:
-		return "switching PlanetScale database to replica mode"
-	case DataImportReverseTrafficError:
-		return "failed to switching PlanetScale database to replica mode"
-	case DataImportDetachExternalDatabaseRunning:
-		return "detaching external database from  PlanetScale database"
-	case DataImportDetachExternalDatabaseError:
-		return "failed to detach external database from  PlanetScale database"
+	if val, ok := importStateToDescMap[d]; ok {
+		return val
 	}
 
-	return "all done"
+	panic("unknown data import state")
 }
 
 type DataImport struct {
@@ -97,41 +107,19 @@ type DataImport struct {
 	ImportState        DataImportState
 	State              string           `json:"state"`
 	Errors             string           `json:"import_check_errors"`
-	StartedAt          time.Time        `json:"started_at"`
-	FinishedAt         time.Time        `json:"finished_at"`
-	DeletedAt          time.Time        `json:"deleted_at"`
-	ExternalDataSource DataImportSource `json:"data_source""`
+	StartedAt          *time.Time       `json:"started_at"`
+	FinishedAt         *time.Time       `json:"finished_at"`
+	DeletedAt          *time.Time       `json:"deleted_at"`
+	ExternalDataSource DataImportSource `json:"data_source"`
 }
 
 func (di *DataImport) ParseState() {
-	switch di.State {
-	case "prepare_data_copy_pending":
-		di.ImportState = DataImportPreparingDataCopy
-	case "prepare_data_copy_error":
-		di.ImportState = DataImportPreparingDataCopyFailed
-	case "data_copy_pending":
-		di.ImportState = DataImportCopyingData
-	case "data_copy_error":
-		di.ImportState = DataImportCopyingDataFailed
-	case "switch_traffic_workflow_pending":
-		di.ImportState = DataImportSwitchTrafficPending
-	case "switch_traffic_workflow_running":
-		di.ImportState = DataImportSwitchTrafficRunning
-	case "switch_traffic_workflow_error":
-		di.ImportState = DataImportSwitchTrafficError
-	case "reverse_traffic_workflow_running":
-		di.ImportState = DataImportReverseTrafficRunning
-	case "reverse_traffic_workflow_error":
-		di.ImportState = DataImportReverseTrafficError
-	case "cleanup_workflow_pending":
-		di.ImportState = DataImportSwitchTrafficCompleted
-	case "cleanup_workflow_running":
-		di.ImportState = DataImportDetachExternalDatabaseRunning
-	case "cleanup_workflow_error":
-		di.ImportState = DataImportDetachExternalDatabaseError
-	default:
-		di.ImportState = DataImportReady
+	if val, ok := stateToImportStateMap[di.State]; ok {
+		di.ImportState = val
+		return
 	}
+
+	panic("unknown data import state " + di.State)
 }
 
 type TestDataImportSourceRequest struct {
@@ -164,28 +152,28 @@ type StartDataImportRequest struct {
 }
 
 type MakePlanetScalePrimaryRequest struct {
-	Organization string `json:"organization"`
-	Database     string `json:"name"`
+	Organization string
+	Database     string
 }
 
 type MakePlanetScaleReplicaRequest struct {
-	Organization string `json:"organization"`
-	Database     string `json:"name"`
+	Organization string
+	Database     string
 }
 
 type DetachExternalDatabaseRequest struct {
-	Organization string `json:"organization"`
-	Database     string `json:"name"`
+	Organization string
+	Database     string
 }
 
 type GetImportStatusRequest struct {
-	Organization string `json:"organization"`
-	Database     string `json:"name"`
+	Organization string
+	Database     string
 }
 
 type CancelDataImportRequest struct {
-	Organization string `json:"organization"`
-	Database     string `json:"name"`
+	Organization string
+	Database     string
 }
 
 // DataImportsService is an interface for communicating with the PlanetScale
@@ -250,12 +238,12 @@ func (d *dataImportsService) GetDataImportStatus(ctx context.Context, getReq *Ge
 		return nil, err
 	}
 
-	if db.DataImport.ID == "" {
+	if db.DataImport == nil || db.DataImport.ID == "" {
 		return nil, errors.Errorf("Database %s is not importing data", getReq.Database)
 	}
 
 	db.DataImport.ParseState()
-	return &db.DataImport, nil
+	return db.DataImport, nil
 }
 
 func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *CancelDataImportRequest) error {

@@ -151,7 +151,7 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 "import_check_errors": "",
 "data_source": {
 	"hostname": "aws.rds.something.com",
-	"port": "25060",
+	"port": 25060,
 	"database": "employees"
 }
 }`
@@ -284,7 +284,7 @@ func TestImports_CanMakePlanetScalePrimary(t *testing.T) {
 "import_check_errors": "",
 "data_source": {
 	"hostname": "aws.rds.something.com",
-	"port": "25060",
+	"port": 25060,
 	"database": "employees"
 }
 }`
@@ -320,7 +320,7 @@ func TestImports_CanMakePlanetScaleReplica(t *testing.T) {
 "import_check_errors": "",
 "data_source": {
 	"hostname": "aws.rds.something.com",
-	"port": "25060",
+	"port": 25060,
 	"database": "employees"
 }
 }`
@@ -356,7 +356,7 @@ func TestImports_CanDetachExternalDatabase(t *testing.T) {
 "import_check_errors": "",
 "data_source": {
 	"hostname": "aws.rds.something.com",
-	"port": "25060",
+	"port": 25060,
 	"database": "employees"
 }
 }`

@@ -167,7 +167,7 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 
 	startReq := &StartDataImportRequest{
 		Organization: org,
-		DatabaseName: db,
+		Database:     db,
 	}
 	di, err := client.DataImports.StartDataImport(ctx, startReq)
 	c.Assert(err, qt.IsNil)
@@ -179,19 +179,11 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 func TestImports_CanGetDataImportStatus_Success(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/data-imports")
 		w.WriteHeader(200)
 		out := `{
-    "id": "planetscale-import-test-db",
-    "type": "database",
-    "name": "my-db",
-    "notes": "This is a test DB created from the planetscale-go API library",
-    "created_at": "2021-01-14T10:19:23.000Z",
-    "updated_at": "2021-01-14T10:19:23.000Z",
-	"data_import": {
 	"id": "IMPORT_PUBLIC_ID",
 	"state": "switch_traffic_workflow_pending"
-}
 }`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -214,15 +206,11 @@ func TestImports_CanGetDataImportStatus_Success(t *testing.T) {
 func TestImports_CanGetDataImportStatus_NoImport(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db")
-		w.WriteHeader(200)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/data-imports")
+		w.WriteHeader(400)
 		out := `{
-    "id": "planetscale-import-test-db",
-    "type": "database",
-    "name": "my-db",
-    "notes": "This is a test DB created from the planetscale-go API library",
-    "created_at": "2021-01-14T10:19:23.000Z",
-    "updated_at": "2021-01-14T10:19:23.000Z"
+"code": "bad_request",
+"message": "Data import has not been setup for this database."
 }`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -238,7 +226,7 @@ func TestImports_CanGetDataImportStatus_NoImport(t *testing.T) {
 		Database:     db,
 	})
 	c.Assert(err, qt.IsNotNil)
-	c.Assert(err, qt.ErrorMatches, "Database my-db is not importing data")
+	c.Assert(err, qt.ErrorMatches, "Data import has not been setup for this database.")
 	c.Assert(di, qt.IsNil)
 }
 
@@ -348,7 +336,7 @@ func TestImports_CanMakePlanetScaleReplica(t *testing.T) {
 func TestImports_CanDetachExternalDatabase(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/data-imports/cleanup")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/data-imports/detach-external-database")
 		w.WriteHeader(200)
 		out := `{
 "id": "PUBLIC_ID",

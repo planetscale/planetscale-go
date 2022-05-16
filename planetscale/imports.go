@@ -124,7 +124,7 @@ func (di *DataImport) ParseState() {
 
 type TestDataImportSourceRequest struct {
 	Organization string           `json:"organization"`
-	Database     string           `json:"name"`
+	Database     string           `json:"database_name"`
 	Source       DataImportSource `json:"connection"`
 }
 
@@ -146,7 +146,7 @@ type TestDataImportSourceResponse struct {
 }
 
 type StartDataImportRequest struct {
-	DatabaseName string           `json:"name"`
+	Database     string           `json:"database_name"`
 	Organization string           `json:"organization"`
 	Source       DataImportSource `json:"connection"`
 }
@@ -226,24 +226,20 @@ func (d *dataImportsService) StartDataImport(ctx context.Context, request *Start
 }
 
 func (d *dataImportsService) GetDataImportStatus(ctx context.Context, getReq *GetImportStatusRequest) (*DataImport, error) {
-	path := fmt.Sprintf("/v1/organizations/%s/databases/%s", getReq.Organization, getReq.Database)
+	path := dataImportAPIPath(getReq.Organization, getReq.Database)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for get database")
 	}
 
-	db := &Database{}
-	err = d.client.do(ctx, req, &db)
+	di := &DataImport{}
+	err = d.client.do(ctx, req, &di)
 	if err != nil {
 		return nil, err
 	}
 
-	if db.DataImport == nil || db.DataImport.ID == "" {
-		return nil, errors.Errorf("Database %s is not importing data", getReq.Database)
-	}
-
-	db.DataImport.ParseState()
-	return db.DataImport, nil
+	di.ParseState()
+	return di, nil
 }
 
 func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *CancelDataImportRequest) error {
@@ -290,7 +286,7 @@ func (d *dataImportsService) MakePlanetScaleReplica(ctx context.Context, request
 }
 
 func (d *dataImportsService) DetachExternalDatabase(ctx context.Context, request *DetachExternalDatabaseRequest) (*DataImport, error) {
-	path := fmt.Sprintf("%s/cleanup", dataImportAPIPath(request.Organization, request.Database))
+	path := fmt.Sprintf("%s/detach-external-database", dataImportAPIPath(request.Organization, request.Database))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

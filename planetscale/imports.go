@@ -99,7 +99,7 @@ func (d DataImportState) String() string {
 		return val
 	}
 
-	panic("unknown data import state")
+	panic(fmt.Sprintf("unknown data import state: %v", d))
 }
 
 type DataImport struct {

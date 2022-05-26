@@ -58,7 +58,7 @@ func TestImports_CanRunLintExternalDatabase_Success(t *testing.T) {
 	td := TestDataImportSourceRequest{
 		Organization: org,
 		Database:     db,
-		Source:       DataImportSource{},
+		Connection:   DataImportSource{},
 	}
 
 	results, err := client.DataImports.TestDataImportSource(ctx, &td)
@@ -85,7 +85,7 @@ func TestImports_CanRunLintExternalDatabase_ConnectFailure(t *testing.T) {
 	td := TestDataImportSourceRequest{
 		Organization: org,
 		Database:     db,
-		Source:       DataImportSource{},
+		Connection:   DataImportSource{},
 	}
 
 	results, err := client.DataImports.TestDataImportSource(ctx, &td)
@@ -122,7 +122,7 @@ func TestImports_CanRunLintExternalDatabase_LintFailure(t *testing.T) {
 	td := TestDataImportSourceRequest{
 		Organization: org,
 		Database:     db,
-		Source:       DataImportSource{},
+		Connection:   DataImportSource{},
 	}
 
 	results, err := client.DataImports.TestDataImportSource(ctx, &td)

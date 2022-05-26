@@ -125,7 +125,7 @@ func (di *DataImport) ParseState() {
 type TestDataImportSourceRequest struct {
 	Organization string           `json:"organization"`
 	Database     string           `json:"database_name"`
-	Source       DataImportSource `json:"connection"`
+	Connection   DataImportSource `json:"connection"`
 }
 
 // DataSourceIncompatibilityError represents an error that occurs when the
@@ -179,12 +179,24 @@ type CancelDataImportRequest struct {
 // DataImportsService is an interface for communicating with the PlanetScale
 // Data Imports API endpoint.
 type DataImportsService interface {
+	// TestDataImportSource checks if the external database that we're importing will be supported
+	// by PlanetScale. It checks for ability to replicate binlogs, schema compatibility and other factors.
 	TestDataImportSource(ctx context.Context, request *TestDataImportSourceRequest) (*TestDataImportSourceResponse, error)
+	// StartDataImport spins up a downstream PlanetScale database in replica mode, with the
+	// external database as a Primary and starts copying data from external to PlanetScale.
 	StartDataImport(ctx context.Context, request *StartDataImportRequest) (*DataImport, error)
+	// CancelDataImport halts all replication and data copy from external to PlanetScale
+	// and deletes the PlanetScale database.
 	CancelDataImport(ctx context.Context, request *CancelDataImportRequest) error
+	// GetDataImportStatus gets the current status of a DataImport for a given database
+	// Fails if the database is not importing any data.
 	GetDataImportStatus(ctx context.Context, request *GetImportStatusRequest) (*DataImport, error)
+	// MakePlanetScalePrimary makes the downstream PlanetScale database a Primary and the external database a Replica.
 	MakePlanetScalePrimary(ctx context.Context, request *MakePlanetScalePrimaryRequest) (*DataImport, error)
+	// MakePlanetScaleReplica makes the downstream PlanetScale database a Replica and the external database a Primary.
 	MakePlanetScaleReplica(ctx context.Context, request *MakePlanetScaleReplicaRequest) (*DataImport, error)
+	// DetachExternalDatabase detaches the external database from PlanetScale after a data import has finished
+	// and PlanetScale is running as Primary.
 	DetachExternalDatabase(ctx context.Context, request *DetachExternalDatabaseRequest) (*DataImport, error)
 }
 
@@ -194,7 +206,7 @@ type dataImportsService struct {
 
 // TestDataImportSource will check an external database for compatibility with PlanetScale
 func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *TestDataImportSourceRequest) (*TestDataImportSourceResponse, error) {
-	request.Source.SSLMode = request.Source.SSLVerificationMode.String()
+	request.Connection.SSLMode = request.Connection.SSLVerificationMode.String()
 	path := fmt.Sprintf("/v1/organizations/%s/data-imports/test-connection", request.Organization)
 	req, err := d.client.newRequest(http.MethodPost, path, request)
 	if err != nil {

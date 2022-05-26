@@ -99,7 +99,7 @@ func (d DataImportState) String() string {
 		return val
 	}
 
-	panic(fmt.Sprintf("unknown data import state: %v", d))
+	panic("unknown data import state")
 }
 
 type DataImport struct {
@@ -148,7 +148,7 @@ type TestDataImportSourceResponse struct {
 type StartDataImportRequest struct {
 	Database     string           `json:"database_name"`
 	Organization string           `json:"organization"`
-	Source       DataImportSource `json:"connection"`
+	Connection   DataImportSource `json:"connection"`
 }
 
 type MakePlanetScalePrimaryRequest struct {
@@ -222,7 +222,7 @@ func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *
 }
 
 func (d *dataImportsService) StartDataImport(ctx context.Context, request *StartDataImportRequest) (*DataImport, error) {
-	request.Source.SSLMode = request.Source.SSLVerificationMode.String()
+	request.Connection.SSLMode = request.Connection.SSLVerificationMode.String()
 	path := fmt.Sprintf("/v1/organizations/%s/data-imports/new", request.Organization)
 	req, err := d.client.newRequest(http.MethodPost, path, request)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
@@ -72,6 +73,7 @@ type BranchSchemaRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
 }
 
 // RefreshSchemaRequest reflects the request needed to refresh a schema
@@ -167,6 +169,15 @@ type schemaResponse struct {
 
 func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchSchemaRequest) ([]*Diff, error) {
 	path := fmt.Sprintf("%s/schema", databaseBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	v := url.Values{}
+	if schemaReq.Keyspace != "" {
+		v.Add("keyspace", schemaReq.Keyspace)
+	}
+
+	if vals := v.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

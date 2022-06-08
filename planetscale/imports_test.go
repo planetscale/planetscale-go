@@ -140,6 +140,37 @@ func TestImports_CanRunLintExternalDatabase_LintFailure(t *testing.T) {
 	}, qt.DeepEquals, results.Errors)
 }
 
+func TestImports_CanRunLintExternalDatabase_NeedsUpgrade(t *testing.T) {
+	c := qt.New(t)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/data-imports/test-connection")
+		w.WriteHeader(200)
+		out := `{
+"can_connect": true, 
+"error": "", 
+"should_upgrade": true,
+"table_statuses": []
+}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+	ctx := context.Background()
+	org := "my-org"
+	db := "my-db"
+	td := TestDataImportSourceRequest{
+		Organization: org,
+		Database:     db,
+		Connection:   DataImportSource{},
+	}
+
+	_, err = client.DataImports.TestDataImportSource(ctx, &td)
+	c.Assert(err, qt.IsNotNil)
+	c.Assert(err, qt.ErrorIs, UserShouldUpgradePlanError{})
+}
+
 func TestImports_CanStartDataImport_Success(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

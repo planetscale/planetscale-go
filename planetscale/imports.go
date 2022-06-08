@@ -139,10 +139,17 @@ type DataSourceIncompatibilityError struct {
 	DocsUrl          string `json:"docs_url"`
 }
 
+type UserShouldUpgradePlanError struct{}
+
+func (e UserShouldUpgradePlanError) Error() string {
+	return "Importing databases over 5GB requires a plan upgrade"
+}
+
 type TestDataImportSourceResponse struct {
-	CanConnect   bool                              `json:"can_connect"`
-	ConnectError string                            `json:"error"`
-	Errors       []*DataSourceIncompatibilityError `json:"lint_errors"`
+	CanConnect        bool                              `json:"can_connect"`
+	ShouldUpgradePlan bool                              `json:"should_upgrade"`
+	ConnectError      string                            `json:"error"`
+	Errors            []*DataSourceIncompatibilityError `json:"lint_errors"`
 }
 
 type StartDataImportRequest struct {
@@ -218,6 +225,9 @@ func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *
 		return nil, err
 	}
 
+	if resp.ShouldUpgradePlan {
+		return resp, UserShouldUpgradePlanError{}
+	}
 	return resp, nil
 }
 

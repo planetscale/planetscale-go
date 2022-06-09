@@ -199,6 +199,33 @@ func TestBranches_Schema(t *testing.T) {
 	c.Assert(schemas, qt.DeepEquals, want)
 }
 
+func TestBranches_VSchema(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"raw": "{}"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	vSchema, err := client.DatabaseBranches.VSchema(ctx, &BranchVSchemaRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+	})
+
+	want := `{}`
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(vSchema.Raw, qt.DeepEquals, want)
+}
+
 func TestBranches_RefreshSchema(t *testing.T) {
 	c := qt.New(t)
 

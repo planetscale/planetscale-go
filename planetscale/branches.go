@@ -76,7 +76,7 @@ type BranchSchemaRequest struct {
 	Keyspace     string `json:"-"`
 }
 
-// BranchSchemaRequest encapsulates a request for getting a branch's schema.
+// BranchVSchemaRequest encapsulates a request for getting a branch's VSchema.
 type BranchVSchemaRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`

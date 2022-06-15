@@ -9,6 +9,27 @@ import (
 	"github.com/pkg/errors"
 )
 
+type BillingPlan int
+
+const (
+	DeveloperPlan BillingPlan = iota
+	ScalerPlan
+)
+
+func (bp BillingPlan) String() string {
+	switch bp {
+	case ScalerPlan:
+		return "scaler"
+	default:
+		return "developer"
+	}
+}
+
+var planToBillingPlanMap = map[string]BillingPlan{
+	"scaler":    ScalerPlan,
+	"developer": DeveloperPlan,
+}
+
 type DataImportSource struct {
 	HostName            string `json:"hostname"`
 	Database            string `json:"schema_name"`
@@ -142,21 +163,23 @@ type DataSourceIncompatibilityError struct {
 type UserShouldUpgradePlanError struct{}
 
 func (e UserShouldUpgradePlanError) Error() string {
-	return "Importing databases over 5GB requires at least a scaler plan, please login to app.planetscale.com to upgrade your billing plan."
+	return "Importing databases over 5GB requires a paid plan. Log in to app.planetscale.com to upgrade."
 }
 
 type TestDataImportSourceResponse struct {
-	CanConnect        bool                              `json:"can_connect"`
-	ShouldUpgradePlan bool                              `json:"should_upgrade"`
-	SuggestedPlan     string                            `json:"suggested_plan"`
-	ConnectError      string                            `json:"error"`
-	Errors            []*DataSourceIncompatibilityError `json:"lint_errors"`
+	CanConnect           bool   `json:"can_connect"`
+	ShouldUpgradePlan    bool   `json:"should_upgrade"`
+	SuggestedPlan        string `json:"suggested_plan"`
+	SuggestedBillingPlan BillingPlan
+	ConnectError         string                            `json:"error"`
+	Errors               []*DataSourceIncompatibilityError `json:"lint_errors"`
 }
 
 type StartDataImportRequest struct {
 	Database     string           `json:"database_name"`
 	Organization string           `json:"organization"`
 	Connection   DataImportSource `json:"connection"`
+	Plan         string           `json:"plan"`
 }
 
 type MakePlanetScalePrimaryRequest struct {
@@ -226,9 +249,11 @@ func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *
 		return nil, err
 	}
 
-	if !resp.ShouldUpgradePlan {
+	if resp.ShouldUpgradePlan {
 		return resp, UserShouldUpgradePlanError{}
 	}
+
+	resp.SuggestedBillingPlan = planToBillingPlanMap[resp.SuggestedPlan]
 	return resp, nil
 }
 

@@ -12,7 +12,7 @@ import (
 type BillingPlan int
 
 const (
-	DeveloperPlan BillingPlan = iota
+	HobbyPlan BillingPlan = iota
 	ScalerPlan
 )
 
@@ -27,7 +27,7 @@ func (bp BillingPlan) String() string {
 
 var planToBillingPlanMap = map[string]BillingPlan{
 	"scaler":    ScalerPlan,
-	"developer": DeveloperPlan,
+	"developer": HobbyPlan,
 }
 
 type DataImportSource struct {

@@ -26,8 +26,8 @@ type DeployRequestsService interface {
 	Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error)
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
-	SkipRevertDeploy(context.Context, *SkipRevertDeployRequest) (*DeployRequest, error)
-	RevertDeploy(context.Context, *RevertDeployRequest) (*DeployRequest, error)
+	SkipRevertDeploy(context.Context, *SkipRevertDeployRequestRequest) (*DeployRequest, error)
+	RevertDeploy(context.Context, *RevertDeployRequestRequest) (*DeployRequest, error)
 }
 
 // DeployRequestReview posts a review to a deploy request.
@@ -158,13 +158,13 @@ type CreateDeployRequestRequest struct {
 	Notes        string `json:"notes"`
 }
 
-type SkipRevertDeployRequest struct {
+type SkipRevertDeployRequestRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
 }
 
-type RevertDeployRequest struct {
+type RevertDeployRequestRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
@@ -305,7 +305,7 @@ func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *Can
 }
 
 // SkipRevert skips a pending revert of a completed deploy request
-func (d *deployRequestsService) SkipRevertDeploy(ctx context.Context, deployReq *SkipRevertDeployRequest) (*DeployRequest, error) {
+func (d *deployRequestsService) SkipRevertDeploy(ctx context.Context, deployReq *SkipRevertDeployRequestRequest) (*DeployRequest, error) {
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "skip-revert")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
@@ -321,7 +321,7 @@ func (d *deployRequestsService) SkipRevertDeploy(ctx context.Context, deployReq 
 }
 
 // RevertDeploy reverts a completed deploy request
-func (d *deployRequestsService) RevertDeploy(ctx context.Context, deployReq *RevertDeployRequest) (*DeployRequest, error) {
+func (d *deployRequestsService) RevertDeploy(ctx context.Context, deployReq *RevertDeployRequestRequest) (*DeployRequest, error) {
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "revert")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {

@@ -298,7 +298,7 @@ func TestDeployRequests_SkipRevertDeploy(t *testing.T) {
 
 	ctx := context.Background()
 
-	dr, err := client.DeployRequests.SkipRevertDeploy(ctx, &SkipRevertDeployRequest{
+	dr, err := client.DeployRequests.SkipRevertDeploy(ctx, &SkipRevertDeployRequestRequest{
 		Organization: "test-organization",
 		Database:     "test-database",
 		Number:       1337,
@@ -339,7 +339,7 @@ func TestDeployRequests_RevertDeploy(t *testing.T) {
 
 	ctx := context.Background()
 
-	dr, err := client.DeployRequests.RevertDeploy(ctx, &RevertDeployRequest{
+	dr, err := client.DeployRequests.RevertDeploy(ctx, &RevertDeployRequestRequest{
 		Organization: "test-organization",
 		Database:     "test-database",
 		Number:       1337,

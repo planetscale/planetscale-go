@@ -26,7 +26,8 @@ type DeployRequestsService interface {
 	Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error)
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
-	SkipRevert(context.Context, *SkipDeploymentRevert) (*DeployRequest, error)
+	SkipRevertDeploy(context.Context, *SkipRevertDeployRequest) (*DeployRequest, error)
+	RevertDeploy(context.Context, *RevertDeployRequest) (*DeployRequest, error)
 }
 
 // DeployRequestReview posts a review to a deploy request.
@@ -157,7 +158,13 @@ type CreateDeployRequestRequest struct {
 	Notes        string `json:"notes"`
 }
 
-type SkipDeploymentRevert struct {
+type SkipRevertDeployRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+}
+
+type RevertDeployRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
@@ -298,8 +305,24 @@ func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *Can
 }
 
 // SkipRevert skips a pending revert of a completed deploy request
-func (d *deployRequestsService) SkipRevert(ctx context.Context, deployReq *SkipDeploymentRevert) (*DeployRequest, error) {
+func (d *deployRequestsService) SkipRevertDeploy(ctx context.Context, deployReq *SkipRevertDeployRequest) (*DeployRequest, error) {
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "skip-revert")
+	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	dr := &DeployRequest{}
+	if err := d.client.do(ctx, req, &dr); err != nil {
+		return nil, err
+	}
+
+	return dr, nil
+}
+
+// RevertDeploy reverts a completed deploy request
+func (d *deployRequestsService) RevertDeploy(ctx context.Context, deployReq *RevertDeployRequest) (*DeployRequest, error) {
+	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "revert")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

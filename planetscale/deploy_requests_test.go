@@ -283,7 +283,7 @@ func TestDeployRequests_List(t *testing.T) {
 	c.Assert(requests, qt.DeepEquals, want)
 }
 
-func TestDeployRequests_SkipRevert(t *testing.T) {
+func TestDeployRequests_SkipRevertDeploy(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -298,7 +298,7 @@ func TestDeployRequests_SkipRevert(t *testing.T) {
 
 	ctx := context.Background()
 
-	dr, err := client.DeployRequests.SkipRevert(ctx, &SkipDeploymentRevert{
+	dr, err := client.DeployRequests.SkipRevertDeploy(ctx, &SkipRevertDeployRequest{
 		Organization: "test-organization",
 		Database:     "test-database",
 		Number:       1337,
@@ -311,6 +311,47 @@ func TestDeployRequests_SkipRevert(t *testing.T) {
 		Branch: "development",
 		Deployment: &Deployment{
 			State: "complete",
+		},
+		IntoBranch: "some-branch",
+		Number:     1337,
+		Notes:      "",
+		CreatedAt:  testTime,
+		UpdatedAt:  testTime,
+		ClosedAt:   &testTime,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dr, qt.DeepEquals, want)
+}
+
+func TestDeployRequests_RevertDeploy(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "complete_revert" }, "number": 1337}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	dr, err := client.DeployRequests.RevertDeploy(ctx, &RevertDeployRequest{
+		Organization: "test-organization",
+		Database:     "test-database",
+		Number:       1337,
+	})
+
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+
+	want := &DeployRequest{
+		ID:     "test-deploy-request-id",
+		Branch: "development",
+		Deployment: &Deployment{
+			State: "complete_revert",
 		},
 		IntoBranch: "some-branch",
 		Number:     1337,

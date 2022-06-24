@@ -86,7 +86,7 @@ func NewDatabasesService(client *Client) *databasesService {
 }
 
 func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequest) ([]*Database, error) {
-	req, err := ds.client.newRequest(http.MethodGet, databasesAPIPath(listReq.Organization), nil)
+	req, err := ds.client.newRequest(http.MethodGet, databasesAPIPath(listReq.Organization)+"?per_page=100", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

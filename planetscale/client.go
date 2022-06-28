@@ -230,8 +230,14 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 		}
 	}
 
-	// this means we don't care about unmrarshaling the response body into v
+	// this means we don't care about unmarshaling the response body into v
 	if v == nil {
+		return nil
+	}
+
+	// We want to overwrite v and make it `nil` if the response body is empty.
+	if res.StatusCode == http.StatusNoContent {
+		v = nil
 		return nil
 	}
 

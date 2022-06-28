@@ -123,6 +123,59 @@ func TestDatabases_List(t *testing.T) {
 	c.Assert(db, qt.DeepEquals, want)
 }
 
+func TestDatabases_DeleteNoContent(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+		_, err := w.Write(nil)
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+
+	dbr, err := client.Databases.Delete(ctx, &DeleteDatabaseRequest{
+		Organization: org,
+		Database:     "planetscale-go-test-db",
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dbr, qt.IsNil)
+}
+
+func TestDatabases_DeleteAccepted(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		out := `{"id": "planetscale-go-test-db"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+
+	dbr, err := client.Databases.Delete(ctx, &DeleteDatabaseRequest{
+		Organization: org,
+		Database:     "planetscale-go-test-db",
+	})
+
+	want := &DatabaseDeletionRequest{
+		ID: "planetscale-go-test-db",
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dbr, qt.DeepEquals, want)
+}
+
 func TestDatabases_List_malformed_response(t *testing.T) {
 	c := qt.New(t)
 

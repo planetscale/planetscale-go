@@ -67,6 +67,28 @@ func TestDo(t *testing.T) {
 				Name: "foo-bar",
 			},
 		},
+		{
+			desc:       "returns an HTTP response 204 when deleting a request",
+			statusCode: http.StatusNoContent,
+			method:     http.MethodDelete,
+			response:   "",
+			body:       nil,
+			v:          &Database{},
+			want:       nil,
+		},
+		{
+			desc:       "returns an non-204 HTTP response when deleting a request",
+			statusCode: http.StatusAccepted,
+			method:     http.MethodDelete,
+			response: `{
+			"id": "test"
+			}`,
+			body: nil,
+			v:    &DatabaseDeletionRequest{},
+			want: &DatabaseDeletionRequest{
+				ID: "test",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -76,7 +98,11 @@ func TestDo(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
 
-				_, err := w.Write([]byte(tt.response))
+				res := []byte(tt.response)
+				if tt.response == "" {
+					res = nil
+				}
+				_, err := w.Write(res)
 				if err != nil {
 					t.Fatal(err)
 				}

@@ -230,8 +230,8 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 		}
 	}
 
-	// this means we don't care about unmrarshaling the response body into v
-	if v == nil {
+	// this means we don't care about unmarshaling the response body into v
+	if v == nil || res.StatusCode == http.StatusNoContent {
 		return nil
 	}
 

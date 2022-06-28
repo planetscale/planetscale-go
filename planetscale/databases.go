@@ -42,7 +42,13 @@ type DatabasesService interface {
 	Create(context.Context, *CreateDatabaseRequest) (*Database, error)
 	Get(context.Context, *GetDatabaseRequest) (*Database, error)
 	List(context.Context, *ListDatabasesRequest) ([]*Database, error)
-	Delete(context.Context, *DeleteDatabaseRequest) error
+	Delete(context.Context, *DeleteDatabaseRequest) (*DatabaseDeletionRequest, error)
+}
+
+// DatabaseDeletionRequest encapsulates the request for deleting a database from
+// an organization.
+type DatabaseDeletionRequest struct {
+	ID string `json:"id"`
 }
 
 // DatabaseState represents the state of a database
@@ -131,15 +137,20 @@ func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest)
 	return db, nil
 }
 
-func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) error {
+func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) (*DatabaseDeletionRequest, error) {
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.Database)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating request for delete database")
+		return nil, errors.Wrap(err, "error creating request for delete database")
 	}
 
-	err = ds.client.do(ctx, req, nil)
-	return err
+	var dbr *DatabaseDeletionRequest
+	err = ds.client.do(ctx, req, &dbr)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbr, nil
 }
 
 func databasesAPIPath(org string) string {

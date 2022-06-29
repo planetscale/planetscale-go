@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/pkg/errors"
@@ -49,6 +50,26 @@ type Client struct {
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
+}
+
+// URLValueOption updates the URL Values with the given options.
+type URLValueOption func(v *url.Values) error
+
+// WithStartingAfter returns a URLValueOption that sets the "starting_after" URL parameter.
+func WithStartingAfter(startingAfter string) URLValueOption {
+	return func(v *url.Values) error {
+		v.Set("starting_after", startingAfter)
+		return nil
+	}
+}
+
+// WithLimit returns a URLValueOption that sets the "limit" URL parameter.
+func WithLimit(limit int) URLValueOption {
+	return func(v *url.Values) error {
+		limitStr := strconv.Itoa(limit)
+		v.Set("limit", limitStr)
+		return nil
+	}
 }
 
 // ClientOption provides a variadic option for configuring the client

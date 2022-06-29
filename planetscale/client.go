@@ -52,22 +52,42 @@ type Client struct {
 	ServiceTokens    ServiceTokenService
 }
 
-// URLValueOption updates the URL Values with the given options.
-type URLValueOption func(v *url.Values) error
+// ListOptions are options for listing responses.
+type ListOptions struct {
+	URLValues *url.Values
+}
+
+type ListOption func(*ListOptions) error
+
+// DefaultListOptions returns the default list options values.
+func defaultListOptions(opts ...ListOption) *ListOptions {
+	listOpts := &ListOptions{
+		URLValues: &url.Values{},
+	}
+
+	for _, opt := range opts {
+		err := opt(listOpts)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return listOpts
+}
 
 // WithStartingAfter returns a URLValueOption that sets the "starting_after" URL parameter.
-func WithStartingAfter(startingAfter string) URLValueOption {
-	return func(v *url.Values) error {
-		v.Set("starting_after", startingAfter)
+func WithStartingAfter(startingAfter string) ListOption {
+	return func(opt *ListOptions) error {
+		opt.URLValues.Set("starting_after", startingAfter)
 		return nil
 	}
 }
 
 // WithLimit returns a URLValueOption that sets the "limit" URL parameter.
-func WithLimit(limit int) URLValueOption {
-	return func(v *url.Values) error {
+func WithLimit(limit int) ListOption {
+	return func(opt *ListOptions) error {
 		limitStr := strconv.Itoa(limit)
-		v.Set("limit", limitStr)
+		opt.URLValues.Set("limit", limitStr)
 		return nil
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
@@ -44,7 +43,7 @@ var _ AuditLogsService = &auditlogsService{}
 // AuditLogsService is an interface for communicating with the PlanetScale
 // AuditLogs API endpoints.
 type AuditLogsService interface {
-	List(context.Context, *ListAuditLogsRequest, ...URLValueOption) (*CursorPaginatedResponse[*AuditLog], error)
+	List(context.Context, *ListAuditLogsRequest, ...ListOption) (*CursorPaginatedResponse[*AuditLog], error)
 }
 
 // ListAuditLogsRequest encapsulates the request for listing the audit logs of
@@ -99,26 +98,33 @@ func NewAuditLogsService(client *Client) *auditlogsService {
 	}
 }
 
+// WithFilters return a ListOption with the filters set onto it
+func WithFilters(events []AuditLogEvent) ListOption {
+	return func(opt *ListOptions) error {
+		values := opt.URLValues
+		if len(events) != 0 {
+			for _, action := range events {
+				values.Add("filters[]", fmt.Sprintf("audit_action:%s", action))
+			}
+		}
+		return nil
+	}
+}
+
 // List returns the audit logs for an organization.
-func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest, opts ...URLValueOption) (*CursorPaginatedResponse[*AuditLog], error) {
+func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest, opts ...ListOption) (*CursorPaginatedResponse[*AuditLog], error) {
 	if listReq.Organization == "" {
 		return nil, errors.New("organization is not set")
 	}
 
 	path := auditlogsAPIPath(listReq.Organization)
 
-	v := url.Values{}
-	if len(listReq.Events) != 0 {
-		for _, action := range listReq.Events {
-			v.Add("filters[]", fmt.Sprintf("audit_action:%s", action))
-		}
-	}
-
+	defaultOpts := defaultListOptions(WithFilters(listReq.Events))
 	for _, opt := range opts {
-		opt(&v)
+		opt(defaultOpts)
 	}
 
-	if vals := v.Encode(); vals != "" {
+	if vals := defaultOpts.URLValues.Encode(); vals != "" {
 		path += "?" + vals
 	}
 

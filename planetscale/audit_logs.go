@@ -44,7 +44,7 @@ var _ AuditLogsService = &auditlogsService{}
 // AuditLogsService is an interface for communicating with the PlanetScale
 // AuditLogs API endpoints.
 type AuditLogsService interface {
-	List(context.Context, *ListAuditLogsRequest) ([]*AuditLog, error)
+	List(context.Context, *ListAuditLogsRequest, ...URLValueOption) (*CursorPaginatedResponse[*AuditLog], error)
 }
 
 // ListAuditLogsRequest encapsulates the request for listing the audit logs of
@@ -100,7 +100,7 @@ func NewAuditLogsService(client *Client) *auditlogsService {
 }
 
 // List returns the audit logs for an organization.
-func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest) ([]*AuditLog, error) {
+func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest, opts ...URLValueOption) (*CursorPaginatedResponse[*AuditLog], error) {
 	if listReq.Organization == "" {
 		return nil, errors.New("organization is not set")
 	}
@@ -114,6 +114,10 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 		}
 	}
 
+	for _, opt := range opts {
+		opt(&v)
+	}
+
 	if vals := v.Encode(); vals != "" {
 		path += "?" + vals
 	}
@@ -123,12 +127,12 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 		return nil, errors.Wrap(err, "error creating request for listing audit logs")
 	}
 
-	resp := &auditlogsResponse{}
+	resp := &CursorPaginatedResponse[*AuditLog]{}
 	if err := o.client.do(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
-	return resp.AuditLogs, nil
+	return resp, nil
 }
 
 func auditlogsAPIPath(org string) string {

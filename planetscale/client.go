@@ -345,5 +345,5 @@ type CursorPaginatedResponse[T any] struct {
 	HasNext     bool   `json:"has_next"`
 	HasPrev     bool   `json:"has_prev"`
 	CursorStart string `json:"cursor_start"`
-	CursorEndd  string `json:"cursor_end"`
+	CursorEnd   string `json:"cursor_end"`
 }

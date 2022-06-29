@@ -84,10 +84,6 @@ type AuditLog struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type auditlogsResponse struct {
-	AuditLogs []*AuditLog `json:"data"`
-}
-
 type auditlogsService struct {
 	client *Client
 }

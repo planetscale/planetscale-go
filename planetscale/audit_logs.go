@@ -94,8 +94,10 @@ func NewAuditLogsService(client *Client) *auditlogsService {
 	}
 }
 
-// WithFilters return a ListOption with the filters set onto it
-func WithFilters(events []AuditLogEvent) ListOption {
+// WithEventFilters sets filters on a set of list filters from audit log events.
+// For example, `audit_action:database.created`,
+// `audit_action:database.deleted`, etc.
+func WithEventFilters(events []AuditLogEvent) ListOption {
 	return func(opt *ListOptions) error {
 		values := opt.URLValues
 		if len(events) != 0 {
@@ -115,7 +117,7 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 
 	path := auditlogsAPIPath(listReq.Organization)
 
-	defaultOpts := defaultListOptions(WithFilters(listReq.Events))
+	defaultOpts := defaultListOptions(WithEventFilters(listReq.Events))
 	for _, opt := range opts {
 		opt(defaultOpts)
 	}

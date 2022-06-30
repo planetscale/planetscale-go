@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/pkg/errors"
@@ -49,6 +50,50 @@ type Client struct {
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
+}
+
+// ListOptions are options for listing responses.
+type ListOptions struct {
+	URLValues *url.Values
+}
+
+type ListOption func(*ListOptions) error
+
+// DefaultListOptions returns the default list options values.
+func defaultListOptions(opts ...ListOption) *ListOptions {
+	listOpts := &ListOptions{
+		URLValues: &url.Values{},
+	}
+
+	for _, opt := range opts {
+		err := opt(listOpts)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return listOpts
+}
+
+// WithStartingAfter returns a ListOption that sets the "starting_after" URL parameter.
+func WithStartingAfter(startingAfter string) ListOption {
+	return func(opt *ListOptions) error {
+		if startingAfter != "" {
+			opt.URLValues.Set("starting_after", startingAfter)
+		}
+		return nil
+	}
+}
+
+// WithLimit returns a ListOption that sets the "limit" URL parameter.
+func WithLimit(limit int) ListOption {
+	return func(opt *ListOptions) error {
+		if limit > 0 {
+			limitStr := strconv.Itoa(limit)
+			opt.URLValues.Set("limit", limitStr)
+		}
+		return nil
+	}
 }
 
 // ClientOption provides a variadic option for configuring the client
@@ -316,3 +361,16 @@ type Error struct {
 
 // Error returns the string representation of the error.
 func (e *Error) Error() string { return e.msg }
+
+// CursorPaginatedResponse provides a generic means of wrapping a paginated
+// response.
+type CursorPaginatedResponse[T any] struct {
+	Data    []T  `json:"data"`
+	HasNext bool `json:"has_next"`
+	HasPrev bool `json:"has_prev"`
+	// CursorStart is the ending curious of the previous page.
+	CursorStart *string `json:"cursor_start"`
+
+	// CursorEnd is the starting cursor of the next page.
+	CursorEnd *string `json:"cursor_end"`
+}

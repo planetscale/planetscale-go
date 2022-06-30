@@ -17,8 +17,10 @@ func TestAuditLogs_List(t *testing.T) {
 		w.WriteHeader(200)
 		out := `{
   "type": "list",
-  "next_page": "https://api.planetscale.com/v1/organizations/planetscale/audit-log?page=2",
-  "prev_page": null,
+	"has_next": true,
+	"has_prev": false,
+	"cursor_start": "ecxuvovgfo95",
+	"cursor_end": "ecxuvovgfo95",
   "data": [
     {
       "id": "ecxuvovgfo95",
@@ -62,30 +64,37 @@ func TestAuditLogs_List(t *testing.T) {
 		},
 	})
 
-	want := []*AuditLog{
-		{
-			ID:                "ecxuvovgfo95",
-			Type:              "AuditLogEvent",
-			ActorID:           "d4hkujnkswjk",
-			ActorType:         "User",
-			AuditableID:       "kbog8qlq6lp4",
-			AuditableType:     "DeployRequest",
-			TargetID:          "m40xz7x6gvvk",
-			TargetType:        "Database",
-			Location:          "Chicago, IL",
-			TargetDisplayName: "planetscale",
-			Metadata: map[string]interface{}{
-				"from": "add-name-to-service-tokens",
-				"into": "main",
+	auditLogID := "ecxuvovgfo95"
+	want := &CursorPaginatedResponse[*AuditLog]{
+		Data: []*AuditLog{
+			{
+				ID:                "ecxuvovgfo95",
+				Type:              "AuditLogEvent",
+				ActorID:           "d4hkujnkswjk",
+				ActorType:         "User",
+				AuditableID:       "kbog8qlq6lp4",
+				AuditableType:     "DeployRequest",
+				TargetID:          "m40xz7x6gvvk",
+				TargetType:        "Database",
+				Location:          "Chicago, IL",
+				TargetDisplayName: "planetscale",
+				Metadata: map[string]interface{}{
+					"from": "add-name-to-service-tokens",
+					"into": "main",
+				},
+				AuditAction:          "deploy_request.queued",
+				Action:               "queued",
+				ActorDisplayName:     "Elom Gomez",
+				AuditableDisplayName: "deploy request #102",
+				RemoteIP:             "45.19.24.124",
+				CreatedAt:            time.Date(2021, time.July, 19, 17, 13, 45, 000, time.UTC),
+				UpdatedAt:            time.Date(2021, time.July, 19, 17, 13, 45, 000, time.UTC),
 			},
-			AuditAction:          "deploy_request.queued",
-			Action:               "queued",
-			ActorDisplayName:     "Elom Gomez",
-			AuditableDisplayName: "deploy request #102",
-			RemoteIP:             "45.19.24.124",
-			CreatedAt:            time.Date(2021, time.July, 19, 17, 13, 45, 000, time.UTC),
-			UpdatedAt:            time.Date(2021, time.July, 19, 17, 13, 45, 000, time.UTC),
 		},
+		HasNext:     true,
+		HasPrev:     false,
+		CursorStart: &auditLogID,
+		CursorEnd:   &auditLogID,
 	}
 
 	c.Assert(err, qt.IsNil)

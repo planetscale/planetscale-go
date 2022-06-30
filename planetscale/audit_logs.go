@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
@@ -44,7 +43,7 @@ var _ AuditLogsService = &auditlogsService{}
 // AuditLogsService is an interface for communicating with the PlanetScale
 // AuditLogs API endpoints.
 type AuditLogsService interface {
-	List(context.Context, *ListAuditLogsRequest) ([]*AuditLog, error)
+	List(context.Context, *ListAuditLogsRequest, ...ListOption) (*CursorPaginatedResponse[*AuditLog], error)
 }
 
 // ListAuditLogsRequest encapsulates the request for listing the audit logs of
@@ -85,10 +84,6 @@ type AuditLog struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type auditlogsResponse struct {
-	AuditLogs []*AuditLog `json:"data"`
-}
-
 type auditlogsService struct {
 	client *Client
 }
@@ -99,22 +94,35 @@ func NewAuditLogsService(client *Client) *auditlogsService {
 	}
 }
 
+// WithEventFilters sets filters on a set of list filters from audit log events.
+// For example, `audit_action:database.created`,
+// `audit_action:database.deleted`, etc.
+func WithEventFilters(events []AuditLogEvent) ListOption {
+	return func(opt *ListOptions) error {
+		values := opt.URLValues
+		if len(events) != 0 {
+			for _, action := range events {
+				values.Add("filters[]", fmt.Sprintf("audit_action:%s", action))
+			}
+		}
+		return nil
+	}
+}
+
 // List returns the audit logs for an organization.
-func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest) ([]*AuditLog, error) {
+func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsRequest, opts ...ListOption) (*CursorPaginatedResponse[*AuditLog], error) {
 	if listReq.Organization == "" {
 		return nil, errors.New("organization is not set")
 	}
 
 	path := auditlogsAPIPath(listReq.Organization)
 
-	v := url.Values{}
-	if len(listReq.Events) != 0 {
-		for _, action := range listReq.Events {
-			v.Add("filters[]", fmt.Sprintf("audit_action:%s", action))
-		}
+	defaultOpts := defaultListOptions(WithEventFilters(listReq.Events))
+	for _, opt := range opts {
+		opt(defaultOpts)
 	}
 
-	if vals := v.Encode(); vals != "" {
+	if vals := defaultOpts.URLValues.Encode(); vals != "" {
 		path += "?" + vals
 	}
 
@@ -123,12 +131,12 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 		return nil, errors.Wrap(err, "error creating request for listing audit logs")
 	}
 
-	resp := &auditlogsResponse{}
+	resp := &CursorPaginatedResponse[*AuditLog]{}
 	if err := o.client.do(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
-	return resp.AuditLogs, nil
+	return resp, nil
 }
 
 func auditlogsAPIPath(org string) string {

@@ -75,7 +75,7 @@ func defaultListOptions(opts ...ListOption) *ListOptions {
 	return listOpts
 }
 
-// WithStartingAfter returns a URLValueOption that sets the "starting_after" URL parameter.
+// WithStartingAfter returns a ListOption that sets the "starting_after" URL parameter.
 func WithStartingAfter(startingAfter string) ListOption {
 	return func(opt *ListOptions) error {
 		if startingAfter != "" {
@@ -85,7 +85,7 @@ func WithStartingAfter(startingAfter string) ListOption {
 	}
 }
 
-// WithLimit returns a URLValueOption that sets the "limit" URL parameter.
+// WithLimit returns a ListOption that sets the "limit" URL parameter.
 func WithLimit(limit int) ListOption {
 	return func(opt *ListOptions) error {
 		if limit > 0 {

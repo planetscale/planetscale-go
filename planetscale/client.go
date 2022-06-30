@@ -365,9 +365,12 @@ func (e *Error) Error() string { return e.msg }
 // CursorPaginatedResponse provides a generic means of wrapping a paginated
 // response.
 type CursorPaginatedResponse[T any] struct {
-	Data        []T    `json:"data"`
-	HasNext     bool   `json:"has_next"`
-	HasPrev     bool   `json:"has_prev"`
-	CursorStart string `json:"cursor_start"`
-	CursorEnd   string `json:"cursor_end"`
+	Data    []T  `json:"data"`
+	HasNext bool `json:"has_next"`
+	HasPrev bool `json:"has_prev"`
+	// CursorStart is the ending curious of the previous page.
+	CursorStart *string `json:"cursor_start"`
+
+	// CursorEnd is the starting cursor of the next page.
+	CursorEnd *string `json:"cursor_end"`
 }

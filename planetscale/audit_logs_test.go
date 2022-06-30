@@ -64,6 +64,7 @@ func TestAuditLogs_List(t *testing.T) {
 		},
 	})
 
+	auditLogID := "ecxuvovgfo95"
 	want := &CursorPaginatedResponse[*AuditLog]{
 		Data: []*AuditLog{
 			{
@@ -92,8 +93,8 @@ func TestAuditLogs_List(t *testing.T) {
 		},
 		HasNext:     true,
 		HasPrev:     false,
-		CursorStart: "ecxuvovgfo95",
-		CursorEnd:   "ecxuvovgfo95",
+		CursorStart: &auditLogID,
+		CursorEnd:   &auditLogID,
 	}
 
 	c.Assert(err, qt.IsNil)

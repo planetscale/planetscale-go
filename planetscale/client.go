@@ -368,7 +368,7 @@ type CursorPaginatedResponse[T any] struct {
 	Data    []T  `json:"data"`
 	HasNext bool `json:"has_next"`
 	HasPrev bool `json:"has_prev"`
-	// CursorStart is the ending curious of the previous page.
+	// CursorStart is the ending cursor of the previous page.
 	CursorStart *string `json:"cursor_start"`
 
 	// CursorEnd is the starting cursor of the next page.

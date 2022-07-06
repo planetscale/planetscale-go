@@ -16,6 +16,8 @@ func TestDo(t *testing.T) {
 		statusCode    int
 		method        string
 		expectedError error
+		clientOptions []ClientOption
+		wantHeaders   map[string]string
 		body          interface{}
 		v             interface{}
 		want          interface{}
@@ -25,6 +27,20 @@ func TestDo(t *testing.T) {
 			statusCode: http.StatusOK,
 			response:   `{}`,
 			method:     http.MethodGet,
+			wantHeaders: map[string]string{
+				"User-Agent": "planetscale-go/v0.67.0",
+			},
+		},
+		{
+			desc:          "sets a custom header with the request option",
+			statusCode:    http.StatusOK,
+			response:      `{}`,
+			method:        http.MethodGet,
+			clientOptions: []ClientOption{WithUserAgent("test-user-agent"), WithRequestHeaders(map[string]string{"Test-Header": "test-value"})},
+			wantHeaders: map[string]string{
+				"Test-Header": "test-value",
+				"User-Agent":  "test-user-agent planetscale-go/v0.67.0",
+			},
 		},
 		{
 			desc:       "returns ErrorResponse for 4xx errors",
@@ -98,6 +114,12 @@ func TestDo(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
 
+				if tt.wantHeaders != nil {
+					for key, value := range tt.wantHeaders {
+						c.Assert(r.Header.Get(key), qt.Equals, value)
+					}
+				}
+
 				res := []byte(tt.response)
 				if tt.response == "" {
 					res = nil
@@ -109,7 +131,8 @@ func TestDo(t *testing.T) {
 			}))
 			t.Cleanup(ts.Close)
 
-			client, err := NewClient(WithBaseURL(ts.URL))
+			opts := append(tt.clientOptions, WithBaseURL(ts.URL))
+			client, err := NewClient(opts...)
 			if err != nil {
 				t.Fatal(err)
 			}

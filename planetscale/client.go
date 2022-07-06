@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,6 +18,11 @@ import (
 const (
 	DefaultBaseURL = "https://api.planetscale.com/"
 	jsonMediaType  = "application/json"
+)
+
+const (
+	libraryVersion = "v0.67.0"
+	userAgent      = "planetscale-go/" + libraryVersion
 )
 
 // ErrorCode defines the code of an error.
@@ -35,6 +41,12 @@ const (
 type Client struct {
 	// client represents the HTTP client used for making HTTP requests.
 	client *http.Client
+
+	// UserAgent is the version of the planetscale-go library that is being used
+	UserAgent string
+
+	// headers are used to override request headers for every single HTTP request
+	headers map[string]string
 
 	// base URL for the API
 	baseURL *url.URL
@@ -99,6 +111,25 @@ func WithLimit(limit int) ListOption {
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
 
+// WithUserAgent overrides the User-Agent header.
+func WithUserAgent(userAgent string) ClientOption {
+	return func(c *Client) error {
+		c.UserAgent = fmt.Sprintf("%s %s", userAgent, c.UserAgent)
+		return nil
+	}
+}
+
+// WithRequestHeaders sets the request headers for every HTTP request.
+func WithRequestHeaders(headers map[string]string) ClientOption {
+	return func(c *Client) error {
+		for k, v := range headers {
+			c.headers[k] = v
+		}
+
+		return nil
+	}
+}
+
 // WithBaseURL overrides the base URL for the API.
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) error {
@@ -148,7 +179,7 @@ func WithServiceToken(name, token string) ClientOption {
 	}
 }
 
-// WithHTTPClient configures the PLanetScale client with the given HTTP client.
+// WithHTTPClient configures the PlanetScale client with the given HTTP client.
 func WithHTTPClient(client *http.Client) ClientOption {
 	return func(c *Client) error {
 		if client == nil {
@@ -168,8 +199,10 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}
 
 	c := &Client{
-		client:  cleanhttp.DefaultClient(),
-		baseURL: baseURL,
+		client:    cleanhttp.DefaultClient(),
+		baseURL:   baseURL,
+		UserAgent: userAgent,
+		headers:   make(map[string]string, 0),
 	}
 
 	for _, opt := range opts {
@@ -330,6 +363,11 @@ func (c *Client) newRequest(method string, path string, body interface{}) (*http
 	}
 
 	req.Header.Set("Accept", jsonMediaType)
+	req.Header.Set("User-Agent", c.UserAgent)
+
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
 
 	return req, nil
 }

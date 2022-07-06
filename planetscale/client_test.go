@@ -11,16 +11,16 @@ import (
 
 func TestDo(t *testing.T) {
 	tests := []struct {
-		desc           string
-		response       string
-		statusCode     int
-		method         string
-		expectedError  error
-		requestOptions []RequestOption
-		wantHeaders    map[string]string
-		body           interface{}
-		v              interface{}
-		want           interface{}
+		desc          string
+		response      string
+		statusCode    int
+		method        string
+		expectedError error
+		clientOptions []ClientOption
+		wantHeaders   map[string]string
+		body          interface{}
+		v             interface{}
+		want          interface{}
 	}{
 		{
 			desc:       "returns an HTTP response and no error for 2xx responses",
@@ -29,14 +29,14 @@ func TestDo(t *testing.T) {
 			method:     http.MethodGet,
 		},
 		{
-			desc:           "sets a custom header with the request option",
-			statusCode:     http.StatusOK,
-			response:       `{}`,
-			method:         http.MethodGet,
-			requestOptions: []RequestOption{WithUserAgent("test-user-agent"), WithHeader("Test-Header", "test-value")},
+			desc:          "sets a custom header with the request option",
+			statusCode:    http.StatusOK,
+			response:      `{}`,
+			method:        http.MethodGet,
+			clientOptions: []ClientOption{WithUserAgent("test-user-agent"), WithRequestHeaders(map[string]string{"Test-Header": "test-value"})},
 			wantHeaders: map[string]string{
 				"Test-Header": "test-value",
-				"User-Agent":  "test-user-agent",
+				"User-Agent":  "test-user-agent planetscale-go/v0.108.0",
 			},
 		},
 		{
@@ -128,7 +128,8 @@ func TestDo(t *testing.T) {
 			}))
 			t.Cleanup(ts.Close)
 
-			client, err := NewClient(WithBaseURL(ts.URL), WithRequestOptions(tt.requestOptions...))
+			opts := append(tt.clientOptions, WithBaseURL(ts.URL))
+			client, err := NewClient(opts...)
 			if err != nil {
 				t.Fatal(err)
 			}

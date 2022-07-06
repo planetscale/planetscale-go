@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	libraryVersion = "v0.108.0"
+	libraryVersion = "v0.67.0"
 	userAgent      = "planetscale-go/" + libraryVersion
 )
 

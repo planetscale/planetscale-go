@@ -28,7 +28,7 @@ func TestDo(t *testing.T) {
 			response:   `{}`,
 			method:     http.MethodGet,
 			wantHeaders: map[string]string{
-				"User-Agent": "planetscale-go/v0.108.0",
+				"User-Agent": "planetscale-go/v0.67.0",
 			},
 		},
 		{
@@ -39,7 +39,7 @@ func TestDo(t *testing.T) {
 			clientOptions: []ClientOption{WithUserAgent("test-user-agent"), WithRequestHeaders(map[string]string{"Test-Header": "test-value"})},
 			wantHeaders: map[string]string{
 				"Test-Header": "test-value",
-				"User-Agent":  "test-user-agent planetscale-go/v0.108.0",
+				"User-Agent":  "test-user-agent planetscale-go/v0.67.0",
 			},
 		},
 		{

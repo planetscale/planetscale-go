@@ -11,20 +11,33 @@ import (
 
 func TestDo(t *testing.T) {
 	tests := []struct {
-		desc          string
-		response      string
-		statusCode    int
-		method        string
-		expectedError error
-		body          interface{}
-		v             interface{}
-		want          interface{}
+		desc           string
+		response       string
+		statusCode     int
+		method         string
+		expectedError  error
+		requestOptions []RequestOption
+		wantHeaders    map[string]string
+		body           interface{}
+		v              interface{}
+		want           interface{}
 	}{
 		{
 			desc:       "returns an HTTP response and no error for 2xx responses",
 			statusCode: http.StatusOK,
 			response:   `{}`,
 			method:     http.MethodGet,
+		},
+		{
+			desc:           "sets a custom header with the request option",
+			statusCode:     http.StatusOK,
+			response:       `{}`,
+			method:         http.MethodGet,
+			requestOptions: []RequestOption{WithUserAgent("test-user-agent"), WithHeader("Test-Header", "test-value")},
+			wantHeaders: map[string]string{
+				"Test-Header": "test-value",
+				"User-Agent":  "test-user-agent",
+			},
 		},
 		{
 			desc:       "returns ErrorResponse for 4xx errors",
@@ -98,6 +111,12 @@ func TestDo(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
 
+				if tt.wantHeaders != nil {
+					for key, value := range tt.wantHeaders {
+						c.Assert(r.Header.Get(key), qt.Equals, value)
+					}
+				}
+
 				res := []byte(tt.response)
 				if tt.response == "" {
 					res = nil
@@ -109,7 +128,7 @@ func TestDo(t *testing.T) {
 			}))
 			t.Cleanup(ts.Close)
 
-			client, err := NewClient(WithBaseURL(ts.URL))
+			client, err := NewClient(WithBaseURL(ts.URL), WithRequestOptions(tt.requestOptions...))
 			if err != nil {
 				t.Fatal(err)
 			}

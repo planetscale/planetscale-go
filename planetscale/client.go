@@ -36,6 +36,8 @@ type Client struct {
 	// client represents the HTTP client used for making HTTP requests.
 	client *http.Client
 
+	requestOptions []RequestOption
+
 	// base URL for the API
 	baseURL *url.URL
 
@@ -96,8 +98,33 @@ func WithLimit(limit int) ListOption {
 	}
 }
 
+// RequestOption provides a variadic option for configuring a request
+type RequestOption func(req *http.Request) error
+
+// WithHeader sets a custom HTTP header
+func WithHeader(key, value string) RequestOption {
+	return func(req *http.Request) error {
+		req.Header.Set(key, value)
+		return nil
+	}
+}
+
+// WithUserAgent overrides the User-Agent header.
+func WithUserAgent(value string) RequestOption {
+	return WithHeader("User-Agent", value)
+}
+
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
+
+// WithRequestOptions returns a list of request options for the Client to use in
+// every single request.
+func WithRequestOptions(opts ...RequestOption) ClientOption {
+	return func(c *Client) error {
+		c.requestOptions = opts
+		return nil
+	}
+}
 
 // WithBaseURL overrides the base URL for the API.
 func WithBaseURL(baseURL string) ClientOption {
@@ -330,6 +357,12 @@ func (c *Client) newRequest(method string, path string, body interface{}) (*http
 	}
 
 	req.Header.Set("Accept", jsonMediaType)
+
+	for _, opt := range c.requestOptions {
+		if err := opt(req); err != nil {
+			return nil, err
+		}
+	}
 
 	return req, nil
 }

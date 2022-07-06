@@ -27,6 +27,9 @@ func TestDo(t *testing.T) {
 			statusCode: http.StatusOK,
 			response:   `{}`,
 			method:     http.MethodGet,
+			wantHeaders: map[string]string{
+				"User-Agent": "planetscale-go/v0.108.0",
+			},
 		},
 		{
 			desc:          "sets a custom header with the request option",

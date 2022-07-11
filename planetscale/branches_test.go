@@ -226,6 +226,37 @@ func TestBranches_VSchema(t *testing.T) {
 	c.Assert(vSchema.Raw, qt.DeepEquals, want)
 }
 
+func TestBranches_Keyspaces(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"thisisanid","type":"Keyspace","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	keyspaces, err := client.DatabaseBranches.Keyspaces(ctx, &BranchKeyspacesRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+	})
+
+	wantID := "thisisanid"
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(len(keyspaces), qt.Equals, 1)
+	c.Assert(keyspaces[0].ID, qt.Equals, wantID)
+	c.Assert(keyspaces[0].Sharded, qt.Equals, true)
+	c.Assert(keyspaces[0].Shards, qt.Equals, 2)
+
+}
+
 func TestBranches_RefreshSchema(t *testing.T) {
 	c := qt.New(t)
 

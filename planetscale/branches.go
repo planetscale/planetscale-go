@@ -143,7 +143,6 @@ type VSchemaDiff struct {
 
 type Keyspace struct {
 	ID        string    `json:"id"`
-	Type      string    `json:"type"`
 	Name      string    `json:"name"`
 	Shards    int       `json:"shards"`
 	Sharded   bool      `json:"sharded"`

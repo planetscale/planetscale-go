@@ -84,6 +84,12 @@ type BranchVSchemaRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type BranchKeyspacesRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
 // RefreshSchemaRequest reflects the request needed to refresh a schema
 // snapshot on a database branch.
 type RefreshSchemaRequest struct {
@@ -135,6 +141,15 @@ type VSchemaDiff struct {
 	HTML string `json:"html"`
 }
 
+type Keyspace struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Shards    int       `json:"shards"`
+	Sharded   bool      `json:"sharded"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
@@ -145,6 +160,7 @@ type DatabaseBranchesService interface {
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
+	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
 	Promote(context.Context, *PromoteRequest) (*BranchPromotionRequest, error)
 	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
@@ -228,6 +244,25 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	}
 
 	return vSchema, nil
+}
+
+func (d *databaseBranchesService) Keyspaces(ctx context.Context, keyspaceReq *BranchKeyspacesRequest) ([]*Keyspace, error) {
+	path := fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(keyspaceReq.Organization, keyspaceReq.Database, keyspaceReq.Branch))
+
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	var out struct {
+		KS []*Keyspace `json:"data"`
+	}
+
+	if err := d.client.do(ctx, req, &out); err != nil {
+		return nil, err
+	}
+
+	return out.KS, nil
 }
 
 // Create creates a new branch for an organization's database.

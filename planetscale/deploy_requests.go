@@ -131,6 +131,8 @@ type DeployRequest struct {
 
 	State string `json:"state"`
 
+	DeploymentState string `json:"deployment_state"`
+
 	Approved bool `json:"approved"`
 
 	Notes string `json:"notes"`
@@ -139,9 +141,10 @@ type DeployRequest struct {
 
 	HtmlURL string `json:"html_url"`
 
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	ClosedAt  *time.Time `json:"closed_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	ClosedAt   *time.Time `json:"closed_at"`
+	DeployedAt *time.Time `json:"deployed_at"`
 }
 
 type CancelDeployRequestRequest struct {

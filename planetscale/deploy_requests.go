@@ -18,6 +18,7 @@ var _ DeployRequestsService = (*deployRequestsService)(nil)
 // DeployRequestsService is an interface for communicating with the PlanetScale
 // deploy requests API.
 type DeployRequestsService interface {
+	AutoApplyDeploy(context.Context, *AutoApplyDeployRequestRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
 	CloseDeploy(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
 	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
@@ -145,6 +146,19 @@ type DeployRequest struct {
 	UpdatedAt  time.Time  `json:"updated_at"`
 	ClosedAt   *time.Time `json:"closed_at"`
 	DeployedAt *time.Time `json:"deployed_at"`
+}
+
+type ApplyDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+}
+
+type AutoApplyDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+	Enable       bool   `json:"-"`
 }
 
 type CancelDeployRequestRequest struct {
@@ -305,6 +319,42 @@ func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *Can
 	}
 
 	return dr, nil
+}
+
+func (d *deployRequestsService) ApplyDeploy(ctx context.Context, applyReq *ApplyDeployRequestRequest) (*DeployRequest, error) {
+	path := deployRequestActionAPIPath(applyReq.Organization, applyReq.Database, applyReq.Number, "apply-deploy")
+	req, err := d.client.newRequest(http.MethodPost, path, applyReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	drr := &DeployRequest{}
+	if err := d.client.do(ctx, req, &drr); err != nil {
+		return nil, err
+	}
+
+	return drr, nil
+}
+
+func (d *deployRequestsService) AutoApplyDeploy(ctx context.Context, autoApplyReq *AutoApplyDeployRequestRequest) (*DeployRequest, error) {
+	var reqBody = struct {
+		Enable bool `json:"enable"`
+	}{
+		Enable: autoApplyReq.Enable,
+	}
+
+	path := deployRequestActionAPIPath(autoApplyReq.Organization, autoApplyReq.Database, autoApplyReq.Number, "auto-apply")
+	req, err := d.client.newRequest(http.MethodPut, path, reqBody)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	drr := &DeployRequest{}
+	if err := d.client.do(ctx, req, &drr); err != nil {
+		return nil, err
+	}
+
+	return drr, nil
 }
 
 // SkipRevert skips a pending revert of a completed deploy request

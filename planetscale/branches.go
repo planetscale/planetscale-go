@@ -36,6 +36,7 @@ type CreateDatabaseBranchRequest struct {
 	Name         string `json:"name"`
 	ParentBranch string `json:"parent_branch"`
 	BackupID     string `json:"backup_id,omitempty"`
+	SeedData     string `json:"seed_data,omitempty"`
 }
 
 // ListDatabaseBranchesRequest encapsulates the request for listing the branches

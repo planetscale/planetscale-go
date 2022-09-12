@@ -18,6 +18,7 @@ var _ DeployRequestsService = (*deployRequestsService)(nil)
 // DeployRequestsService is an interface for communicating with the PlanetScale
 // deploy requests API.
 type DeployRequestsService interface {
+	ApplyDeploy(context.Context, *ApplyDeployRequestRequest) (*DeployRequest, error)
 	AutoApplyDeploy(context.Context, *AutoApplyDeployRequestRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
 	CloseDeploy(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)

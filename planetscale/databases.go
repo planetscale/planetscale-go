@@ -41,7 +41,7 @@ type DeleteDatabaseRequest struct {
 type DatabasesService interface {
 	Create(context.Context, *CreateDatabaseRequest) (*Database, error)
 	Get(context.Context, *GetDatabaseRequest) (*Database, error)
-	List(context.Context, *ListDatabasesRequest) ([]*Database, error)
+	List(context.Context, *ListDatabasesRequest, ...ListOption) ([]*Database, error)
 	Delete(context.Context, *DeleteDatabaseRequest) (*DatabaseDeletionRequest, error)
 }
 
@@ -91,8 +91,19 @@ func NewDatabasesService(client *Client) *databasesService {
 	}
 }
 
-func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequest) ([]*Database, error) {
-	req, err := ds.client.newRequest(http.MethodGet, databasesAPIPath(listReq.Organization)+"?per_page=100", nil)
+func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequest, opts ...ListOption) ([]*Database, error) {
+	path := databasesAPIPath(listReq.Organization)
+
+	defaultOpts := defaultListOptions(WithPerPage(100))
+	for _, opt := range opts {
+		opt(defaultOpts)
+	}
+
+	if vals := defaultOpts.URLValues.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
+	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

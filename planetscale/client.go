@@ -108,6 +108,28 @@ func WithLimit(limit int) ListOption {
 	}
 }
 
+// WithPage returns a ListOption that sets the "page" URL parameter.
+func WithPage(page int) ListOption {
+	return func(opt *ListOptions) error {
+		if page > 0 {
+			pageStr := strconv.Itoa(page)
+			opt.URLValues.Set("page", pageStr)
+		}
+		return nil
+	}
+}
+
+// WithPerPage returns a ListOption that sets the "per_page" URL paramter.
+func WithPerPage(perPage int) ListOption {
+	return func(opt *ListOptions) error {
+		if perPage > 0 {
+			perPageStr := strconv.Itoa(perPage)
+			opt.URLValues.Set("per_page", perPageStr)
+		}
+		return nil
+	}
+}
+
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
 

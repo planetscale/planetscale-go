@@ -24,6 +24,7 @@ type ConnectionStrings struct {
 type DatabaseBranchPassword struct {
 	PublicID          string            `json:"id"`
 	Name              string            `json:"display_name"`
+	Hostname              string            `json:"access_host_url"`
 	Username          string            `json:"username"`
 	Role              string            `json:"role"`
 	Branch            DatabaseBranch    `json:"database_branch"`

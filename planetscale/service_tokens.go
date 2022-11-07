@@ -13,6 +13,7 @@ var _ ServiceTokenService = &serviceTokenService{}
 type ServiceTokenService interface {
 	Create(context.Context, *CreateServiceTokenRequest) (*ServiceToken, error)
 	List(context.Context, *ListServiceTokensRequest) ([]*ServiceToken, error)
+	Get(context.Context, *GetServiceTokenRequest) (*ServiceToken, error)
 	Delete(context.Context, *DeleteServiceTokenRequest) error
 	GetAccess(context.Context, *GetServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
 	AddAccess(context.Context, *AddServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
@@ -49,6 +50,20 @@ func (s *serviceTokenService) List(ctx context.Context, listReq *ListServiceToke
 	}
 
 	return tokenListResponse.ServiceTokens, nil
+}
+
+func (s *serviceTokenService) Get(ctx context.Context, getReq *GetServiceTokenRequest) (*ServiceToken, error) {
+	req, err := s.client.newRequest(http.MethodGet, serviceTokenAPIPath(getReq.Organization, getReq.ID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	st := &ServiceToken{}
+	if err := s.client.do(ctx, req, &st); err != nil {
+		return nil, err
+	}
+
+	return st, nil
 }
 
 func (s *serviceTokenService) Delete(ctx context.Context, delReq *DeleteServiceTokenRequest) error {
@@ -99,6 +114,11 @@ func (s *serviceTokenService) DeleteAccess(ctx context.Context, delReq *DeleteSe
 
 type CreateServiceTokenRequest struct {
 	Organization string `json:"-"`
+}
+
+type GetServiceTokenRequest struct {
+	Organization string `json:"-"`
+	ID           string `json:"-"`
 }
 
 type DeleteServiceTokenRequest struct {

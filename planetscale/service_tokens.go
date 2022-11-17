@@ -155,9 +155,11 @@ type ServiceToken struct {
 }
 
 type ServiceTokenGrant struct {
-	ID       string                `json:"id"`
-	Resource Database              `json:"resource"`
-	Accesses []*ServiceTokenAccess `json:"accesses"`
+	ID           string   `json:"id"`
+	ResourceName string   `json:"resource_name"`
+	ResourceType string   `json:"resource_type"`
+	ResourceID   string   `json:"resource_id"`
+	Accesses     []string `json:"accesses"`
 }
 
 type serviceTokensResponse struct {

@@ -39,6 +39,40 @@ func TestServiceTokens_Create(t *testing.T) {
 	c.Assert(snapshot, qt.DeepEquals, want)
 }
 
+func TestServiceTokens_ListGrants(t *testing.T) {
+	c := qt.New(t)
+
+	out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"qbphfi83nxti","type":"ServiceTokenGrant","resource_name":"planetscale","resource_type":"Database","resource_id":"qbphfi83nxti","accesses":["read_branch"]}]}`
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	grants, err := client.ServiceTokens.ListGrants(ctx, &ListServiceTokenGrantsRequest{
+		Organization: testOrg,
+		ID:           "1234",
+	})
+
+	want := []*ServiceTokenGrant{
+		{
+			ID:           "qbphfi83nxti",
+			ResourceName: "planetscale",
+			ResourceType: "Database",
+			ResourceID:   "qbphfi83nxti",
+			Accesses:     []string{"read_branch"},
+		},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(grants, qt.DeepEquals, want)
+}
+
 func TestServiceTokens_List(t *testing.T) {
 	c := qt.New(t)
 

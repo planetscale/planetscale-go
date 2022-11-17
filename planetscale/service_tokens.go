@@ -13,6 +13,7 @@ var _ ServiceTokenService = &serviceTokenService{}
 type ServiceTokenService interface {
 	Create(context.Context, *CreateServiceTokenRequest) (*ServiceToken, error)
 	List(context.Context, *ListServiceTokensRequest) ([]*ServiceToken, error)
+	ListGrants(context.Context, *ListServiceTokenGrantsRequest) ([]*ServiceTokenGrant, error)
 	Delete(context.Context, *DeleteServiceTokenRequest) error
 	GetAccess(context.Context, *GetServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
 	AddAccess(context.Context, *AddServiceTokenAccessRequest) ([]*ServiceTokenAccess, error)
@@ -74,6 +75,19 @@ func (s *serviceTokenService) GetAccess(ctx context.Context, accessReq *GetServi
 	return tokenAccess.ServiceTokenAccesses, nil
 }
 
+func (s *serviceTokenService) ListGrants(ctx context.Context, listReq *ListServiceTokenGrantsRequest) ([]*ServiceTokenGrant, error) {
+	req, err := s.client.newRequest(http.MethodGet, serviceTokenGrantsAPIPath(listReq.Organization, listReq.ID), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenGrants := serviceTokenGrantsResponse{}
+	if err := s.client.do(ctx, req, &tokenGrants); err != nil {
+		return nil, err
+	}
+	return tokenGrants.ServiceTokenGrants, nil
+}
+
 func (s *serviceTokenService) AddAccess(ctx context.Context, addReq *AddServiceTokenAccessRequest) ([]*ServiceTokenAccess, error) {
 	req, err := s.client.newRequest(http.MethodPost, serviceTokenAccessAPIPath(addReq.Organization, addReq.ID), addReq)
 	if err != nil {
@@ -99,6 +113,11 @@ func (s *serviceTokenService) DeleteAccess(ctx context.Context, delReq *DeleteSe
 
 type CreateServiceTokenRequest struct {
 	Organization string `json:"-"`
+}
+
+type ListServiceTokenGrantsRequest struct {
+	Organization string `json:"-"`
+	ID           string `json:"-"`
 }
 
 type DeleteServiceTokenRequest struct {
@@ -135,6 +154,14 @@ type ServiceToken struct {
 	Token string `json:"token"`
 }
 
+type ServiceTokenGrant struct {
+	ID           string   `json:"id"`
+	ResourceName string   `json:"resource_name"`
+	ResourceType string   `json:"resource_type"`
+	ResourceID   string   `json:"resource_id"`
+	Accesses     []string `json:"accesses"`
+}
+
 type serviceTokensResponse struct {
 	ServiceTokens []*ServiceToken `json:"data"`
 }
@@ -150,8 +177,16 @@ type serviceTokenAccessResponse struct {
 	ServiceTokenAccesses []*ServiceTokenAccess `json:"data"`
 }
 
+type serviceTokenGrantsResponse struct {
+	ServiceTokenGrants []*ServiceTokenGrant `json:"data"`
+}
+
 func serviceTokenAccessAPIPath(org, id string) string {
 	return fmt.Sprintf("%s/%s/access", serviceTokensAPIPath(org), id)
+}
+
+func serviceTokenGrantsAPIPath(org, id string) string {
+	return fmt.Sprintf("%s/%s/grants", serviceTokensAPIPath(org), id)
 }
 
 func serviceTokensAPIPath(org string) string {

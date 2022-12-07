@@ -2,7 +2,7 @@ package planetscale
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -169,7 +169,7 @@ func TestServiceTokens_AddAccess(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(data, qt.DeepEquals, wantBody)
 
@@ -214,7 +214,7 @@ func TestServiceTokens_DeleteAccess(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(data, qt.DeepEquals, wantBody)
 	}))

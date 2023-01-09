@@ -99,9 +99,9 @@ type RefreshSchemaRequest struct {
 	Branch       string `json:"-"`
 }
 
-// PromoteRequest encapsulates the request for promoting a branch to
+// RequestPromotionRequest encapsulates the request for promoting a branch to
 // production.
-type PromoteRequest struct {
+type RequestPromotionRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
@@ -163,7 +163,7 @@ type DatabaseBranchesService interface {
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
-	Promote(context.Context, *PromoteRequest) (*BranchPromotionRequest, error)
+	RequestPromotion(context.Context, *RequestPromotionRequest) (*BranchPromotionRequest, error)
 	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
 }
 
@@ -342,9 +342,9 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 	return nil
 }
 
-// PromoteBranch promotes a database's branch from a development branch to a
-// production branch.
-func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteRequest) (*BranchPromotionRequest, error) {
+// RequestPromotion requests a branch to be promoted from development to
+// production.
+func (d *databaseBranchesService) RequestPromotion(ctx context.Context, promoteReq *RequestPromotionRequest) (*BranchPromotionRequest, error) {
 	path := fmt.Sprintf("%s/promotion-request", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {

@@ -65,7 +65,7 @@ func TestServiceTokens_ListGrants(t *testing.T) {
 			ResourceName: "planetscale",
 			ResourceType: "Database",
 			ResourceID:   "qbphfi83nxti",
-			Accesses:     []*ServiceTokenGrantAccess{{Access: "read_branch"}},
+			Accesses:     []*ServiceTokenGrantAccess{{Access: "read_branch", Description: "Read database branch"}},
 		},
 	}
 

@@ -67,7 +67,7 @@ func TestPasswords_List(t *testing.T) {
     [
         {
             "id": "4rwwvrxk2o99",
-            "_name": "planetscale-go-test-password",
+            "name": "planetscale-go-test-password",
             "created_at": "2021-01-14T10:19:23.000Z"
         }
     ]

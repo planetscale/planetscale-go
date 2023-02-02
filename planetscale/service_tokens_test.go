@@ -42,7 +42,7 @@ func TestServiceTokens_Create(t *testing.T) {
 func TestServiceTokens_ListGrants(t *testing.T) {
 	c := qt.New(t)
 
-	out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"qbphfi83nxti","type":"ServiceTokenGrant","resource_name":"planetscale","resource_type":"Database","resource_id":"qbphfi83nxti","accesses":["read_branch"]}]}`
+	out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"qbphfi83nxti","type":"ServiceTokenGrant","resource_name":"planetscale","resource_type":"Database","resource_id":"qbphfi83nxti","accesses":[{"access": "read_branch", "description": "Read database branch"}]}]}`
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		_, err := w.Write([]byte(out))
@@ -65,7 +65,7 @@ func TestServiceTokens_ListGrants(t *testing.T) {
 			ResourceName: "planetscale",
 			ResourceType: "Database",
 			ResourceID:   "qbphfi83nxti",
-			Accesses:     []string{"read_branch"},
+			Accesses:     []*ServiceTokenGrantAccess{{Access: "read_branch"}},
 		},
 	}
 

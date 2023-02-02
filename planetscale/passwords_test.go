@@ -22,7 +22,7 @@ func TestPasswords_Create(t *testing.T) {
     "id": "%s",
     "role": "admin",
     "plain_text": "%s",
-    "display_name": "planetscale-go-test-password",
+    "name": "planetscale-go-test-password",
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testPasswordID, plainText)
 		_, err := w.Write([]byte(out))
@@ -67,7 +67,7 @@ func TestPasswords_List(t *testing.T) {
     [
         {
             "id": "4rwwvrxk2o99",
-            "display_name": "planetscale-go-test-password",
+            "name": "planetscale-go-test-password",
             "created_at": "2021-01-14T10:19:23.000Z"
         }
     ]
@@ -110,7 +110,7 @@ func TestPasswords_ListBranch(t *testing.T) {
     [
         {
             "id": "4rwwvrxk2o99",
-            "display_name": "planetscale-go-test-password",
+            "name": "planetscale-go-test-password",
             "database_branch": {
 			  "name": "my-branch"
 			},
@@ -185,7 +185,7 @@ func TestPasswords_Get(t *testing.T) {
 		out := fmt.Sprintf(`{
     "id": "%s",
     "role": "writer",
-    "display_name": "planetscale-go-test-password",
+    "name": "planetscale-go-test-password",
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testPasswordID)
 		_, err := w.Write([]byte(out))

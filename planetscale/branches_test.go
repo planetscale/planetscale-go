@@ -407,3 +407,185 @@ func TestBranches_GetPromotionRequest(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.DeepEquals, want)
 }
+
+func TestBranches_DemoteWithDemotionRequest(t *testing.T) {
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(http.MethodPost, qt.Equals, r.Method)
+		w.WriteHeader(200)
+		out := `
+	{
+	"id": "test-demotion-request",
+	"type": "BranchDemotionRequest",
+	"branch": "main",
+	"actor": {
+	"id": "test-actor",
+	"type": "User",
+	"display_name": "Test User",
+	"name": null,
+	"email": "test@example.com",
+	"avatar_url": "https://app.planetscale.com/gravatar-fallback.png",
+	"created_at": "2021-01-14T10:19:23.000Z",
+				"updated_at": "2021-01-14T10:19:23.000Z",
+	"two_factor_auth_configured": false
+	},
+	"responder": null,
+	"created_at": "2021-01-14T10:19:23.000Z",
+	"responded_at": null,
+	"state": "pending"
+	}
+`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "my-test-db"
+	branch := "main"
+
+	dr, err := client.DatabaseBranches.Demote(ctx, &DemoteRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       branch,
+	})
+
+	want := &BranchDemotionRequest{
+		ID:    "test-demotion-request",
+		State: "pending",
+		Actor: &Actor{
+			ID:   "test-actor",
+			Type: "User",
+			Name: "Test User",
+		},
+		CreatedAt:   testTime,
+		RespondedAt: nil,
+		Responder:   nil,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dr, qt.DeepEquals, want)
+}
+
+func TestBranches_DemoteNoDemotionRequest(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(http.MethodPost, qt.Equals, r.Method)
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "my-test-db"
+	branch := "main"
+
+	dr, err := client.DatabaseBranches.Demote(ctx, &DemoteRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       branch,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dr, qt.IsNil)
+}
+
+func TestBranches_GetDemotionRequest(t *testing.T) {
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(http.MethodGet, qt.Equals, r.Method)
+		w.WriteHeader(200)
+		out := `
+{
+	"id": "test-demotion-request",
+	"type": "BranchDemotionRequest",
+	"branch": "main",
+	"actor": {
+	"id": "test-actor",
+	"type": "User",
+	"display_name": "Test User",
+	"name": null,
+	"email": "test@example.com",
+	"avatar_url": "https://app.planetscale.com/gravatar-fallback.png",
+	"created_at": "2021-01-14T10:19:23.000Z",
+				"updated_at": "2021-01-14T10:19:23.000Z",
+	"two_factor_auth_configured": false
+	},
+	"responder": null,
+	"created_at": "2021-01-14T10:19:23.000Z",
+	"responded_at": null,
+	"state": "pending"
+	}
+`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "my-test-db"
+	branch := "main"
+
+	dr, err := client.DatabaseBranches.GetDemotionRequest(ctx, &GetDemotionRequestRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       branch,
+	})
+
+	want := &BranchDemotionRequest{
+		ID:    "test-demotion-request",
+		State: "pending",
+		Actor: &Actor{
+			ID:   "test-actor",
+			Type: "User",
+			Name: "Test User",
+		},
+		CreatedAt:   testTime,
+		RespondedAt: nil,
+		Responder:   nil,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(dr, qt.DeepEquals, want)
+}
+
+func TestBranches_DenyDemotionRequest(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(http.MethodDelete, qt.Equals, r.Method)
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "my-test-db"
+	branch := "main"
+
+	err = client.DatabaseBranches.DenyDemotionRequest(ctx, &DenyDemotionRequestRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       branch,
+	})
+
+	c.Assert(err, qt.IsNil)
+}

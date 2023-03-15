@@ -10,6 +10,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Actor represents a user or service token
+type Actor struct {
+	Type string `json:"type"`
+	ID   string `json:"id"`
+	Name string `json:"display_name"`
+}
+
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
 	Name          string    `json:"name"`
@@ -99,6 +106,42 @@ type RefreshSchemaRequest struct {
 	Branch       string `json:"-"`
 }
 
+// BranchDemotionRequest represents a demotion request for a branch. This will
+// only be applicable to enterprise databases.
+type BranchDemotionRequest struct {
+	ID          string     `json:"id"`
+	Actor       *Actor     `json:"actor"`
+	Responder   *Actor     `json:"responder"`
+	RespondedAt *time.Time `json:"responded_at"`
+	State       string     `json:"state"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
+// DemoteRequest encapsulates the request for demoting a branch to
+// development.
+type DemoteRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+// GetDemotionRequestRequest encapsulates the request for getting a demotion
+// request for an enterprise branch.
+type GetDemotionRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+// DenyDemotionRequest encapsulates the request for denying a demotion request
+// for a branch or cancelling it (if called by the same actor who requested it).
+type DenyDemotionRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
 // RequestPromotionRequest encapsulates the request for promoting a branch to
 // production.
 type RequestPromotionRequest struct {
@@ -163,8 +206,11 @@ type DatabaseBranchesService interface {
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
+	Demote(context.Context, *DemoteRequest) (*BranchDemotionRequest, error)
+	GetDemotionRequest(context.Context, *GetDemotionRequestRequest) (*BranchDemotionRequest, error)
 	RequestPromotion(context.Context, *RequestPromotionRequest) (*BranchPromotionRequest, error)
 	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
+	DenyDemotionRequest(context.Context, *DenyDemotionRequestRequest) error
 }
 
 type databaseBranchesService struct {
@@ -374,6 +420,62 @@ func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getRe
 	}
 
 	return promotionReq, nil
+}
+
+// GetDemotionRequest returns any pending demotion request for a given branch.
+func (d *databaseBranchesService) GetDemotionRequest(ctx context.Context, getReq *GetDemotionRequestRequest) (*BranchDemotionRequest, error) {
+	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch))
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for getting branch demotion request")
+	}
+
+	demotionReq := &BranchDemotionRequest{}
+	err = d.client.do(ctx, req, &demotionReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return demotionReq, nil
+}
+
+// DenyDemotionRequest denies a pending demotion request for a given branch or
+// cancels it if called by the same admin that created it.
+func (d *databaseBranchesService) DenyDemotionRequest(ctx context.Context, denyReq *DenyDemotionRequestRequest) error {
+	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(denyReq.Organization, denyReq.Database, denyReq.Branch))
+	req, err := d.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return errors.Wrap(err, "error creating request for deleting branch demotion request")
+	}
+
+	err = d.client.do(ctx, req, nil)
+	return err
+}
+
+// Demote demotes a branch from production to development. If the branch belongs
+// to an Enterprise organization, it will return a demote request and require a
+// second call by a different admin in order to complete demotion.
+func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteRequest) (*BranchDemotionRequest, error) {
+	path := fmt.Sprintf("%s/demote", databaseBranchAPIPath(demoteReq.Organization, demoteReq.Database, demoteReq.Branch))
+	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch demotion")
+	}
+
+	demotionReq := BranchDemotionRequest{}
+	err = d.client.do(ctx, req, &demotionReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// This is smelly but if the demotionReq does not equal the blank struct, that
+	// means that something was marshaled into it, meaning a demotion request was
+	// returned.
+	if (demotionReq != BranchDemotionRequest{}) {
+		return &demotionReq, nil
+	}
+
+	return nil, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

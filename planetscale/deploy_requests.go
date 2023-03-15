@@ -172,7 +172,7 @@ type CreateDeployRequestRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"branch"`
-	IntoBranch   string `json:"into_branch"`
+	IntoBranch   string `json:"into_branch,omitempty"`
 	Notes        string `json:"notes"`
 }
 

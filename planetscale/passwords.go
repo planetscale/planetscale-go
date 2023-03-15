@@ -23,8 +23,8 @@ type ConnectionStrings struct {
 
 type DatabaseBranchPassword struct {
 	PublicID          string            `json:"id"`
-	Name              string            `json:"display_name"`
-	Hostname              string            `json:"access_host_url"`
+	Name              string            `json:"name"`
+	Hostname          string            `json:"access_host_url"`
 	Username          string            `json:"username"`
 	Role              string            `json:"role"`
 	Branch            DatabaseBranch    `json:"database_branch"`
@@ -41,7 +41,7 @@ type DatabaseBranchPasswordRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	Role         string `json:"role,omitempty"`
-	DisplayName  string `json:"display_name"`
+	Name         string `json:"name"`
 }
 
 // ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords
@@ -58,7 +58,7 @@ type GetDatabaseBranchPasswordRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
-	DisplayName  string `json:"display_name"`
+	Name         string `json:"name"`
 	PasswordId   string
 }
 
@@ -68,7 +68,7 @@ type DeleteDatabaseBranchPasswordRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
-	DisplayName  string `json:"display_name"`
+	Name         string `json:"name"`
 	PasswordId   string
 }
 

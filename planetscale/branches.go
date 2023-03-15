@@ -134,6 +134,14 @@ type GetDemotionRequestRequest struct {
 	Branch       string `json:"-"`
 }
 
+// DenyDemotionRequest encapsulates the request for denying a demotion request
+// for a branch or cancelling it (if called by the same actor who requested it).
+type DenyDemotionRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
 // PromoteRequest encapsulates the request for promoting a branch to
 // production.
 type PromoteRequest struct {
@@ -202,6 +210,7 @@ type DatabaseBranchesService interface {
 	Demote(context.Context, *DemoteRequest) (*BranchDemotionRequest, error)
 	GetDemotionRequest(context.Context, *GetDemotionRequestRequest) (*BranchDemotionRequest, error)
 	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
+	DenyDemotionRequest(context.Context, *DenyDemotionRequestRequest) error
 }
 
 type databaseBranchesService struct {
@@ -413,9 +422,34 @@ func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getRe
 	return promotionReq, nil
 }
 
+// GetDemotionRequest returns any pending demotion request for a given branch.
 func (d *databaseBranchesService) GetDemotionRequest(ctx context.Context, getReq *GetDemotionRequestRequest) (*BranchDemotionRequest, error) {
-	panic("not implemented")
+	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch))
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for getting branch demotion request")
+	}
 
+	demotionReq := &BranchDemotionRequest{}
+	err = d.client.do(ctx, req, &demotionReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return demotionReq, nil
+}
+
+// DenyDemotionRequest denies a pending demotion request for a given branch or
+// cancels it if called by the same admin that created it.
+func (d *databaseBranchesService) DenyDemotionRequest(ctx context.Context, denyReq *DenyDemotionRequestRequest) error {
+	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(denyReq.Organization, denyReq.Database, denyReq.Branch))
+	req, err := d.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return errors.Wrap(err, "error creating request for deleting branch demotion request")
+	}
+
+	err = d.client.do(ctx, req, nil)
+	return err
 }
 
 // Demote demotes a branch from production to development. If the branch belongs

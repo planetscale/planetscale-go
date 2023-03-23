@@ -19,15 +19,16 @@ type Actor struct {
 
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
-	Name          string    `json:"name"`
-	ParentBranch  string    `json:"parent_branch"`
-	Region        Region    `json:"region"`
-	Ready         bool      `json:"ready"`
-	Production    bool      `json:"production"`
-	HtmlURL       string    `json:"html_url"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	AccessHostURL string    `json:"access_host_url"`
+	Name           string    `json:"name"`
+	ParentBranch   string    `json:"parent_branch"`
+	Region         Region    `json:"region"`
+	Ready          bool      `json:"ready"`
+	Production     bool      `json:"production"`
+	HtmlURL        string    `json:"html_url"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	AccessHostURL  string    `json:"access_host_url"`
+	SafeMigrations bool      `json:"safe_migrations"`
 }
 
 type databaseBranchesResponse struct {
@@ -150,7 +151,33 @@ type RequestPromotionRequest struct {
 	Branch       string `json:"-"`
 }
 
+// GetPromotionRequestRequest encapsulates the request for getting a branch
+// promotion request.
 type GetPromotionRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+// PromoteRequest encapsulates the request for promoting a request to
+// production.
+type PromoteRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+// EnableSafeMigrationsRequest encapsulates the request for enabling safe
+// migrations on a branch.
+type EnableSafeMigrationsRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+// DisableSafeMigrationsRequest encapsulates the request for disabling safe
+// migrations on a branch.
+type DisableSafeMigrationsRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
@@ -211,6 +238,9 @@ type DatabaseBranchesService interface {
 	RequestPromotion(context.Context, *RequestPromotionRequest) (*BranchPromotionRequest, error)
 	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
 	DenyDemotionRequest(context.Context, *DenyDemotionRequestRequest) error
+	Promote(context.Context, *PromoteRequest) (*DatabaseBranch, error)
+	EnableSafeMigrations(context.Context, *EnableSafeMigrationsRequest) (*DatabaseBranch, error)
+	DisableSafeMigrations(context.Context, *DisableSafeMigrationsRequest) (*DatabaseBranch, error)
 }
 
 type databaseBranchesService struct {
@@ -404,6 +434,59 @@ func (d *databaseBranchesService) RequestPromotion(ctx context.Context, promoteR
 	}
 
 	return promotionReq, nil
+}
+
+// Promote promotes a branch from development to production.
+func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteRequest) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/promote", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
+	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for branch promotion")
+	}
+
+	branch := &DatabaseBranch{}
+	err = d.client.do(ctx, req, &branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return branch, nil
+}
+
+// EnableSafeMigrations enables safe migrations for a production branch. This
+// will prevent DDL statements from being performed on the branch.
+func (d *databaseBranchesService) EnableSafeMigrations(ctx context.Context, enableReq *EnableSafeMigrationsRequest) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(enableReq.Organization, enableReq.Database, enableReq.Branch))
+	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for enabling safe migrations")
+	}
+
+	branch := &DatabaseBranch{}
+	err = d.client.do(ctx, req, &branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return branch, nil
+}
+
+// DisableSafeMigrations disables safe migrations for a production branch. This
+// will allow DDL statements to be performed on the branch.
+func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, disableReq *DisableSafeMigrationsRequest) (*DatabaseBranch, error) {
+	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(disableReq.Organization, disableReq.Database, disableReq.Branch))
+	req, err := d.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for disabling safe migrations")
+	}
+
+	branch := &DatabaseBranch{}
+	err = d.client.do(ctx, req, &branch)
+	if err != nil {
+		return nil, err
+	}
+
+	return branch, nil
 }
 
 func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getReg *GetPromotionRequestRequest) (*BranchPromotionRequest, error) {

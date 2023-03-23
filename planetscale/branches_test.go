@@ -127,7 +127,9 @@ func TestDatabaseBranches_Get(t *testing.T) {
 
 	db, err := client.DatabaseBranches.Get(ctx, &GetDatabaseBranchRequest{
 		Organization: org,
-		Database:     name})
+		Database:     name,
+		Branch:       testBranch,
+	})
 
 	want := &DatabaseBranch{
 		Name:      testBranch,
@@ -588,4 +590,108 @@ func TestBranches_DenyDemotionRequest(t *testing.T) {
 	})
 
 	c.Assert(err, qt.IsNil)
+}
+
+func TestDatabaseBranches_Promote(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z","production": true}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.Promote(ctx, &PromoteRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       testBranch,
+	})
+
+	want := &DatabaseBranch{
+		Name:       testBranch,
+		Production: true,
+		CreatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		UpdatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
+func TestDatabaseBranches_EnableSafeMigrations(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z","production": true,"safe_migrations":true}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.EnableSafeMigrations(ctx, &EnableSafeMigrationsRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       testBranch,
+	})
+
+	want := &DatabaseBranch{
+		Name:           testBranch,
+		Production:     true,
+		SafeMigrations: true,
+		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
+func TestDatabaseBranches_DisableSafeMigrations(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z","production": true,"safe_migrations":false}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.DisableSafeMigrations(ctx, &DisableSafeMigrationsRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       testBranch,
+	})
+
+	want := &DatabaseBranch{
+		Name:           testBranch,
+		Production:     true,
+		SafeMigrations: false,
+		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
 }

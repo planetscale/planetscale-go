@@ -19,15 +19,16 @@ type Actor struct {
 
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
-	Name          string    `json:"name"`
-	ParentBranch  string    `json:"parent_branch"`
-	Region        Region    `json:"region"`
-	Ready         bool      `json:"ready"`
-	Production    bool      `json:"production"`
-	HtmlURL       string    `json:"html_url"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	AccessHostURL string    `json:"access_host_url"`
+	Name           string    `json:"name"`
+	ParentBranch   string    `json:"parent_branch"`
+	Region         Region    `json:"region"`
+	Ready          bool      `json:"ready"`
+	Production     bool      `json:"production"`
+	HtmlURL        string    `json:"html_url"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	AccessHostURL  string    `json:"access_host_url"`
+	SafeMigrations bool      `json:"safe_migrations"`
 }
 
 type databaseBranchesResponse struct {

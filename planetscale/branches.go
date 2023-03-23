@@ -487,7 +487,6 @@ func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, dis
 	}
 
 	return branch, nil
-
 }
 
 func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getReg *GetPromotionRequestRequest) (*BranchPromotionRequest, error) {

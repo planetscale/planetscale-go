@@ -183,6 +183,13 @@ type DisableSafeMigrationsRequest struct {
 	Branch       string `json:"-"`
 }
 
+// LintSchemaRequest encapsulates the request for linting a branch's schema.
+type LintSchemaRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
 // PromotionRequestLintError represents an error that occurs during branch
 // promotion.
 type PromotionRequestLintError struct {
@@ -192,6 +199,16 @@ type PromotionRequestLintError struct {
 	SubjectType      string `json:"subject_type"`
 	ErrorDescription string `json:"error_description"`
 	DocsUrl          string `json:"docs_url"`
+}
+
+// SchemaLintError represents an error with the branch's schema
+type SchemaLintError struct {
+	LintError        string `json:"lint_error"`
+	Keyspace         string `json:"keyspace_name"`
+	Table            string `json:"table_name"`
+	SubjectType      string `json:"subject_type"`
+	ErrorDescription string `json:"error_description"`
+	DocsURL          string `json:"docs_url"`
 }
 
 // BranchPromotionRequest represents a promotion request for a branch.
@@ -241,6 +258,7 @@ type DatabaseBranchesService interface {
 	Promote(context.Context, *PromoteRequest) (*DatabaseBranch, error)
 	EnableSafeMigrations(context.Context, *EnableSafeMigrationsRequest) (*DatabaseBranch, error)
 	DisableSafeMigrations(context.Context, *DisableSafeMigrationsRequest) (*DatabaseBranch, error)
+	LintSchema(context.Context, *LintSchemaRequest) ([]*SchemaLintError, error)
 }
 
 type databaseBranchesService struct {
@@ -559,6 +577,30 @@ func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteR
 	}
 
 	return nil, nil
+}
+
+// lintSchemaResponse represents the response from the lint schema endpoint.
+type lintSchemaResponse struct {
+	Errors []*SchemaLintError `json:"data"`
+}
+
+// LintSchema lints the current schema of a branch and returns any errors that
+// may be present.
+func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintSchemaRequest) ([]*SchemaLintError, error) {
+	path := fmt.Sprintf("%s/schema/lint", databaseBranchAPIPath(lintReq.Organization, lintReq.Database, lintReq.Branch))
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating request for linting branch schema")
+	}
+
+	lintResp := &lintSchemaResponse{}
+	err = d.client.do(ctx, req, &lintResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return lintResp.Errors, nil
+
 }
 
 func databaseBranchesAPIPath(org, db string) string {

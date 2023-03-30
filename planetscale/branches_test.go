@@ -695,3 +695,74 @@ func TestDatabaseBranches_DisableSafeMigrations(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(db, qt.DeepEquals, want)
 }
+
+func TestDatabaseBranches_LintSchema(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `
+{
+			"type": "list",
+			"current_page": 1,
+			"next_page": null,
+			"next_page_url": null,
+			"prev_page": null,
+			"prev_page_url": null,
+			"data": [
+			{
+			"type": "SchemaLintError",
+			"lint_error": "NO_UNIQUE_KEY",
+			"subject_type": "table_error",
+			"keyspace_name": "test-database",
+			"table_name": "test",
+			"error_description": "table \"test\" has no unique key: all tables must have at least one unique, not-null key.",
+			"docs_url": "https://planetscale.com/docs/learn/change-single-unique-key",
+			"column_name": "",
+			"foreign_key_column_names": [],
+			"auto_increment_column_names": [],
+			"charset_name": "",
+			"engine_name": "",
+			"vindex_name": null,
+			"json_path": null,
+			"check_constraint_name": "",
+			"enum_value": "",
+			"partitioning_type": "",
+			"partition_name": "",
+			"url_hash": "81e9ed9a459b5824393c4fa735753c49d47861bbd43742e2baa0ab7013158d2b"
+			}
+			]
+			}
+		`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	lintErrors, err := client.DatabaseBranches.LintSchema(ctx, &LintSchemaRequest{
+		Organization: org,
+		Database:     name,
+		Branch:       testBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(len(lintErrors), qt.Equals, 1)
+
+	want := &SchemaLintError{
+		LintError:        "NO_UNIQUE_KEY",
+		SubjectType:      "table_error",
+		Keyspace:         "test-database",
+		Table:            "test",
+		ErrorDescription: "table \"test\" has no unique key: all tables must have at least one unique, not-null key.",
+		DocsURL:          "https://planetscale.com/docs/learn/change-single-unique-key",
+	}
+	lintErr := lintErrors[0]
+
+	c.Assert(lintErr, qt.DeepEquals, want)
+}

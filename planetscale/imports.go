@@ -176,9 +176,10 @@ type TestDataImportSourceResponse struct {
 }
 
 type StartDataImportRequest struct {
-	Database     string           `json:"database_name"`
 	Organization string           `json:"organization"`
+	Database     string           `json:"database_name"`
 	Connection   DataImportSource `json:"connection"`
+	Region       string           `json:"region"`
 	Plan         string           `json:"plan"`
 }
 

@@ -38,6 +38,10 @@ type DataImportSource struct {
 	SSLVerificationMode ExternalDataSourceSSLVerificationMode
 	UserName            string `json:"username"`
 	Password            string `json:"password"`
+	SSLCA               string `json:"ssl_ca"`
+	SSLCertificate      string `json:"ssl_cert"`
+	SSLKey              string `json:"ssl_key"`
+	SSLServerName       string `json:"ssl_server_name"`
 }
 
 type ExternalDataSourceSSLVerificationMode int
@@ -173,6 +177,7 @@ type TestDataImportSourceResponse struct {
 	SuggestedBillingPlan BillingPlan
 	ConnectError         string                            `json:"error"`
 	Errors               []*DataSourceIncompatibilityError `json:"lint_errors"`
+	MaxPoolSize          int                               `json:"max_pool_size"`
 }
 
 type StartDataImportRequest struct {
@@ -181,6 +186,7 @@ type StartDataImportRequest struct {
 	Connection   DataImportSource `json:"connection"`
 	Region       string           `json:"region"`
 	Plan         string           `json:"plan"`
+	MaxPoolSize  int              `json:"max_pool_size"`
 }
 
 type MakePlanetScalePrimaryRequest struct {

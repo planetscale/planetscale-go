@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -99,6 +100,7 @@ func TestImports_CanRunLintExternalDatabase_LintFailure(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/data-imports/test-connection")
+
 		w.WriteHeader(200)
 		out := `{
 "can_connect": true, 
@@ -175,6 +177,11 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/data-imports/new")
+		var startRequest StartDataImportRequest
+		err := json.NewDecoder(r.Body).Decode(&startRequest)
+		c.Assert(err, qt.IsNil)
+		c.Assert("us-west-2", qt.Equals, startRequest.Region)
+
 		w.WriteHeader(200)
 		out := `{
 "id": "PUBLIC_ID",
@@ -186,7 +193,7 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 	"database": "employees"
 }
 }`
-		_, err := w.Write([]byte(out))
+		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 
@@ -199,6 +206,7 @@ func TestImports_CanStartDataImport_Success(t *testing.T) {
 	startReq := &StartDataImportRequest{
 		Organization: org,
 		Database:     db,
+		Region:       "us-west-2",
 	}
 	di, err := client.DataImports.StartDataImport(ctx, startReq)
 	c.Assert(err, qt.IsNil)

@@ -33,9 +33,10 @@ type ListOrganizationRegionsRequest struct {
 
 // Organization represents a PlanetScale organization.
 type Organization struct {
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Name                   string    `json:"name"`
+	CreatedAt              time.Time `json:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at"`
+	RemainingFreeDatabases int       `json:"free_databases_remaining"`
 }
 
 type organizationsResponse struct {

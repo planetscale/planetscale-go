@@ -3,7 +3,7 @@ module github.com/planetscale/planetscale-go
 go 1.19
 
 require (
-	github.com/frankban/quicktest v1.14.4
+	github.com/frankban/quicktest v1.14.5
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/pkg/errors v0.9.1
 	golang.org/x/oauth2 v0.8.0

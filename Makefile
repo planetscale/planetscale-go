@@ -13,6 +13,7 @@ build:
 lint: 
 	@go install honnef.co/go/tools/cmd/staticcheck@latest
 	@staticcheck ./...
+	@go vet ./...
 
 .PHONY: licensed
 licensed:

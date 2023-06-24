@@ -48,7 +48,7 @@ func TestPasswords_Create(t *testing.T) {
 		Name:     "planetscale-go-test-password",
 		PublicID: testPasswordID,
 
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:      "admin",
 		PlainText: plainText,
 	}
@@ -92,7 +92,7 @@ func TestPasswords_List(t *testing.T) {
 		{
 			Name:      "planetscale-go-test-password",
 			PublicID:  testPasswordID,
-			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		},
 	}
 
@@ -143,7 +143,7 @@ func TestPasswords_ListBranch(t *testing.T) {
 				Name: branch,
 			},
 			PublicID:  testPasswordID,
-			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		},
 	}
 
@@ -210,7 +210,7 @@ func TestPasswords_Get(t *testing.T) {
 	want := &DatabaseBranchPassword{
 		Name:      "planetscale-go-test-password",
 		PublicID:  testPasswordID,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:      "writer",
 	}
 

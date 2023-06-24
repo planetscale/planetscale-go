@@ -13,8 +13,9 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
-const testCertificateID = "9nWlLMXw7twk"
-const testCert = `-----BEGIN CERTIFICATE-----
+const (
+	testCertificateID = "9nWlLMXw7twk"
+	testCert          = `-----BEGIN CERTIFICATE-----
 MIIB+jCCAaCgAwIBAgIJAM1hLEO/Mf1sMAoGCCqGSM49BAMCMDIxMDAuBgNVBAMM
 J1BsYW5ldFNjYWxlIEF1dGhlbnRpY2F0aW9uIEludGVybWVkaWF0ZTAeFw0yMTA3
 MDcxMjMxNTdaFw0yMTA4MDYxMjMxNTdaMDExLzAtBgNVBAMMJlBsYW5ldFNjYWxl
@@ -40,6 +41,7 @@ ZXRzY2FsZS5jb20wCgYIKoZIzj0EAwIDaQAwZgIxAPe1GVe9anAhR02+qRf6u2+Z
 cjaVH/gRhl6LweVTb2YUPxrZ+gtwhx0oAx9p2sQa2QIxAJPUIXyCaLa1e5qIpv16
 3VGE4ZIOlqPmLokx0TfZJP/3UbA8IwSEdGQUVEtn2AUKxQ==
 -----END CERTIFICATE-----`
+)
 
 const testKey = `-----BEGIN PRIVATE KEY-----
 MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg2Xhd7IaDvRBJKaYv
@@ -53,7 +55,7 @@ func TestCertificates_Create(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 
-		var out = struct {
+		out := struct {
 			ID          string `json:"id"`
 			Certificate string `json:"certificate"`
 			DisplayName string `json:"display_name"`
@@ -96,7 +98,7 @@ func TestCertificates_Create(t *testing.T) {
 	want := &DatabaseBranchCertificate{
 		Name:        "planetscale-go-test-certificate",
 		PublicID:    testCertificateID,
-		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:        "writer",
 		Certificate: testCert,
 	}
@@ -123,7 +125,7 @@ func TestCertificates_List(t *testing.T) {
 			CreatedAt   string `json:"created_at"`
 			Role        string `json:"role"`
 		}
-		var out = struct {
+		out := struct {
 			Data []entry `json:"data"`
 		}{[]entry{{
 			ID:          testCertificateID,
@@ -155,7 +157,7 @@ func TestCertificates_List(t *testing.T) {
 		{
 			Name:        "planetscale-go-test-certificate",
 			PublicID:    testCertificateID,
-			CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+			CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 			Role:        "writer",
 			Certificate: testCert,
 		},
@@ -199,7 +201,7 @@ func TestCertificates_Get(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 
-		var out = struct {
+		out := struct {
 			ID          string `json:"id"`
 			Certificate string `json:"certificate"`
 			DisplayName string `json:"display_name"`
@@ -234,7 +236,7 @@ func TestCertificates_Get(t *testing.T) {
 	want := &DatabaseBranchCertificate{
 		Name:        "planetscale-go-test-certificate",
 		PublicID:    testCertificateID,
-		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt:   time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:        "writer",
 		Certificate: testCert,
 	}

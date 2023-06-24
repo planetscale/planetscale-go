@@ -338,7 +338,7 @@ func (d *deployRequestsService) ApplyDeploy(ctx context.Context, applyReq *Apply
 }
 
 func (d *deployRequestsService) AutoApplyDeploy(ctx context.Context, autoApplyReq *AutoApplyDeployRequestRequest) (*DeployRequest, error) {
-	var reqBody = struct {
+	reqBody := struct {
 		Enable bool `json:"enable"`
 	}{
 		Enable: autoApplyReq.Enable,
@@ -441,7 +441,7 @@ func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployReq
 }
 
 func (d *deployRequestsService) CreateReview(ctx context.Context, reviewReq *ReviewDeployRequestRequest) (*DeployRequestReview, error) {
-	var reqBody = struct {
+	reqBody := struct {
 		State string `json:"state"`
 		Body  string `json:"body"`
 	}{

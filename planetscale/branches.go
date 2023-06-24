@@ -600,7 +600,6 @@ func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintS
 	}
 
 	return lintResp.Errors, nil
-
 }
 
 func databaseBranchesAPIPath(org, db string) string {

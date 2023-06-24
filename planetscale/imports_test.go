@@ -134,7 +134,7 @@ func TestImports_CanRunLintExternalDatabase_LintFailure(t *testing.T) {
 	c.Assert("", qt.Equals, results.ConnectError)
 	c.Assert(1, qt.Equals, len(results.Errors))
 	c.Assert([]*DataSourceIncompatibilityError{
-		&DataSourceIncompatibilityError{
+		{
 			LintError:        "NO_PRIMARY_KEY",
 			Table:            "employees",
 			ErrorDescription: "Table 'employees' has no primary key",
@@ -406,5 +406,4 @@ func TestImports_CanDetachExternalDatabase(t *testing.T) {
 	c.Assert(di.ID, qt.Equals, "PUBLIC_ID")
 	c.Assert(di.Errors, qt.Equals, "")
 	c.Assert(di.ImportState, qt.Equals, DataImportReady)
-
 }

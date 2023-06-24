@@ -123,7 +123,6 @@ func (d *passwordsService) Delete(ctx context.Context, deleteReq *DeleteDatabase
 
 	err = d.client.do(ctx, req, nil)
 	return err
-
 }
 
 // Get an existing password for a branch.
@@ -140,7 +139,6 @@ func (d *passwordsService) Get(ctx context.Context, getReq *GetDatabaseBranchPas
 	}
 
 	return password, nil
-
 }
 
 // List all existing passwords. If req.Branch is set, all passwords for that

@@ -48,8 +48,8 @@ func TestDatabases_Create(t *testing.T) {
 			Slug: "us-west",
 			Name: "US West",
 		},
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -82,8 +82,8 @@ func TestDatabases_Get(t *testing.T) {
 	want := &Database{
 		Name:      name,
 		Notes:     notes,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -115,8 +115,8 @@ func TestDatabases_List(t *testing.T) {
 	want := []*Database{{
 		Name:      name,
 		Notes:     notes,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}}
 
 	c.Assert(err, qt.IsNil)
@@ -133,7 +133,6 @@ func TestDatabases_ListWithOptions(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.URL.Query().Get("page"), qt.Equals, "2")
 		c.Assert(r.URL.Query().Get("per_page"), qt.Equals, "100")
-
 	}))
 
 	client, err := NewClient(WithBaseURL(ts.URL))
@@ -151,8 +150,8 @@ func TestDatabases_ListWithOptions(t *testing.T) {
 	want := []*Database{{
 		Name:      name,
 		Notes:     notes,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}}
 
 	c.Assert(err, qt.IsNil)

@@ -310,6 +310,7 @@ func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *Ca
 
 	return nil
 }
+
 func (d *dataImportsService) MakePlanetScalePrimary(ctx context.Context, request *MakePlanetScalePrimaryRequest) (*DataImport, error) {
 	path := fmt.Sprintf("%s/begin-switch-traffic", dataImportAPIPath(request.Organization, request.Database))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)

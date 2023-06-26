@@ -31,7 +31,7 @@ func TestDeployRequests_Get(t *testing.T) {
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:         "test-deploy-request-id",
@@ -64,13 +64,12 @@ func TestDeployRequests_Deploy(t *testing.T) {
 	ctx := context.Background()
 
 	dr, err := client.DeployRequests.Deploy(ctx, &PerformDeployRequest{
-
 		Organization: "test-organization",
 		Database:     "test-database",
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:         "test-deploy-request-id",
@@ -111,7 +110,7 @@ func TestDeployRequests_CancelDeploy(t *testing.T) {
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:     "test-deploy-request-id",
@@ -152,7 +151,7 @@ func TestDeployRequests_Close(t *testing.T) {
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:     "test-deploy-request-id",
@@ -193,7 +192,7 @@ func TestDeployRequests_Create(t *testing.T) {
 		Notes:        "",
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:         "test-deploy-request-id",
@@ -232,7 +231,7 @@ func TestDeployRequests_Review(t *testing.T) {
 		ReviewAction: ReviewApprove,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequestReview{
 		ID:        "test-review-id",
@@ -266,17 +265,18 @@ func TestDeployRequests_List(t *testing.T) {
 		Database:     testDatabase,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
-	want := []*DeployRequest{{
-		ID:         "test-deploy-request-id",
-		Branch:     "development",
-		IntoBranch: "some-branch",
-		Notes:      "",
-		CreatedAt:  testTime,
-		UpdatedAt:  testTime,
-		ClosedAt:   &testTime,
-	},
+	want := []*DeployRequest{
+		{
+			ID:         "test-deploy-request-id",
+			Branch:     "development",
+			IntoBranch: "some-branch",
+			Notes:      "",
+			CreatedAt:  testTime,
+			UpdatedAt:  testTime,
+			ClosedAt:   &testTime,
+		},
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -304,7 +304,7 @@ func TestDeployRequests_SkipRevertDeploy(t *testing.T) {
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:     "test-deploy-request-id",
@@ -345,7 +345,7 @@ func TestDeployRequests_RevertDeploy(t *testing.T) {
 		Number:       1337,
 	})
 
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	want := &DeployRequest{
 		ID:     "test-deploy-request-id",

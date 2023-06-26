@@ -42,8 +42,8 @@ func TestOrganizations_List(t *testing.T) {
 	want := []*Organization{
 		{
 			Name:      "my-cool-org",
-			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-			UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+			UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		},
 	}
 
@@ -79,8 +79,8 @@ func TestOrganizations_Get(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	want := &Organization{
 		Name:      "my-cool-org",
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(org, qt.DeepEquals, want)

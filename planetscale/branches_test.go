@@ -42,8 +42,8 @@ func TestDatabaseBranches_Create(t *testing.T) {
 			Slug: "us-west",
 			Name: "US West",
 		},
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -74,8 +74,8 @@ func TestDatabaseBranches_List(t *testing.T) {
 
 	want := []*DatabaseBranch{{
 		Name:      testBranch,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}}
 
 	c.Assert(err, qt.IsNil)
@@ -133,8 +133,8 @@ func TestDatabaseBranches_Get(t *testing.T) {
 
 	want := &DatabaseBranch{
 		Name:      testBranch,
-		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -256,7 +256,6 @@ func TestBranches_Keyspaces(t *testing.T) {
 	c.Assert(keyspaces[0].ID, qt.Equals, wantID)
 	c.Assert(keyspaces[0].Sharded, qt.Equals, true)
 	c.Assert(keyspaces[0].Shards, qt.Equals, 2)
-
 }
 
 func TestBranches_RefreshSchema(t *testing.T) {
@@ -282,7 +281,7 @@ func TestBranches_RefreshSchema(t *testing.T) {
 }
 
 func TestBranches_RequestPromotion(t *testing.T) {
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -347,7 +346,7 @@ func TestBranches_RequestPromotion(t *testing.T) {
 }
 
 func TestBranches_GetPromotionRequest(t *testing.T) {
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -411,7 +410,7 @@ func TestBranches_GetPromotionRequest(t *testing.T) {
 }
 
 func TestBranches_DemoteWithDemotionRequest(t *testing.T) {
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -502,7 +501,7 @@ func TestBranches_DemoteNoDemotionRequest(t *testing.T) {
 }
 
 func TestBranches_GetDemotionRequest(t *testing.T) {
-	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC)
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
 
 	c := qt.New(t)
 
@@ -618,8 +617,8 @@ func TestDatabaseBranches_Promote(t *testing.T) {
 	want := &DatabaseBranch{
 		Name:       testBranch,
 		Production: true,
-		CreatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -653,8 +652,8 @@ func TestDatabaseBranches_EnableSafeMigrations(t *testing.T) {
 		Name:           testBranch,
 		Production:     true,
 		SafeMigrations: true,
-		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -688,8 +687,8 @@ func TestDatabaseBranches_DisableSafeMigrations(t *testing.T) {
 		Name:           testBranch,
 		Production:     true,
 		SafeMigrations: false,
-		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+		CreatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt:      time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)

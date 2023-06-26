@@ -152,8 +152,8 @@ func TestServiceTokens_GetAccess(t *testing.T) {
 			Resource: Database{
 				Name:      "hidden-river-4209",
 				Notes:     "",
-				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 			},
 		},
 	}
@@ -197,8 +197,8 @@ func TestServiceTokens_AddAccess(t *testing.T) {
 			Resource: Database{
 				Name:      "hidden-river-4209",
 				Notes:     "",
-				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
-				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 000, time.UTC),
+				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 			},
 		},
 	}

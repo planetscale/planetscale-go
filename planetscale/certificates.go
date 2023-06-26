@@ -128,7 +128,7 @@ func (c *certificatesService) Create(ctx context.Context, r *DatabaseBranchCerti
 		return nil, errors.Wrap(err, "unable to encode the CSR to PEM")
 	}
 
-	var certReq = struct {
+	certReq := struct {
 		CSR         string `json:"csr"`
 		Role        string `json:"role"`
 		DisplayName string `json:"display_name"`

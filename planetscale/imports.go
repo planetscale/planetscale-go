@@ -114,8 +114,8 @@ var importStateToDescMap = map[DataImportState]string{
 	DataImportSwitchTrafficError:            "Failed to switching PlanetScale database to primary mode",
 	DataImportReverseTrafficRunning:         "Switching PlanetScale database to replica mode",
 	DataImportReverseTrafficError:           "Failed to switching PlanetScale database to replica mode",
-	DataImportDetachExternalDatabaseRunning: "Detaching external database from  PlanetScale database",
-	DataImportDetachExternalDatabaseError:   "Failed to detach external database from  PlanetScale database",
+	DataImportDetachExternalDatabaseRunning: "Detaching external database from PlanetScale database",
+	DataImportDetachExternalDatabaseError:   "Failed to detach external database from PlanetScale database",
 	DataImportReady:                         "Import has completed and your PlanetScale Database is now ready",
 }
 

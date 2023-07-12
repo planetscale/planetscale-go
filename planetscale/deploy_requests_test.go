@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -281,6 +282,56 @@ func TestDeployRequests_List(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(requests, qt.DeepEquals, want)
+}
+
+func TestDeployRequests_ListQueryParams(t *testing.T) {
+	c := qt.New(t)
+
+	var receivedQueryParams url.Values
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedQueryParams = r.URL.Query()
+
+		w.WriteHeader(200)
+		out := `{"data": [{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	requests, err := client.DeployRequests.List(ctx, &ListDeployRequestsRequest{
+		Organization: testOrg,
+		Database:     testDatabase,
+		State:        "closed",
+		Branch:       "dev",
+		IntoBranch:   "main",
+	})
+
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
+
+	want := []*DeployRequest{
+		{
+			ID:         "test-deploy-request-id",
+			Branch:     "development",
+			IntoBranch: "some-branch",
+			Notes:      "",
+			CreatedAt:  testTime,
+			UpdatedAt:  testTime,
+			ClosedAt:   &testTime,
+		},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(requests, qt.DeepEquals, want)
+
+	// Assert the expected query parameters
+	c.Assert(receivedQueryParams.Get("state"), qt.Equals, "closed")
+	c.Assert(receivedQueryParams.Get("branch"), qt.Equals, "dev")
+	c.Assert(receivedQueryParams.Get("into_branch"), qt.Equals, "main")
 }
 
 func TestDeployRequests_SkipRevertDeploy(t *testing.T) {

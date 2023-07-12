@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/pkg/errors"
@@ -63,6 +64,9 @@ type GetDeployRequestRequest struct {
 type ListDeployRequestsRequest struct {
 	Organization string
 	Database     string
+	State        string
+	Branch       string
+	IntoBranch   string
 }
 
 // DeployOperation encapsulates a deploy operation within a deployment from the
@@ -427,7 +431,24 @@ func (d *deployRequestsService) Diff(ctx context.Context, diffReq *DiffRequest) 
 }
 
 func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployRequestsRequest) ([]*DeployRequest, error) {
-	req, err := d.client.newRequest(http.MethodGet, deployRequestsAPIPath(listReq.Organization, listReq.Database), nil)
+	baseURL := deployRequestsAPIPath(listReq.Organization, listReq.Database)
+
+	queryParams := url.Values{}
+	if listReq.State != "" {
+		queryParams.Set("state", listReq.State)
+	}
+	if listReq.Branch != "" {
+		queryParams.Set("branch", listReq.Branch)
+	}
+	if listReq.IntoBranch != "" {
+		queryParams.Set("into_branch", listReq.IntoBranch)
+	}
+
+	if len(queryParams) > 0 {
+		baseURL += "?" + queryParams.Encode()
+	}
+
+	req, err := d.client.newRequest(http.MethodGet, baseURL, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

@@ -107,18 +107,6 @@ type RefreshSchemaRequest struct {
 	Branch       string `json:"-"`
 }
 
-// BranchDemotionRequest represents a demotion request for a branch. This will
-// only be applicable to enterprise databases.
-type BranchDemotionRequest struct {
-	ID          string     `json:"id"`
-	Actor       *Actor     `json:"actor"`
-	Responder   *Actor     `json:"responder"`
-	RespondedAt *time.Time `json:"responded_at"`
-	State       string     `json:"state"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-}
-
 // DemoteRequest encapsulates the request for demoting a branch to
 // development.
 type DemoteRequest struct {

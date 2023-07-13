@@ -127,38 +127,6 @@ type DemoteRequest struct {
 	Branch       string `json:"-"`
 }
 
-// GetDemotionRequestRequest encapsulates the request for getting a demotion
-// request for an enterprise branch.
-type GetDemotionRequestRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-}
-
-// DenyDemotionRequest encapsulates the request for denying a demotion request
-// for a branch or cancelling it (if called by the same actor who requested it).
-type DenyDemotionRequestRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-}
-
-// RequestPromotionRequest encapsulates the request for promoting a branch to
-// production.
-type RequestPromotionRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-}
-
-// GetPromotionRequestRequest encapsulates the request for getting a branch
-// promotion request.
-type GetPromotionRequestRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-}
-
 // PromoteRequest encapsulates the request for promoting a request to
 // production.
 type PromoteRequest struct {
@@ -190,17 +158,6 @@ type LintSchemaRequest struct {
 	Branch       string `json:"-"`
 }
 
-// PromotionRequestLintError represents an error that occurs during branch
-// promotion.
-type PromotionRequestLintError struct {
-	LintError        string `json:"lint_error"`
-	Keyspace         string `json:"keyspace_name"`
-	Table            string `json:"table_name"`
-	SubjectType      string `json:"subject_type"`
-	ErrorDescription string `json:"error_description"`
-	DocsUrl          string `json:"docs_url"`
-}
-
 // SchemaLintError represents an error with the branch's schema
 type SchemaLintError struct {
 	LintError        string `json:"lint_error"`
@@ -209,18 +166,6 @@ type SchemaLintError struct {
 	SubjectType      string `json:"subject_type"`
 	ErrorDescription string `json:"error_description"`
 	DocsURL          string `json:"docs_url"`
-}
-
-// BranchPromotionRequest represents a promotion request for a branch.
-type BranchPromotionRequest struct {
-	ID         string                       `json:"id"`
-	Branch     string                       `json:"branch"`
-	LintErrors []*PromotionRequestLintError `json:"lint_errors"`
-	State      string                       `json:"state"`
-	CreatedAt  time.Time                    `json:"created_at"`
-	UpdatedAt  time.Time                    `json:"updated_at"`
-	StartedAt  *time.Time                   `json:"started_at"`
-	FinishedAt *time.Time                   `json:"finished_at"`
 }
 
 // VSchemaDiff returns the diff for a vschema
@@ -250,11 +195,7 @@ type DatabaseBranchesService interface {
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
-	Demote(context.Context, *DemoteRequest) (*BranchDemotionRequest, error)
-	GetDemotionRequest(context.Context, *GetDemotionRequestRequest) (*BranchDemotionRequest, error)
-	RequestPromotion(context.Context, *RequestPromotionRequest) (*BranchPromotionRequest, error)
-	GetPromotionRequest(context.Context, *GetPromotionRequestRequest) (*BranchPromotionRequest, error)
-	DenyDemotionRequest(context.Context, *DenyDemotionRequestRequest) error
+	Demote(context.Context, *DemoteRequest) (*DatabaseBranch, error)
 	Promote(context.Context, *PromoteRequest) (*DatabaseBranch, error)
 	EnableSafeMigrations(context.Context, *EnableSafeMigrationsRequest) (*DatabaseBranch, error)
 	DisableSafeMigrations(context.Context, *DisableSafeMigrationsRequest) (*DatabaseBranch, error)
@@ -436,24 +377,6 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 	return nil
 }
 
-// RequestPromotion requests a branch to be promoted from development to
-// production.
-func (d *databaseBranchesService) RequestPromotion(ctx context.Context, promoteReq *RequestPromotionRequest) (*BranchPromotionRequest, error) {
-	path := fmt.Sprintf("%s/promotion-request", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for branch promotion")
-	}
-
-	promotionReq := &BranchPromotionRequest{}
-	err = d.client.do(ctx, req, &promotionReq)
-	if err != nil {
-		return nil, err
-	}
-
-	return promotionReq, nil
-}
-
 // Promote promotes a branch from development to production.
 func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteRequest) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/promote", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
@@ -507,76 +430,23 @@ func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, dis
 	return branch, nil
 }
 
-func (d *databaseBranchesService) GetPromotionRequest(ctx context.Context, getReg *GetPromotionRequestRequest) (*BranchPromotionRequest, error) {
-	path := fmt.Sprintf("%s/promotion-request", databaseBranchAPIPath(getReg.Organization, getReg.Database, getReg.Branch))
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for getting branch promotion request")
-	}
-
-	promotionReq := &BranchPromotionRequest{}
-	err = d.client.do(ctx, req, &promotionReq)
-	if err != nil {
-		return nil, err
-	}
-
-	return promotionReq, nil
-}
-
-// GetDemotionRequest returns any pending demotion request for a given branch.
-func (d *databaseBranchesService) GetDemotionRequest(ctx context.Context, getReq *GetDemotionRequestRequest) (*BranchDemotionRequest, error) {
-	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch))
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for getting branch demotion request")
-	}
-
-	demotionReq := &BranchDemotionRequest{}
-	err = d.client.do(ctx, req, &demotionReq)
-	if err != nil {
-		return nil, err
-	}
-
-	return demotionReq, nil
-}
-
-// DenyDemotionRequest denies a pending demotion request for a given branch or
-// cancels it if called by the same admin that created it.
-func (d *databaseBranchesService) DenyDemotionRequest(ctx context.Context, denyReq *DenyDemotionRequestRequest) error {
-	path := fmt.Sprintf("%s/demotion-request", databaseBranchAPIPath(denyReq.Organization, denyReq.Database, denyReq.Branch))
-	req, err := d.client.newRequest(http.MethodDelete, path, nil)
-	if err != nil {
-		return errors.Wrap(err, "error creating request for deleting branch demotion request")
-	}
-
-	err = d.client.do(ctx, req, nil)
-	return err
-}
-
 // Demote demotes a branch from production to development. If the branch belongs
 // to an Enterprise organization, it will return a demote request and require a
 // second call by a different admin in order to complete demotion.
-func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteRequest) (*BranchDemotionRequest, error) {
+func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteRequest) (*DatabaseBranch, error) {
 	path := fmt.Sprintf("%s/demote", databaseBranchAPIPath(demoteReq.Organization, demoteReq.Database, demoteReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating request for branch demotion")
 	}
 
-	demotionReq := BranchDemotionRequest{}
-	err = d.client.do(ctx, req, &demotionReq)
+	branch := &DatabaseBranch{}
+	err = d.client.do(ctx, req, &branch)
 	if err != nil {
 		return nil, err
 	}
 
-	// This is smelly but if the demotionReq does not equal the blank struct, that
-	// means that something was marshaled into it, meaning a demotion request was
-	// returned.
-	if (demotionReq != BranchDemotionRequest{}) {
-		return &demotionReq, nil
-	}
-
-	return nil, nil
+	return branch, nil
 }
 
 // lintSchemaResponse represents the response from the lint schema endpoint.

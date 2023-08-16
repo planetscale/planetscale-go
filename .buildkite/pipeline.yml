@@ -1,14 +1,16 @@
 agents:
   queue: "public"
 steps:
-- name: "Go build and test %n"
+- name: "Go build and test"
   command: make
   plugins:
-    - docker-compose#v3.7.0:
+    - docker-compose#v4.14.0:
+        cli-version: "2"
         run: app
 
-- name: "Check licenses %n"
+- name: "Check licenses"
   command: make licensed
   plugins:
-    - docker-compose#v3.7.0:
+    - docker-compose#v4.14.0:
+        cli-version: "2"
         run: licensing

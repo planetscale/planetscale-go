@@ -91,9 +91,7 @@ type QueuedDeployment struct {
 	DeployRequestNumber uint64 `json:"deploy_request_number"`
 	IntoBranch          string `json:"into_branch"`
 
-	Actor          *Actor `json:"actor"`
-	CutoverActor   *Actor `json:"cutover_actor"`
-	CancelledActor *Actor `json:"cancelled_actor"`
+	Actor *Actor `json:"actor"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
@@ -122,6 +120,10 @@ type Deployment struct {
 	DeployRequestNumber  uint64                 `json:"deploy_request_number"`
 	IntoBranch           string                 `json:"into_branch"`
 	PrecedingDeployments []*QueuedDeployment    `json:"preceding_deployments"`
+
+	Actor          *Actor `json:"actor"`
+	CutoverActor   *Actor `json:"cutover_actor"`
+	CancelledActor *Actor `json:"cancelled_actor"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

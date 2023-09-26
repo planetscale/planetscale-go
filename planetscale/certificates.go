@@ -21,6 +21,7 @@ type DatabaseBranchCertificate struct {
 	PublicID    string         `json:"id"`
 	Name        string         `json:"display_name"`
 	Role        string         `json:"role"`
+	Actor       *Actor         `json:"actor"`
 	Branch      DatabaseBranch `json:"database_branch"`
 	Certificate string         `json:"certificate"`
 	CreatedAt   time.Time      `json:"created_at"`

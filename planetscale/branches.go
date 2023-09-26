@@ -21,6 +21,7 @@ type Actor struct {
 type DatabaseBranch struct {
 	Name           string    `json:"name"`
 	ParentBranch   string    `json:"parent_branch"`
+	Actor          Actor     `json:"actor"`
 	Region         Region    `json:"region"`
 	Ready          bool      `json:"ready"`
 	Production     bool      `json:"production"`

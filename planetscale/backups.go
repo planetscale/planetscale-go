@@ -14,6 +14,7 @@ type Backup struct {
 	Name        string    `json:"name"`
 	State       string    `json:"state"`
 	Size        int64     `json:"size"`
+	Actor       *Actor    `json:"actor"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	StartedAt   time.Time `json:"started_at"`

@@ -38,6 +38,7 @@ type DeployRequestReview struct {
 	ID        string    `json:"id"`
 	Body      string    `json:"body"`
 	State     string    `json:"state"`
+	Actor     Actor     `json:"actor"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -90,6 +91,10 @@ type QueuedDeployment struct {
 	DeployRequestNumber uint64 `json:"deploy_request_number"`
 	IntoBranch          string `json:"into_branch"`
 
+	Actor          *Actor `json:"actor"`
+	CutoverActor   *Actor `json:"cutover_actor"`
+	CancelledActor *Actor `json:"cancelled_actor"`
+
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	StartedAt  *time.Time `json:"started_at"`
@@ -133,7 +138,10 @@ type DeployRequest struct {
 	Branch     string `json:"branch"`
 	IntoBranch string `json:"into_branch"`
 
-	Number uint64 `json:"number"`
+	Actor           Actor  `json:"actor"`
+	ClosedBy        *Actor `json:"closed_by"`
+	BranchDeletedBy *Actor `json:"branch_deleted_by"`
+	Number          uint64 `json:"number"`
 
 	State string `json:"state"`
 

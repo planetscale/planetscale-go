@@ -70,7 +70,8 @@ type DatabasesService interface {
 // DatabaseDeletionRequest encapsulates the request for deleting a database from
 // an organization.
 type DatabaseDeletionRequest struct {
-	ID string `json:"id"`
+	ID    string `json:"id"`
+	Actor Actor  `json:"actor"`
 }
 
 // DatabaseState represents the state of a database

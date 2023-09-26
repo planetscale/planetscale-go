@@ -27,6 +27,7 @@ type DatabaseBranchPassword struct {
 	Hostname          string            `json:"access_host_url"`
 	Username          string            `json:"username"`
 	Role              string            `json:"role"`
+	Actor             *Actor            `json:"actor"`
 	Branch            DatabaseBranch    `json:"database_branch"`
 	CreatedAt         time.Time         `json:"created_at"`
 	DeletedAt         time.Time         `json:"deleted_at"`

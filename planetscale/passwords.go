@@ -33,6 +33,8 @@ type DatabaseBranchPassword struct {
 	DeletedAt         time.Time         `json:"deleted_at"`
 	PlainText         string            `json:"plain_text"`
 	ConnectionStrings ConnectionStrings `json:"connection_strings"`
+	TTL               int               `json:"ttl_seconds"`
+	Renewable         bool              `json:"renewable"`
 }
 
 // DatabaseBranchPasswordRequest encapsulates the request for creating/getting/deleting a
@@ -43,6 +45,7 @@ type DatabaseBranchPasswordRequest struct {
 	Branch       string `json:"-"`
 	Role         string `json:"role,omitempty"`
 	Name         string `json:"name"`
+	TTL          int    `json:"ttl,omitempty"`
 }
 
 // ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords

@@ -71,7 +71,7 @@ func TestDo(t *testing.T) {
 			response: `
 { 
 	"id": "509",
-	"type": "database",
+	"type": "Database",
 	"name": "foo-bar",
 	"notes": ""
 }`,
@@ -81,6 +81,7 @@ func TestDo(t *testing.T) {
 			v: &Database{},
 			want: &Database{
 				Name: "foo-bar",
+				Type: "Database",
 			},
 		},
 		{

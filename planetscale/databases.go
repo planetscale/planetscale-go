@@ -90,6 +90,7 @@ const (
 type Database struct {
 	Name      string        `json:"name"`
 	Notes     string        `json:"notes"`
+	Type      string        `json:"type"`
 	Region    Region        `json:"region"`
 	State     DatabaseState `json:"state"`
 	HtmlURL   string        `json:"html_url"`

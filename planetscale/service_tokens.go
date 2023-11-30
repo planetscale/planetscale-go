@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -180,6 +181,51 @@ type ServiceTokenAccess struct {
 
 func (d Database) isServiceTokenAccessResource()     {}
 func (o Organization) isServiceTokenAccessResource() {}
+
+func (st *ServiceTokenAccess) UnmarshalJSON(data []byte) error {
+	type tempStruct struct {
+		ID       string `json:"id"`
+		Access   string `json:"access"`
+		Type     string `json:"type"`
+		Resource json.RawMessage
+	}
+
+	var temp tempStruct
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	st.ID = temp.ID
+	st.Access = temp.Access
+	st.Type = temp.Type
+
+	var resourceType struct {
+		Type string `json:"type"`
+	}
+
+	if err := json.Unmarshal(temp.Resource, &resourceType); err != nil {
+		return err
+	}
+
+	switch resourceType.Type {
+	case "Database":
+		var db Database
+		if err := json.Unmarshal(temp.Resource, &db); err != nil {
+			return err
+		}
+		st.Resource = db
+	case "Organization":
+		var org Organization
+		if err := json.Unmarshal(temp.Resource, &org); err != nil {
+			return err
+		}
+		st.Resource = org
+	default:
+		return fmt.Errorf("unknown resource type: %s", resourceType.Type)
+	}
+
+	return nil
+}
 
 type ServiceTokenAccessResource interface {
 	isServiceTokenAccessResource()

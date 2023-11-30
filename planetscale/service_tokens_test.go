@@ -151,6 +151,7 @@ func TestServiceTokens_GetAccess(t *testing.T) {
 			Type:   "DatabaseAccess",
 			Resource: Database{
 				Name:      "hidden-river-4209",
+				Type:      "Database",
 				Notes:     "",
 				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -196,6 +197,7 @@ func TestServiceTokens_AddAccess(t *testing.T) {
 			Type:   "DatabaseAccess",
 			Resource: Database{
 				Name:      "hidden-river-4209",
+				Type:      "Database",
 				Notes:     "",
 				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),

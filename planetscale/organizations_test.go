@@ -19,7 +19,7 @@ func TestOrganizations_List(t *testing.T) {
   "data": [
     {
       "id": "my-cool-org",
-      "type": "organization",
+      "type": "Organization",
 	  "name": "my-cool-org",
 	  "created_at": "2021-01-14T10:19:23.000Z",
 	  "updated_at": "2021-01-14T10:19:23.000Z"
@@ -42,6 +42,7 @@ func TestOrganizations_List(t *testing.T) {
 	want := []*Organization{
 		{
 			Name:      "my-cool-org",
+			Type:      "Organization",
 			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 			UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		},
@@ -57,7 +58,7 @@ func TestOrganizations_Get(t *testing.T) {
 		w.WriteHeader(200)
 		out := `{
       "id": "my-cool-org",
-      "type": "organization",
+      "type": "Organization",
       "name": "my-cool-org",
       "created_at": "2021-01-14T10:19:23.000Z",
       "updated_at": "2021-01-14T10:19:23.000Z"
@@ -79,6 +80,7 @@ func TestOrganizations_Get(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	want := &Organization{
 		Name:      "my-cool-org",
+		Type:      "Organization",
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}

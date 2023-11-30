@@ -20,7 +20,7 @@ func TestDatabases_Create(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": { "slug": "us-west", "display_name": "US West" },"state":"ready"}`
+		out := `{"id":"planetscale-go-test-db","type":"Database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": { "slug": "us-west", "display_name": "US West" },"state":"ready"}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -44,6 +44,7 @@ func TestDatabases_Create(t *testing.T) {
 		Name:  name,
 		Notes: notes,
 		State: DatabaseReady,
+		Type:  "Database",
 		Region: Region{
 			Slug: "us-west",
 			Name: "US West",
@@ -61,7 +62,7 @@ func TestDatabases_Get(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
+		out := `{"id":"planetscale-go-test-db","type":"Database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -81,6 +82,7 @@ func TestDatabases_Get(t *testing.T) {
 
 	want := &Database{
 		Name:      name,
+		Type:      "Database",
 		Notes:     notes,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -95,7 +97,7 @@ func TestDatabases_List(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"data":[{"id":"planetscale-go-test-db","type":"database", "name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		out := `{"data":[{"id":"planetscale-go-test-db","type":"Database", "name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -115,6 +117,7 @@ func TestDatabases_List(t *testing.T) {
 	want := []*Database{{
 		Name:      name,
 		Notes:     notes,
+		Type:      "Database",
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}}
@@ -128,7 +131,7 @@ func TestDatabases_ListWithOptions(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"data":[{"id":"planetscale-go-test-db","type":"database", "name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		out := `{"data":[{"id":"planetscale-go-test-db","type":"Database", "name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.URL.Query().Get("page"), qt.Equals, "2")
@@ -150,6 +153,7 @@ func TestDatabases_ListWithOptions(t *testing.T) {
 	want := []*Database{{
 		Name:      name,
 		Notes:     notes,
+		Type:      "Database",
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}}

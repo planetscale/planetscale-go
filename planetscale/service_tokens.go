@@ -172,10 +172,17 @@ type serviceTokensResponse struct {
 }
 
 type ServiceTokenAccess struct {
-	ID       string   `json:"id"`
-	Access   string   `json:"access"`
-	Type     string   `json:"type"`
-	Resource Database `json:"resource"`
+	ID       string                     `json:"id"`
+	Access   string                     `json:"access"`
+	Type     string                     `json:"type"`
+	Resource ServiceTokenAccessResource `json:"resource"`
+}
+
+func (d Database) isServiceTokenAccessResource()     {}
+func (o Organization) isServiceTokenAccessResource() {}
+
+type ServiceTokenAccessResource interface {
+	isServiceTokenAccessResource()
 }
 
 type serviceTokenAccessResponse struct {

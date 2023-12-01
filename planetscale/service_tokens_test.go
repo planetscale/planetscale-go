@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	qt "github.com/frankban/quicktest"
 )
@@ -130,7 +129,7 @@ func TestServiceTokens_GetAccess(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"hjqui654yu71","type":"DatabaseAccess","resource":{"id":"1lbjwnp48b6r","type":"Database","url":"http://api.planetscaledb.local:3000/v1/organizations/organization5/databases/hidden-river-4209","branches_url":"http://api.planetscaledb.local:3000/v1/organizations/organization5/databases/hidden-river-4209/branches","name":"hidden-river-4209","notes":"","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"},"access":"read_comment"}]}`
+		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"hjqui654yu71","type":"DatabaseAccess","resource":{"id":"1lbjwnp48b6r","type":"Database","name":"hidden-river-4209","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"},"access":"read_comment"}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -149,11 +148,10 @@ func TestServiceTokens_GetAccess(t *testing.T) {
 			ID:     "hjqui654yu71",
 			Access: "read_comment",
 			Type:   "DatabaseAccess",
-			Resource: Database{
-				Name:      "hidden-river-4209",
-				Notes:     "",
-				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
-				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+			Resource: ServiceTokenResource{
+				ID:   "1lbjwnp48b6r",
+				Name: "hidden-river-4209",
+				Type: "Database",
 			},
 		},
 	}
@@ -173,7 +171,7 @@ func TestServiceTokens_AddAccess(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		c.Assert(data, qt.DeepEquals, wantBody)
 
-		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"hjqui654yu71","type":"DatabaseAccess","resource":{"id":"1lbjwnp48b6r","type":"Database","url":"http://api.planetscaledb.local:3000/v1/organizations/organization5/databases/hidden-river-4209","branches_url":"http://api.planetscaledb.local:3000/v1/organizations/organization5/databases/hidden-river-4209/branches","name":"hidden-river-4209","notes":"","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"},"access":"read_comment"}]}`
+		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"hjqui654yu71","type":"DatabaseAccess","resource":{"id":"1lbjwnp48b6r","type":"Database","name":"hidden-river-4209","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"},"access":"read_comment"}]}`
 		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -194,11 +192,10 @@ func TestServiceTokens_AddAccess(t *testing.T) {
 			ID:     "hjqui654yu71",
 			Access: "read_comment",
 			Type:   "DatabaseAccess",
-			Resource: Database{
-				Name:      "hidden-river-4209",
-				Notes:     "",
-				CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
-				UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+			Resource: ServiceTokenResource{
+				ID:   "1lbjwnp48b6r",
+				Name: "hidden-river-4209",
+				Type: "Database",
 			},
 		},
 	}

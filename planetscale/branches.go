@@ -28,7 +28,6 @@ type DatabaseBranch struct {
 	HtmlURL        string    `json:"html_url"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-	AccessHostURL  string    `json:"access_host_url"`
 	SafeMigrations bool      `json:"safe_migrations"`
 }
 

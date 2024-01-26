@@ -217,3 +217,44 @@ func TestPasswords_Get(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(password, qt.DeepEquals, want)
 }
+
+func TestPasswords_Renew(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := fmt.Sprintf(`{
+    "id": "%s",
+    "role": "writer",
+    "name": "planetscale-go-test-password",
+    "created_at": "2021-01-14T10:19:23.000Z"
+}`, testPasswordID)
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "planetscale-go-test-db"
+	branch := "my-branch"
+
+	password, err := client.Passwords.Renew(ctx, &RenewDatabaseBranchPasswordRequest{
+		Organization: org,
+		Database:     db,
+		Branch:       branch,
+		PasswordId:   testPasswordID,
+	})
+
+	want := &DatabaseBranchPassword{
+		Name:      "planetscale-go-test-password",
+		PublicID:  testPasswordID,
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		Role:      "writer",
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(password, qt.DeepEquals, want)
+}

@@ -31,6 +31,7 @@ type DatabaseBranchPassword struct {
 	Branch            DatabaseBranch    `json:"database_branch"`
 	CreatedAt         time.Time         `json:"created_at"`
 	DeletedAt         time.Time         `json:"deleted_at"`
+	ExpiresAt         time.Time         `json:"expires_at"`
 	PlainText         string            `json:"plain_text"`
 	ConnectionStrings ConnectionStrings `json:"connection_strings"`
 	TTL               int               `json:"ttl_seconds"`
@@ -76,6 +77,15 @@ type DeleteDatabaseBranchPasswordRequest struct {
 	PasswordId   string
 }
 
+// RenewDatabaseBranchPasswordRequest encapsulates the request for renewing a password
+// for a given database branch.
+type RenewDatabaseBranchPasswordRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+	PasswordId   string
+}
+
 // DatabaseBranchPasswordsService is an interface for communicating with the PlanetScale
 // Database Branch Passwords API endpoint.
 type PasswordsService interface {
@@ -83,6 +93,7 @@ type PasswordsService interface {
 	List(context.Context, *ListDatabaseBranchPasswordRequest) ([]*DatabaseBranchPassword, error)
 	Get(context.Context, *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	Delete(context.Context, *DeleteDatabaseBranchPasswordRequest) error
+	Renew(context.Context, *RenewDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 }
 
 type passwordsService struct {
@@ -166,6 +177,20 @@ func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranch
 	return passwordsResp.Passwords, nil
 }
 
+func (d *passwordsService) Renew(ctx context.Context, renewReq *RenewDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error) {
+	path := passwordRenewAPIPath(renewReq.Organization, renewReq.Database, renewReq.Branch, renewReq.PasswordId)
+	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	password := &DatabaseBranchPassword{}
+	if err := d.client.do(ctx, req, &password); err != nil {
+		return nil, err
+	}
+	return password, nil
+}
+
 func passwordBranchAPIPath(org, db, branch, password string) string {
 	return fmt.Sprintf("%s/%s", passwordsBranchAPIPath(org, db, branch), password)
 }
@@ -176,4 +201,8 @@ func passwordsBranchAPIPath(org, db, branch string) string {
 
 func passwordsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/passwords", databasesAPIPath(org), db)
+}
+
+func passwordRenewAPIPath(org, db, branch, password string) string {
+	return fmt.Sprintf("%s/renew", passwordBranchAPIPath(org, db, branch, password))
 }

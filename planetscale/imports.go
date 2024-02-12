@@ -13,21 +13,21 @@ type BillingPlan int
 
 const (
 	HobbyPlan BillingPlan = iota
-	ScalerPlan
+	ScalerProPlan
 )
 
 func (bp BillingPlan) String() string {
 	switch bp {
-	case ScalerPlan:
-		return "scaler"
+	case ScalerProPlan:
+		return "scaler_pro"
 	default:
 		return "developer"
 	}
 }
 
 var planToBillingPlanMap = map[string]BillingPlan{
-	"scaler":    ScalerPlan,
-	"developer": HobbyPlan,
+	"scaler_pro": ScalerProPlan,
+	"developer":  HobbyPlan,
 }
 
 type DataImportSource struct {

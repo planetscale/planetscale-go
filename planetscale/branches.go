@@ -94,6 +94,14 @@ type BranchVSchemaRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type UpdateBranchVschemaRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"keyspace"`
+	VSchema      string `json:"vschema"`
+}
+
 type BranchKeyspacesRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -182,6 +190,7 @@ type DatabaseBranchesService interface {
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
+	UpdateVSchema(context.Context, *UpdateBranchVschemaRequest) (*VSchemaDiff, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
 	Demote(context.Context, *DemoteRequest) (*DatabaseBranch, error)
@@ -259,6 +268,22 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	}
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	vSchema := &VSchemaDiff{}
+	if err := d.client.do(ctx, req, &vSchema); err != nil {
+		return nil, err
+	}
+
+	return vSchema, nil
+}
+
+func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchemaDiff, error) {
+	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch))
+
+	req, err := d.client.newRequest(http.MethodPatch, path, updateVSchemaReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

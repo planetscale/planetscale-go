@@ -228,6 +228,35 @@ func TestBranches_VSchema(t *testing.T) {
 	c.Assert(vSchema.Raw, qt.DeepEquals, want)
 }
 
+func TestBranches_UpdateVSchema(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"raw": "{}"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	vSchema, err := client.DatabaseBranches.UpdateVSchema(ctx, &UpdateBranchVschemaRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "bar",
+		VSchema:      "{}",
+	})
+
+	want := `{}`
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(vSchema.Raw, qt.DeepEquals, want)
+}
+
 func TestBranches_Keyspaces(t *testing.T) {
 	c := qt.New(t)
 

@@ -94,6 +94,27 @@ type BranchVSchemaRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type UpdateBranchVschemaRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"keyspace"`
+	VSchema      string `json:"vschema"`
+}
+
+type BranchRoutingRulesRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
+type UpdateBranchRoutingRulesRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	RoutingRules string `json:"routing_rules"`
+}
+
 type BranchKeyspacesRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -163,6 +184,11 @@ type VSchemaDiff struct {
 	HTML string `json:"html"`
 }
 
+type RoutingRules struct {
+	Raw  string `json:"raw"`
+	HTML string `json:"html"`
+}
+
 type Keyspace struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
@@ -182,6 +208,9 @@ type DatabaseBranchesService interface {
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
 	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
+	UpdateVSchema(context.Context, *UpdateBranchVschemaRequest) (*VSchemaDiff, error)
+	RoutingRules(context.Context, *BranchRoutingRulesRequest) (*RoutingRules, error)
+	UpdateRoutingRules(context.Context, *UpdateBranchRoutingRulesRequest) (*RoutingRules, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
 	Demote(context.Context, *DemoteRequest) (*DatabaseBranch, error)
@@ -269,6 +298,54 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	}
 
 	return vSchema, nil
+}
+
+func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchemaDiff, error) {
+	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch))
+
+	req, err := d.client.newRequest(http.MethodPatch, path, updateVSchemaReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	vSchema := &VSchemaDiff{}
+	if err := d.client.do(ctx, req, &vSchema); err != nil {
+		return nil, err
+	}
+
+	return vSchema, nil
+}
+
+func (d *databaseBranchesService) RoutingRules(ctx context.Context, routingRulesReq *BranchRoutingRulesRequest) (*RoutingRules, error) {
+	path := fmt.Sprintf("%s/routing-rules", databaseBranchAPIPath(routingRulesReq.Organization, routingRulesReq.Database, routingRulesReq.Branch))
+
+	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	routingRules := &RoutingRules{}
+	if err := d.client.do(ctx, req, &routingRules); err != nil {
+		return nil, err
+	}
+
+	return routingRules, nil
+}
+
+func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, updateRoutingRulesReq *UpdateBranchRoutingRulesRequest) (*RoutingRules, error) {
+	path := fmt.Sprintf("%s/routing-rules", databaseBranchAPIPath(updateRoutingRulesReq.Organization, updateRoutingRulesReq.Database, updateRoutingRulesReq.Branch))
+
+	req, err := d.client.newRequest(http.MethodPatch, path, updateRoutingRulesReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	routingRules := &RoutingRules{}
+	if err := d.client.do(ctx, req, &routingRules); err != nil {
+		return nil, err
+	}
+
+	return routingRules, nil
 }
 
 func (d *databaseBranchesService) Keyspaces(ctx context.Context, keyspaceReq *BranchKeyspacesRequest) ([]*Keyspace, error) {

@@ -178,8 +178,8 @@ type SchemaLintError struct {
 	DocsURL          string `json:"docs_url"`
 }
 
-// VSchemaDiff returns the diff for a vschema
-type VSchemaDiff struct {
+// VSchema returns a vschema for a branch
+type VSchema struct {
 	Raw  string `json:"raw"`
 	HTML string `json:"html"`
 }
@@ -207,8 +207,8 @@ type DatabaseBranchesService interface {
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
-	VSchema(context.Context, *BranchVSchemaRequest) (*VSchemaDiff, error)
-	UpdateVSchema(context.Context, *UpdateBranchVschemaRequest) (*VSchemaDiff, error)
+	VSchema(context.Context, *BranchVSchemaRequest) (*VSchema, error)
+	UpdateVSchema(context.Context, *UpdateBranchVschemaRequest) (*VSchema, error)
 	RoutingRules(context.Context, *BranchRoutingRulesRequest) (*RoutingRules, error)
 	UpdateRoutingRules(context.Context, *UpdateBranchRoutingRulesRequest) (*RoutingRules, error)
 	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
@@ -276,7 +276,7 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 	return schemas.Schemas, nil
 }
 
-func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchemaDiff, error) {
+func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch))
 	v := url.Values{}
 	if vSchemaReq.Keyspace != "" {
@@ -292,7 +292,7 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	vSchema := &VSchemaDiff{}
+	vSchema := &VSchema{}
 	if err := d.client.do(ctx, req, &vSchema); err != nil {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	return vSchema, nil
 }
 
-func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchemaDiff, error) {
+func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch))
 
 	req, err := d.client.newRequest(http.MethodPatch, path, updateVSchemaReq)
@@ -308,7 +308,7 @@ func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSche
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	vSchema := &VSchemaDiff{}
+	vSchema := &VSchema{}
 	if err := d.client.do(ctx, req, &vSchema); err != nil {
 		return nil, err
 	}

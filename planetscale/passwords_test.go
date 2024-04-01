@@ -57,6 +57,51 @@ func TestPasswords_Create(t *testing.T) {
 	c.Assert(password, qt.DeepEquals, want)
 }
 
+func TestPasswords_CreateReplica(t *testing.T) {
+	c := qt.New(t)
+	plainText := "plain-text-replica-password"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := fmt.Sprintf(`{
+    "id": "%s",
+    "role": "reader",
+    "plain_text": "%s",
+    "name": "planetscale-go-test-replica-password",
+    "created_at": "2021-01-14T10:19:23.000Z"
+}`, testPasswordID, plainText)
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "my-db"
+	branch := "my-branch"
+
+	password, err := client.Passwords.Create(ctx, &DatabaseBranchPasswordRequest{
+		Organization: org,
+		Database:     db,
+		Branch:       branch,
+		Role:         "reader",
+		Replica:      true,
+	})
+
+	want := &DatabaseBranchPassword{
+		Name:     "planetscale-go-test-replica-password",
+		PublicID: testPasswordID,
+
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		Role:      "reader",
+		PlainText: plainText,
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(password, qt.DeepEquals, want)
+}
+
 func TestPasswords_List(t *testing.T) {
 	c := qt.New(t)
 

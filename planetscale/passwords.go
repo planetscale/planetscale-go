@@ -47,6 +47,7 @@ type DatabaseBranchPasswordRequest struct {
 	Role         string `json:"role,omitempty"`
 	Name         string `json:"name"`
 	TTL          int    `json:"ttl,omitempty"`
+	Replica      bool   `json:"replica,omitempty"`
 }
 
 // ListDatabaseBranchPasswordRequest encapsulates the request for listing all passwords

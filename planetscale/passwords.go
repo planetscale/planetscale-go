@@ -36,6 +36,7 @@ type DatabaseBranchPassword struct {
 	ConnectionStrings ConnectionStrings `json:"connection_strings"`
 	TTL               int               `json:"ttl_seconds"`
 	Renewable         bool              `json:"renewable"`
+	Replica           bool              `json:"replica"`
 }
 
 // DatabaseBranchPasswordRequest encapsulates the request for creating/getting/deleting a

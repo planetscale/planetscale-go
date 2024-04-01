@@ -23,7 +23,8 @@ func TestPasswords_Create(t *testing.T) {
     "role": "admin",
     "plain_text": "%s",
     "name": "planetscale-go-test-password",
-    "created_at": "2021-01-14T10:19:23.000Z"
+    "created_at": "2021-01-14T10:19:23.000Z",
+		"replica": false
 }`, testPasswordID, plainText)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -51,6 +52,7 @@ func TestPasswords_Create(t *testing.T) {
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:      "admin",
 		PlainText: plainText,
+		Replica:   false,
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -67,7 +69,8 @@ func TestPasswords_CreateReplica(t *testing.T) {
     "role": "reader",
     "plain_text": "%s",
     "name": "planetscale-go-test-replica-password",
-    "created_at": "2021-01-14T10:19:23.000Z"
+    "created_at": "2021-01-14T10:19:23.000Z",
+		"replica": true
 }`, testPasswordID, plainText)
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -96,6 +99,7 @@ func TestPasswords_CreateReplica(t *testing.T) {
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		Role:      "reader",
 		PlainText: plainText,
+		Replica:   true,
 	}
 
 	c.Assert(err, qt.IsNil)

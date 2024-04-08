@@ -9,34 +9,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ConnectionStrings struct {
-	DotNet   string `json:"dotnet"`
-	General  string `json:"general"`
-	MySQLCLI string `json:"mysqlcli"`
-	PHP      string `json:"php"`
-	Prisma   string `json:"prisma"`
-	Rails    string `json:"rails"`
-	Go       string `json:"go"`
-	Java     string `json:"java"`
-	Rust     string `json:"rust"`
-}
-
 type DatabaseBranchPassword struct {
-	PublicID          string            `json:"id"`
-	Name              string            `json:"name"`
-	Hostname          string            `json:"access_host_url"`
-	Username          string            `json:"username"`
-	Role              string            `json:"role"`
-	Actor             *Actor            `json:"actor"`
-	Branch            DatabaseBranch    `json:"database_branch"`
-	CreatedAt         time.Time         `json:"created_at"`
-	DeletedAt         time.Time         `json:"deleted_at"`
-	ExpiresAt         time.Time         `json:"expires_at"`
-	PlainText         string            `json:"plain_text"`
-	ConnectionStrings ConnectionStrings `json:"connection_strings"`
-	TTL               int               `json:"ttl_seconds"`
-	Renewable         bool              `json:"renewable"`
-	Replica           bool              `json:"replica"`
+	PublicID  string         `json:"id"`
+	Name      string         `json:"name"`
+	Hostname  string         `json:"access_host_url"`
+	Username  string         `json:"username"`
+	Role      string         `json:"role"`
+	Actor     *Actor         `json:"actor"`
+	Branch    DatabaseBranch `json:"database_branch"`
+	CreatedAt time.Time      `json:"created_at"`
+	DeletedAt time.Time      `json:"deleted_at"`
+	ExpiresAt time.Time      `json:"expires_at"`
+	PlainText string         `json:"plain_text"`
+	TTL       int            `json:"ttl_seconds"`
+	Renewable bool           `json:"renewable"`
+	Replica   bool           `json:"replica"`
 }
 
 // DatabaseBranchPasswordRequest encapsulates the request for creating/getting/deleting a

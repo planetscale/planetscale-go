@@ -157,6 +157,9 @@ type DeployRequest struct {
 
 	HtmlURL string `json:"html_url"`
 
+	InstantDDLEligible bool `json:"instant_ddl_eligible"`
+	InstantDDL         bool `json:"instant_ddl"`
+
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	ClosedAt   *time.Time `json:"closed_at"`

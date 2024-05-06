@@ -50,6 +50,7 @@ type PerformDeployRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
+	InstantDDL   bool   `json:"-"`
 }
 
 // GetDeployRequest encapsulates the request for getting a single deploy
@@ -156,6 +157,9 @@ type DeployRequest struct {
 	Deployment *Deployment `json:"deployment"`
 
 	HtmlURL string `json:"html_url"`
+
+	InstantDDLEligible bool `json:"instant_ddl_eligible"`
+	InstantDDL         bool `json:"instant_ddl"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

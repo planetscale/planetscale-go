@@ -122,6 +122,9 @@ type Deployment struct {
 	IntoBranch           string                 `json:"into_branch"`
 	PrecedingDeployments []*QueuedDeployment    `json:"preceding_deployments"`
 
+	InstantDDLEligible bool `json:"instant_ddl_eligible"`
+	InstantDDL         bool `json:"instant_ddl"`
+
 	Actor          *Actor `json:"actor"`
 	CutoverActor   *Actor `json:"cutover_actor"`
 	CancelledActor *Actor `json:"cancelled_actor"`
@@ -157,9 +160,6 @@ type DeployRequest struct {
 	Deployment *Deployment `json:"deployment"`
 
 	HtmlURL string `json:"html_url"`
-
-	InstantDDLEligible bool `json:"instant_ddl_eligible"`
-	InstantDDL         bool `json:"instant_ddl"`
 
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`

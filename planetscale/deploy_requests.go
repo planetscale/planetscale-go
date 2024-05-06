@@ -50,6 +50,7 @@ type PerformDeployRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
+	InstantDDL   bool   `json:"-"`
 }
 
 // GetDeployRequest encapsulates the request for getting a single deploy

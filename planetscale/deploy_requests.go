@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -293,6 +294,15 @@ func (d *deployRequestsService) CloseDeploy(ctx context.Context, closeReq *Close
 // Deploy approves and executes a specific deploy request.
 func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDeployRequest) (*DeployRequest, error) {
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "deploy")
+
+	queryParams := url.Values{}
+	if deployReq.InstantDDL {
+		queryParams.Set("instant_ddl", strconv.FormatBool(deployReq.InstantDDL))
+	}
+	if len(queryParams) > 0 {
+		path += "?" + queryParams.Encode()
+	}
+
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

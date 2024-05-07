@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -94,10 +95,15 @@ func TestDeployRequests_InstantDeploy(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(r.URL.Query(), qt.DeepEquals, url.Values{"instant_ddl": []string{"true"}})
+		var request struct {
+			InstantDDL bool `json:"instant_ddl"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&request)
+		c.Assert(err, qt.IsNil)
+		c.Assert(request.InstantDDL, qt.Equals, true)
 		w.WriteHeader(200)
 		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "queued", "instant_ddl": true }, "number": 1337}`
-		_, err := w.Write([]byte(out))
+		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 

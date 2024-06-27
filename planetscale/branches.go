@@ -276,15 +276,7 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 }
 
 func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch))
-	v := url.Values{}
-	if vSchemaReq.Keyspace != "" {
-		v.Add("keyspace", vSchemaReq.Keyspace)
-	}
-
-	if vals := v.Encode(); vals != "" {
-		path += "?" + vals
-	}
+	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch), vSchemaReq.Keyspace)
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -300,7 +292,7 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 }
 
 func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch))
+	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch), updateVSchemaReq.Keyspace)
 
 	req, err := d.client.newRequest(http.MethodPatch, path, updateVSchemaReq)
 	if err != nil {

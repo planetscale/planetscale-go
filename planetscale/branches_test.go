@@ -220,6 +220,7 @@ func TestBranches_VSchema(t *testing.T) {
 		Organization: "foo",
 		Database:     "bar",
 		Branch:       "baz",
+		Keyspace:     "main",
 	})
 
 	want := `{}`

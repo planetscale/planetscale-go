@@ -177,24 +177,9 @@ type SchemaLintError struct {
 	DocsURL          string `json:"docs_url"`
 }
 
-// VSchema returns a vschema for a branch
-type VSchema struct {
-	Raw  string `json:"raw"`
-	HTML string `json:"html"`
-}
-
 type RoutingRules struct {
 	Raw  string `json:"raw"`
 	HTML string `json:"html"`
-}
-
-type Keyspace struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Shards    int       `json:"shards"`
-	Sharded   bool      `json:"sharded"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // DatabaseBranchesService is an interface for communicating with the PlanetScale

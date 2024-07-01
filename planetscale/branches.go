@@ -260,6 +260,8 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 	return schemas.Schemas, nil
 }
 
+// VSchema returns the VSchema for a branch keyspace.
+// Deprecated: Use the VSchema method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch), vSchemaReq.Keyspace)
 
@@ -276,6 +278,8 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	return vSchema, nil
 }
 
+// UpdateVSchema updates the VSchema for a branch keyspace.
+// Deprecated: Use the UpdateVSchema method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch), updateVSchemaReq.Keyspace)
 
@@ -324,6 +328,8 @@ func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, update
 	return routingRules, nil
 }
 
+// Keyspaces returns the keyspaces for a branch.
+// Deprecated: Use the List method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) Keyspaces(ctx context.Context, keyspaceReq *BranchKeyspacesRequest) ([]*Keyspace, error) {
 	path := fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(keyspaceReq.Organization, keyspaceReq.Database, keyspaceReq.Branch))
 

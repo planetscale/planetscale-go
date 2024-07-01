@@ -177,24 +177,9 @@ type SchemaLintError struct {
 	DocsURL          string `json:"docs_url"`
 }
 
-// VSchema returns a vschema for a branch
-type VSchema struct {
-	Raw  string `json:"raw"`
-	HTML string `json:"html"`
-}
-
 type RoutingRules struct {
 	Raw  string `json:"raw"`
 	HTML string `json:"html"`
-}
-
-type Keyspace struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Shards    int       `json:"shards"`
-	Sharded   bool      `json:"sharded"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // DatabaseBranchesService is an interface for communicating with the PlanetScale
@@ -275,6 +260,8 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 	return schemas.Schemas, nil
 }
 
+// VSchema returns the VSchema for a branch keyspace.
+// Deprecated: Use the VSchema method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch), vSchemaReq.Keyspace)
 
@@ -291,6 +278,8 @@ func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *Branc
 	return vSchema, nil
 }
 
+// UpdateVSchema updates the VSchema for a branch keyspace.
+// Deprecated: Use the UpdateVSchema method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchema, error) {
 	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch), updateVSchemaReq.Keyspace)
 
@@ -339,6 +328,8 @@ func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, update
 	return routingRules, nil
 }
 
+// Keyspaces returns the keyspaces for a branch.
+// Deprecated: Use the List method within BranchKeyspacesService instead.
 func (d *databaseBranchesService) Keyspaces(ctx context.Context, keyspaceReq *BranchKeyspacesRequest) ([]*Keyspace, error) {
 	path := fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(keyspaceReq.Organization, keyspaceReq.Database, keyspaceReq.Branch))
 

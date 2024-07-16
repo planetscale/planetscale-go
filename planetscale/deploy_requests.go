@@ -192,6 +192,7 @@ type CreateDeployRequestRequest struct {
 	Branch           string `json:"branch"`
 	IntoBranch       string `json:"into_branch,omitempty"`
 	Notes            string `json:"notes"`
+	AutoApply        bool   `json:"auto_apply,omitempty"`
 	AutoDeleteBranch bool   `json:"auto_delete_branch,omitempty"`
 }
 

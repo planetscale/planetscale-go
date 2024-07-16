@@ -242,7 +242,7 @@ func TestDeployRequests_Create(t *testing.T) {
 		Database:         testDatabase,
 		Notes:            "",
 		AutoDeleteBranch: true,
-		AutoApply:        false,
+		AutoCutover:      false,
 	})
 
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)

@@ -238,9 +238,11 @@ func TestDeployRequests_Create(t *testing.T) {
 	ctx := context.Background()
 
 	requests, err := client.DeployRequests.Create(ctx, &CreateDeployRequestRequest{
-		Organization: testOrg,
-		Database:     testDatabase,
-		Notes:        "",
+		Organization:     testOrg,
+		Database:         testDatabase,
+		Notes:            "",
+		AutoDeleteBranch: true,
+		AutoCutover:      false,
 	})
 
 	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)

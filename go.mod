@@ -1,6 +1,6 @@
 module github.com/planetscale/planetscale-go
 
-go 1.19
+go 1.23.0
 
 require (
 	github.com/frankban/quicktest v1.14.6

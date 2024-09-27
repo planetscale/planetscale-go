@@ -34,6 +34,16 @@ type ListBranchKeyspacesRequest struct {
 	Branch       string `json:"-"`
 }
 
+type CreateBranchKeyspaceRequest struct {
+	Organization  string      `json:"-"`
+	Database      string      `json:"-"`
+	Branch        string      `json:"-"`
+	Name          string      `json:"name"`
+	ClusterSize   ClusterSize `json:"cluster_size"`
+	ExtraReplicas int         `json:"replicas"`
+	Shards        int         `json:"shards"`
+}
+
 type GetBranchKeyspaceRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -62,6 +72,7 @@ type branchKeyspacesResponse struct {
 
 // BranchKeyspaceService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type BranchKeyspacesService interface {
+	Create(context.Context, *CreateBranchKeyspaceRequest) (*Keyspace, error)
 	List(context.Context, *ListBranchKeyspacesRequest) ([]*Keyspace, error)
 	Get(context.Context, *GetBranchKeyspaceRequest) (*Keyspace, error)
 	VSchema(context.Context, *GetKeyspaceVSchemaRequest) (*VSchema, error)
@@ -96,6 +107,21 @@ func (s *branchKeyspacesService) List(ctx context.Context, listReq *ListBranchKe
 // Get returns a keyspace for a branch
 func (s *branchKeyspacesService) Get(ctx context.Context, getReq *GetBranchKeyspaceRequest) (*Keyspace, error) {
 	req, err := s.client.newRequest(http.MethodGet, databaseBranchKeyspaceAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Keyspace), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	keyspace := &Keyspace{}
+	if err := s.client.do(ctx, req, keyspace); err != nil {
+		return nil, err
+	}
+
+	return keyspace, nil
+}
+
+// Create creates a keyspace for a branch
+func (s *branchKeyspacesService) Create(ctx context.Context, createReq *CreateBranchKeyspaceRequest) (*Keyspace, error) {
+	req, err := s.client.newRequest(http.MethodPost, databaseBranchKeyspacesAPIPath(createReq.Organization, createReq.Database, createReq.Branch), createReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

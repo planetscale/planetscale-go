@@ -69,6 +69,40 @@ func TestKeyspaces_Get(t *testing.T) {
 	c.Assert(keyspace.Shards, qt.Equals, 2)
 }
 
+func TestKeyspaces_Create(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	keyspace, err := client.Keyspaces.Create(ctx, &CreateBranchKeyspaceRequest{
+		Organization:  "foo",
+		Database:      "bar",
+		Branch:        "baz",
+		Name:          "qux",
+		ClusterSize:   "small",
+		ExtraReplicas: 3,
+		Shards:        2,
+	})
+
+	wantID := "thisisanid"
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(keyspace.ID, qt.Equals, wantID)
+	c.Assert(keyspace.Sharded, qt.Equals, true)
+	c.Assert(keyspace.Shards, qt.Equals, 2)
+}
+
 func TestKeyspaces_VSchema(t *testing.T) {
 	c := qt.New(t)
 

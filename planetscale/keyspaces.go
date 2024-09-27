@@ -16,7 +16,9 @@ type Keyspace struct {
 	Sharded       bool        `json:"sharded"`
 	Replicas      uint64      `json:"replicas"`
 	ExtraReplicas uint64      `json:"extra_replicas"`
+	ResizePending bool        `json:"resize_pending"`
 	Resizing      bool        `json:"resizing"`
+	Ready         bool        `json:"ready"`
 	ClusterSize   ClusterSize `json:"cluster_rate_name"`
 	CreatedAt     time.Time   `json:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at"`

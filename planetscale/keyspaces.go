@@ -77,7 +77,7 @@ type ResizeKeyspaceRequest struct {
 	Database      string      `json:"-"`
 	Branch        string      `json:"-"`
 	Keyspace      string      `json:"-"`
-	ExtraReplicas uint        `json:"extra_replicas,omitempty"`
+	ExtraReplicas uint        `json:"extra_replicas"`
 	ClusterSize   ClusterSize `json:"cluster_size,omitempty"`
 }
 

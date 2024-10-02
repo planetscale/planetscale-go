@@ -73,12 +73,12 @@ type branchKeyspacesResponse struct {
 }
 
 type ResizeKeyspaceRequest struct {
-	Organization  string      `json:"-"`
-	Database      string      `json:"-"`
-	Branch        string      `json:"-"`
-	Keyspace      string      `json:"-"`
-	ExtraReplicas uint        `json:"extra_replicas"`
-	ClusterSize   ClusterSize `json:"cluster_size,omitempty"`
+	Organization  string       `json:"-"`
+	Database      string       `json:"-"`
+	Branch        string       `json:"-"`
+	Keyspace      string       `json:"-"`
+	ExtraReplicas *uint        `json:"extra_replicas,omitempty"`
+	ClusterSize   *ClusterSize `json:"cluster_size,omitempty"`
 }
 
 type KeyspaceResizeRequest struct {

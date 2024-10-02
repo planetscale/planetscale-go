@@ -181,13 +181,16 @@ func TestKeyspaces_Resize(t *testing.T) {
 
 	ctx := context.Background()
 
+	size := ClusterSize("PS_10")
+	replicas := uint(3)
+
 	krr, err := client.Keyspaces.Resize(ctx, &ResizeKeyspaceRequest{
 		Organization:  "foo",
 		Database:      "bar",
 		Branch:        "baz",
 		Keyspace:      "qux",
-		ClusterSize:   ClusterSize("PS_10"),
-		ExtraReplicas: 3,
+		ClusterSize:   &size,
+		ExtraReplicas: &replicas,
 	})
 
 	wantID := "thisisanid"

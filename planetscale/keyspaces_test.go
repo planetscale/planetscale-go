@@ -133,6 +133,38 @@ func TestKeyspaces_VSchema(t *testing.T) {
 	c.Assert(vSchema.HTML, qt.Equals, wantHTML)
 }
 
+func TestKeyspaces_UpdateVSchema(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"raw":"{\"sharded\":true,\"tables\":{}}","html":"<div>\"sharded\":true,\"tables\":{}</div>"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	vSchema, err := client.Keyspaces.UpdateVSchema(ctx, &UpdateKeyspaceVSchemaRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+		VSchema:      "{\"sharded\":true,\"tables\":{}}",
+	})
+
+	wantRaw := "{\"sharded\":true,\"tables\":{}}"
+	wantHTML := "<div>\"sharded\":true,\"tables\":{}</div>"
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(vSchema.Raw, qt.Equals, wantRaw)
+	c.Assert(vSchema.HTML, qt.Equals, wantHTML)
+}
+
 func TestKeyspaces_Resize(t *testing.T) {
 	c := qt.New(t)
 
@@ -167,36 +199,4 @@ func TestKeyspaces_Resize(t *testing.T) {
 	c.Assert(krr.PreviousReplicas, qt.Equals, uint(5))
 	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
 	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
-}
-
-func TestKeyspaces_UpdateVSchema(t *testing.T) {
-	c := qt.New(t)
-
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		out := `{"raw":"{\"sharded\":true,\"tables\":{}}","html":"<div>\"sharded\":true,\"tables\":{}</div>"}`
-		_, err := w.Write([]byte(out))
-		c.Assert(err, qt.IsNil)
-		c.Assert(r.Method, qt.Equals, http.MethodPatch)
-	}))
-
-	client, err := NewClient(WithBaseURL(ts.URL))
-	c.Assert(err, qt.IsNil)
-
-	ctx := context.Background()
-
-	vSchema, err := client.Keyspaces.UpdateVSchema(ctx, &UpdateKeyspaceVSchemaRequest{
-		Organization: "foo",
-		Database:     "bar",
-		Branch:       "baz",
-		Keyspace:     "qux",
-		VSchema:      "{\"sharded\":true,\"tables\":{}}",
-	})
-
-	wantRaw := "{\"sharded\":true,\"tables\":{}}"
-	wantHTML := "<div>\"sharded\":true,\"tables\":{}</div>"
-
-	c.Assert(err, qt.IsNil)
-	c.Assert(vSchema.Raw, qt.Equals, wantRaw)
-	c.Assert(vSchema.HTML, qt.Equals, wantHTML)
 }

@@ -106,6 +106,13 @@ type CancelKeyspaceResizeRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type KeyspaceResizeStatusRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
+}
+
 // BranchKeyspaceService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type BranchKeyspacesService interface {
 	Create(context.Context, *CreateBranchKeyspaceRequest) (*Keyspace, error)
@@ -115,7 +122,7 @@ type BranchKeyspacesService interface {
 	UpdateVSchema(context.Context, *UpdateKeyspaceVSchemaRequest) (*VSchema, error)
 	Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
 	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
-	// ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
+	ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
 }
 
 type branchKeyspacesService struct {
@@ -238,4 +245,30 @@ func databaseBranchKeyspaceAPIPath(org, db, branch, keyspace string) string {
 
 func databaseBranchKeyspaceResizesAPIPath(org, db, branch, keyspace string) string {
 	return fmt.Sprintf("%s/resizes", databaseBranchKeyspaceAPIPath(org, db, branch, keyspace))
+}
+
+type keyspaceResizesResponse struct {
+	Resizes []*KeyspaceResizeRequest `json:"data"`
+}
+
+func (s *branchKeyspacesService) ResizeStatus(ctx context.Context, resizeReq *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error) {
+	req, err := s.client.newRequest(http.MethodGet, databaseBranchKeyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	resizesResponse := &keyspaceResizesResponse{}
+	if err := s.client.do(ctx, req, resizesResponse); err != nil {
+		return nil, err
+	}
+
+	// If there are no resizes, treat the same as a not found error
+	if len(resizesResponse.Resizes) == 0 {
+		return nil, &Error{
+			msg:  "Not Found",
+			Code: ErrNotFound,
+		}
+	}
+
+	return resizesResponse.Resizes[0], nil
 }

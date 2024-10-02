@@ -200,3 +200,26 @@ func TestKeyspaces_Resize(t *testing.T) {
 	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
 	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
 }
+
+func TestKeyspaces_CancelResize(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(204)
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.Keyspaces.CancelResize(ctx, &CancelKeyspaceResizeRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+	})
+
+	c.Assert(err, qt.IsNil)
+}

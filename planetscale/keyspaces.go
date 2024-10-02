@@ -99,6 +99,13 @@ type KeyspaceResizeRequest struct {
 	CompletedAt *time.Time `json:"completed_at"`
 }
 
+type CancelKeyspaceResizeRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
+}
+
 // BranchKeyspaceService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type BranchKeyspacesService interface {
 	Create(context.Context, *CreateBranchKeyspaceRequest) (*Keyspace, error)
@@ -107,8 +114,8 @@ type BranchKeyspacesService interface {
 	VSchema(context.Context, *GetKeyspaceVSchemaRequest) (*VSchema, error)
 	UpdateVSchema(context.Context, *UpdateKeyspaceVSchemaRequest) (*VSchema, error)
 	Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
+	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
 	// ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
-	// CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
 }
 
 type branchKeyspacesService struct {
@@ -209,6 +216,16 @@ func (s *branchKeyspacesService) Resize(ctx context.Context, resizeReq *ResizeKe
 	}
 
 	return keyspaceResize, nil
+}
+
+// CancelResize cancels a queued resize of a branch's keyspace.
+func (s *branchKeyspacesService) CancelResize(ctx context.Context, cancelReq *CancelKeyspaceResizeRequest) error {
+	req, err := s.client.newRequest(http.MethodDelete, databaseBranchKeyspaceResizesAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.Branch, cancelReq.Keyspace), nil)
+	if err != nil {
+		return errors.Wrap(err, "error creating http request")
+	}
+
+	return s.client.do(ctx, req, nil)
 }
 
 func databaseBranchKeyspacesAPIPath(org, db, branch string) string {

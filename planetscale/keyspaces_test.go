@@ -164,3 +164,131 @@ func TestKeyspaces_UpdateVSchema(t *testing.T) {
 	c.Assert(vSchema.Raw, qt.Equals, wantRaw)
 	c.Assert(vSchema.HTML, qt.Equals, wantHTML)
 }
+
+func TestKeyspaces_Resize(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"pending","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"actorid","type":"User","display_name":"Test User"},"cluster_rate_name":"PS_10","extra_replicas":1,"previous_cluster_rate_name":"PS_10","replicas":3,"previous_replicas":5}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodPut)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	size := ClusterSize("PS_10")
+	replicas := uint(3)
+
+	krr, err := client.Keyspaces.Resize(ctx, &ResizeKeyspaceRequest{
+		Organization:  "foo",
+		Database:      "bar",
+		Branch:        "baz",
+		Keyspace:      "qux",
+		ClusterSize:   &size,
+		ExtraReplicas: &replicas,
+	})
+
+	wantID := "thisisanid"
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(krr.ID, qt.Equals, wantID)
+	c.Assert(krr.ExtraReplicas, qt.Equals, uint(1))
+	c.Assert(krr.Replicas, qt.Equals, uint(3))
+	c.Assert(krr.PreviousReplicas, qt.Equals, uint(5))
+	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
+	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
+}
+
+func TestKeyspaces_CancelResize(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(204)
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.Keyspaces.CancelResize(ctx, &CancelKeyspaceResizeRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
+func TestKeyspaces_ResizeStatus(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"completed","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"thisisanid","type":"User","display_name":"Test User"},"cluster_rate_name":"PS_10","extra_replicas":0,"previous_cluster_rate_name":"PS_10","replicas":2,"previous_replicas":5}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	krr, err := client.Keyspaces.ResizeStatus(ctx, &KeyspaceResizeStatusRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+	})
+
+	wantID := "thisisanid"
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(krr.ID, qt.Equals, wantID)
+	c.Assert(krr.ExtraReplicas, qt.Equals, uint(0))
+	c.Assert(krr.Replicas, qt.Equals, uint(2))
+	c.Assert(krr.PreviousReplicas, qt.Equals, uint(5))
+	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
+	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
+}
+
+func TestKeyspaces_ResizeStatusEmpty(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	krr, err := client.Keyspaces.ResizeStatus(ctx, &KeyspaceResizeStatusRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+	})
+
+	wantError := &Error{
+		msg:  "Not Found",
+		Code: ErrNotFound,
+	}
+
+	c.Assert(krr, qt.IsNil)
+	c.Assert(err.Error(), qt.Equals, wantError.Error())
+}

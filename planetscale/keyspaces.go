@@ -72,6 +72,47 @@ type branchKeyspacesResponse struct {
 	Keyspaces []*Keyspace `json:"data"`
 }
 
+type ResizeKeyspaceRequest struct {
+	Organization  string       `json:"-"`
+	Database      string       `json:"-"`
+	Branch        string       `json:"-"`
+	Keyspace      string       `json:"-"`
+	ExtraReplicas *uint        `json:"extra_replicas,omitempty"`
+	ClusterSize   *ClusterSize `json:"cluster_size,omitempty"`
+}
+
+type KeyspaceResizeRequest struct {
+	ID    string `json:"id"`
+	State string `json:"state"`
+	Actor *Actor `json:"actor"`
+
+	ClusterSize         ClusterSize `json:"cluster_rate_name"`
+	PreviousClusterSize ClusterSize `json:"previous_cluster_rate_name"`
+
+	Replicas         uint `json:"replicas"`
+	ExtraReplicas    uint `json:"extra_replicas"`
+	PreviousReplicas uint `json:"previous_replicas"`
+
+	UpdatedAt   time.Time  `json:"updated_at"`
+	CreatedAt   time.Time  `json:"created_at"`
+	StartedAt   *time.Time `json:"started_at"`
+	CompletedAt *time.Time `json:"completed_at"`
+}
+
+type CancelKeyspaceResizeRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
+}
+
+type KeyspaceResizeStatusRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
+}
+
 // BranchKeyspaceService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type BranchKeyspacesService interface {
 	Create(context.Context, *CreateBranchKeyspaceRequest) (*Keyspace, error)
@@ -79,6 +120,9 @@ type BranchKeyspacesService interface {
 	Get(context.Context, *GetBranchKeyspaceRequest) (*Keyspace, error)
 	VSchema(context.Context, *GetKeyspaceVSchemaRequest) (*VSchema, error)
 	UpdateVSchema(context.Context, *UpdateKeyspaceVSchemaRequest) (*VSchema, error)
+	Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
+	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
+	ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
 }
 
 type branchKeyspacesService struct {
@@ -167,10 +211,65 @@ func (s *branchKeyspacesService) UpdateVSchema(ctx context.Context, updateReq *U
 	return vschema, nil
 }
 
+// Resize starts or queues a resize of a branch's keyspace.
+func (s *branchKeyspacesService) Resize(ctx context.Context, resizeReq *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error) {
+	req, err := s.client.newRequest(http.MethodPut, databaseBranchKeyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), resizeReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	keyspaceResize := &KeyspaceResizeRequest{}
+	if err := s.client.do(ctx, req, keyspaceResize); err != nil {
+		return nil, err
+	}
+
+	return keyspaceResize, nil
+}
+
+// CancelResize cancels a queued resize of a branch's keyspace.
+func (s *branchKeyspacesService) CancelResize(ctx context.Context, cancelReq *CancelKeyspaceResizeRequest) error {
+	req, err := s.client.newRequest(http.MethodDelete, databaseBranchKeyspaceResizesAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.Branch, cancelReq.Keyspace), nil)
+	if err != nil {
+		return errors.Wrap(err, "error creating http request")
+	}
+
+	return s.client.do(ctx, req, nil)
+}
+
 func databaseBranchKeyspacesAPIPath(org, db, branch string) string {
 	return fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(org, db, branch))
 }
 
 func databaseBranchKeyspaceAPIPath(org, db, branch, keyspace string) string {
 	return fmt.Sprintf("%s/%s", databaseBranchKeyspacesAPIPath(org, db, branch), keyspace)
+}
+
+func databaseBranchKeyspaceResizesAPIPath(org, db, branch, keyspace string) string {
+	return fmt.Sprintf("%s/resizes", databaseBranchKeyspaceAPIPath(org, db, branch, keyspace))
+}
+
+type keyspaceResizesResponse struct {
+	Resizes []*KeyspaceResizeRequest `json:"data"`
+}
+
+func (s *branchKeyspacesService) ResizeStatus(ctx context.Context, resizeReq *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error) {
+	req, err := s.client.newRequest(http.MethodGet, databaseBranchKeyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	resizesResponse := &keyspaceResizesResponse{}
+	if err := s.client.do(ctx, req, resizesResponse); err != nil {
+		return nil, err
+	}
+
+	// If there are no resizes, treat the same as a not found error
+	if len(resizesResponse.Resizes) == 0 {
+		return nil, &Error{
+			msg:  "Not Found",
+			Code: ErrNotFound,
+		}
+	}
+
+	return resizesResponse.Resizes[0], nil
 }

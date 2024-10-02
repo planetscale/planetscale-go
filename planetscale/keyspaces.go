@@ -211,6 +211,7 @@ func (s *branchKeyspacesService) UpdateVSchema(ctx context.Context, updateReq *U
 	return vschema, nil
 }
 
+// Resize starts or queues a resize of a branch's keyspace.
 func (s *branchKeyspacesService) Resize(ctx context.Context, resizeReq *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error) {
 	req, err := s.client.newRequest(http.MethodPut, databaseBranchKeyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), resizeReq)
 	if err != nil {

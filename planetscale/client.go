@@ -58,7 +58,6 @@ type Client struct {
 	DataImports      DataImportsService
 	Organizations    OrganizationsService
 	Passwords        PasswordsService
-	Certificates     CertificatesService
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
@@ -242,7 +241,6 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.DataImports = &dataImportsService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
-	c.Certificates = &certificatesService{client: c}
 	c.Regions = &regionsService{client: c}
 	c.DeployRequests = &deployRequestsService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}

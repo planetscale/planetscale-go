@@ -133,8 +133,11 @@ func defaultUserAgent() string {
 	libraryVersion := "unknown"
 	buildInfo, ok := debug.ReadBuildInfo()
 	if ok {
-		if buildInfo.Main.Version != "" {
-			libraryVersion = buildInfo.Main.Version
+		for _, dep := range buildInfo.Deps {
+			if dep.Path == "github.com/planetscale/planetscale-go" {
+				libraryVersion = dep.Version
+				break
+			}
 		}
 	}
 

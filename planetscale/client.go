@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -18,11 +19,6 @@ import (
 const (
 	DefaultBaseURL = "https://api.planetscale.com/"
 	jsonMediaType  = "application/json"
-)
-
-const (
-	libraryVersion = "v0.67.0"
-	userAgent      = "planetscale-go/" + libraryVersion
 )
 
 // ErrorCode defines the code of an error.
@@ -133,6 +129,21 @@ func WithPerPage(perPage int) ListOption {
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
 
+func defaultUserAgent() string {
+	libraryVersion := "unknown"
+	buildInfo, ok := debug.ReadBuildInfo()
+	if ok {
+		for _, dep := range buildInfo.Deps {
+			if dep.Path == "github.com/planetscale/planetscale-go" {
+				libraryVersion = dep.Version
+				break
+			}
+		}
+	}
+
+	return "planetscale-go/" + libraryVersion
+}
+
 // WithUserAgent overrides the User-Agent header.
 func WithUserAgent(userAgent string) ClientOption {
 	return func(c *Client) error {
@@ -223,7 +234,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c := &Client{
 		client:    cleanhttp.DefaultClient(),
 		baseURL:   baseURL,
-		UserAgent: userAgent,
+		UserAgent: defaultUserAgent(),
 		headers:   make(map[string]string, 0),
 	}
 

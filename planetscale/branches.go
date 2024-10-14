@@ -85,22 +85,6 @@ type BranchSchemaRequest struct {
 	Keyspace     string `json:"-"`
 }
 
-// BranchVSchemaRequest encapsulates a request for getting a branch's VSchema.
-type BranchVSchemaRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-	Keyspace     string `json:"-"`
-}
-
-type UpdateBranchVschemaRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-	Keyspace     string `json:"keyspace"`
-	VSchema      string `json:"vschema"`
-}
-
 type BranchRoutingRulesRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -112,12 +96,6 @@ type UpdateBranchRoutingRulesRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	RoutingRules string `json:"routing_rules"`
-}
-
-type BranchKeyspacesRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
 }
 
 // RefreshSchemaRequest reflects the request needed to refresh a schema
@@ -191,11 +169,8 @@ type DatabaseBranchesService interface {
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
 	Schema(context.Context, *BranchSchemaRequest) ([]*Diff, error)
-	VSchema(context.Context, *BranchVSchemaRequest) (*VSchema, error)
-	UpdateVSchema(context.Context, *UpdateBranchVschemaRequest) (*VSchema, error)
 	RoutingRules(context.Context, *BranchRoutingRulesRequest) (*RoutingRules, error)
 	UpdateRoutingRules(context.Context, *UpdateBranchRoutingRulesRequest) (*RoutingRules, error)
-	Keyspaces(context.Context, *BranchKeyspacesRequest) ([]*Keyspace, error)
 	RefreshSchema(context.Context, *RefreshSchemaRequest) error
 	Demote(context.Context, *DemoteRequest) (*DatabaseBranch, error)
 	Promote(context.Context, *PromoteRequest) (*DatabaseBranch, error)
@@ -260,42 +235,6 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 	return schemas.Schemas, nil
 }
 
-// VSchema returns the VSchema for a branch keyspace.
-// Deprecated: Use the VSchema method within BranchKeyspacesService instead.
-func (d *databaseBranchesService) VSchema(ctx context.Context, vSchemaReq *BranchVSchemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(vSchemaReq.Organization, vSchemaReq.Database, vSchemaReq.Branch), vSchemaReq.Keyspace)
-
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
-	}
-
-	vSchema := &VSchema{}
-	if err := d.client.do(ctx, req, &vSchema); err != nil {
-		return nil, err
-	}
-
-	return vSchema, nil
-}
-
-// UpdateVSchema updates the VSchema for a branch keyspace.
-// Deprecated: Use the UpdateVSchema method within BranchKeyspacesService instead.
-func (d *databaseBranchesService) UpdateVSchema(ctx context.Context, updateVSchemaReq *UpdateBranchVschemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/keyspaces/%s/vschema", databaseBranchAPIPath(updateVSchemaReq.Organization, updateVSchemaReq.Database, updateVSchemaReq.Branch), updateVSchemaReq.Keyspace)
-
-	req, err := d.client.newRequest(http.MethodPatch, path, updateVSchemaReq)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
-	}
-
-	vSchema := &VSchema{}
-	if err := d.client.do(ctx, req, &vSchema); err != nil {
-		return nil, err
-	}
-
-	return vSchema, nil
-}
-
 func (d *databaseBranchesService) RoutingRules(ctx context.Context, routingRulesReq *BranchRoutingRulesRequest) (*RoutingRules, error) {
 	path := fmt.Sprintf("%s/routing-rules", databaseBranchAPIPath(routingRulesReq.Organization, routingRulesReq.Database, routingRulesReq.Branch))
 
@@ -326,27 +265,6 @@ func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, update
 	}
 
 	return routingRules, nil
-}
-
-// Keyspaces returns the keyspaces for a branch.
-// Deprecated: Use the List method within BranchKeyspacesService instead.
-func (d *databaseBranchesService) Keyspaces(ctx context.Context, keyspaceReq *BranchKeyspacesRequest) ([]*Keyspace, error) {
-	path := fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(keyspaceReq.Organization, keyspaceReq.Database, keyspaceReq.Branch))
-
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
-	}
-
-	var out struct {
-		KS []*Keyspace `json:"data"`
-	}
-
-	if err := d.client.do(ctx, req, &out); err != nil {
-		return nil, err
-	}
-
-	return out.KS, nil
 }
 
 // Create creates a new branch for an organization's database.

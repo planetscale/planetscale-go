@@ -24,7 +24,7 @@ func TestKeyspaces_List(t *testing.T) {
 
 	ctx := context.Background()
 
-	keyspaces, err := client.Keyspaces.List(ctx, &ListBranchKeyspacesRequest{
+	keyspaces, err := client.Keyspaces.List(ctx, &ListKeyspacesRequest{
 		Organization: "foo",
 		Database:     "bar",
 		Branch:       "baz",
@@ -54,7 +54,7 @@ func TestKeyspaces_Get(t *testing.T) {
 
 	ctx := context.Background()
 
-	keyspace, err := client.Keyspaces.Get(ctx, &GetBranchKeyspaceRequest{
+	keyspace, err := client.Keyspaces.Get(ctx, &GetKeyspaceRequest{
 		Organization: "foo",
 		Database:     "bar",
 		Branch:       "baz",
@@ -85,7 +85,7 @@ func TestKeyspaces_Create(t *testing.T) {
 
 	ctx := context.Background()
 
-	keyspace, err := client.Keyspaces.Create(ctx, &CreateBranchKeyspaceRequest{
+	keyspace, err := client.Keyspaces.Create(ctx, &CreateKeyspaceRequest{
 		Organization:  "foo",
 		Database:      "bar",
 		Branch:        "baz",

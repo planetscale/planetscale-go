@@ -42,7 +42,7 @@ type CreateBranchKeyspaceRequest struct {
 	Branch        string      `json:"-"`
 	Name          string      `json:"name"`
 	ClusterSize   ClusterSize `json:"cluster_size"`
-	ExtraReplicas int         `json:"replicas"`
+	ExtraReplicas int         `json:"extra_replicas"`
 	Shards        int         `json:"shards"`
 }
 

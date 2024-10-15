@@ -467,3 +467,56 @@ func TestDeployRequests_RevertDeploy(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(dr, qt.DeepEquals, want)
 }
+
+func TestDeployRequests_DeployOperations(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{
+		"type":"list",
+		"current_page":1,
+		"data":[
+			{
+				"id":"test-operation-id",
+				"type":"DeployOperation",
+				"state":"pending",
+				"keyspace_name":"treats",
+				"table_name":"ice_creams",
+				"operation_name":"CREATE",
+				"created_at":"2021-01-14T10:19:23.000Z",
+				"updated_at":"2021-01-14T10:19:23.000Z"
+			}
+		]
+	}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	do, err := client.DeployRequests.GetDeployOperations(ctx, &GetDeployOperationsRequest{
+		Organization: "test-organization",
+		Database:     "test-database",
+		Number:       1337,
+	})
+
+	testTime := time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC)
+
+	want := []*DeployOperation{{
+		ID:                 "test-operation-id",
+		State:              "pending",
+		Table:              "ice_creams",
+		Keyspace:           "treats",
+		Operation:          "CREATE",
+		ETASeconds:         0,
+		ProgressPercentage: 0,
+		CreatedAt:          testTime,
+		UpdatedAt:          testTime,
+	}}
+	c.Assert(err, qt.IsNil)
+	c.Assert(do, qt.DeepEquals, want)
+}

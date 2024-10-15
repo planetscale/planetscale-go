@@ -29,6 +29,7 @@ type DeployRequestsService interface {
 	Diff(ctx context.Context, diffReq *DiffRequest) ([]*Diff, error)
 	Get(context.Context, *GetDeployRequestRequest) (*DeployRequest, error)
 	List(context.Context, *ListDeployRequestsRequest) ([]*DeployRequest, error)
+	GetDeployOperations(context.Context, *GetDeployOperationsRequest) ([]*DeployOperation, error)
 	SkipRevertDeploy(context.Context, *SkipRevertDeployRequestRequest) (*DeployRequest, error)
 	RevertDeploy(context.Context, *RevertDeployRequestRequest) (*DeployRequest, error)
 }
@@ -69,6 +70,14 @@ type ListDeployRequestsRequest struct {
 	State        string
 	Branch       string
 	IntoBranch   string
+}
+
+// GetDeployOperationsRequest encapsulates the request for getting a deploy
+// operation for a deploy request.
+type GetDeployOperationsRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
 }
 
 // DeployOperation encapsulates a deploy operation within a deployment from the
@@ -503,6 +512,24 @@ func (d *deployRequestsService) CreateReview(ctx context.Context, reviewReq *Rev
 	}
 
 	return drr, nil
+}
+
+type deployOperationResponse struct {
+	Ops []*DeployOperation `json:"data"`
+}
+
+func (d *deployRequestsService) GetDeployOperations(ctx context.Context, getReq *GetDeployOperationsRequest) ([]*DeployOperation, error) {
+	req, err := d.client.newRequest(http.MethodGet, deployRequestActionAPIPath(getReq.Organization, getReq.Database, getReq.Number, "operations"), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	resp := &deployOperationResponse{}
+	if err := d.client.do(ctx, req, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.Ops, nil
 }
 
 func deployRequestsAPIPath(org, db string) string {

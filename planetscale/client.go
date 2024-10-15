@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"runtime/debug"
 	"strconv"
+	"sync"
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/pkg/errors"
@@ -129,7 +130,7 @@ func WithPerPage(perPage int) ListOption {
 // ClientOption provides a variadic option for configuring the client
 type ClientOption func(c *Client) error
 
-func defaultUserAgent() string {
+var defaultUserAgent = sync.OnceValue(func() string {
 	libraryVersion := "unknown"
 	buildInfo, ok := debug.ReadBuildInfo()
 	if ok {
@@ -142,7 +143,7 @@ func defaultUserAgent() string {
 	}
 
 	return "planetscale-go/" + libraryVersion
-}
+})
 
 // WithUserAgent overrides the User-Agent header.
 func WithUserAgent(userAgent string) ClientOption {

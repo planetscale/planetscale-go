@@ -1,5 +1,5 @@
 FROM golang:1.23
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y ruby-dev rubygems ruby cmake pkg-config git-core libgit2-dev
+RUN apt-get install -y xz-utils ruby-dev rubygems ruby cmake pkg-config git-core libgit2-dev
 RUN gem install licensed

@@ -99,6 +99,21 @@ type KeyspaceResizeRequest struct {
 	CompletedAt *time.Time `json:"completed_at"`
 }
 
+type KeyspaceRollout struct {
+	Name  string `json:"name"`
+	State string `json:"state"`
+
+	Shards []ShardRollout `json:"shards"`
+}
+
+type ShardRollout struct {
+	Name  string `json:"name"`
+	State string `json:"state"`
+
+	LastRolloutStartedAt  time.Time `json:"last_rollout_started_at"`
+	LastRolloutFinishedAt time.Time `json:"last_rollout_finished_at"`
+}
+
 type CancelKeyspaceResizeRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -107,6 +122,13 @@ type CancelKeyspaceResizeRequest struct {
 }
 
 type KeyspaceResizeStatusRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Keyspace     string `json:"-"`
+}
+
+type KeyspaceRolloutStatusRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
@@ -123,6 +145,7 @@ type KeyspacesService interface {
 	Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
 	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
 	ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
+	RolloutStatus(context.Context, *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error)
 }
 
 type keyspacesService struct {
@@ -272,4 +295,22 @@ func (s *keyspacesService) ResizeStatus(ctx context.Context, resizeReq *Keyspace
 	}
 
 	return resizesResponse.Resizes[0], nil
+}
+
+func keyspaceRolloutStatusAPIPath(org, db, branch, keyspace string) string {
+	return fmt.Sprintf("%s/rollout-status", keyspaceAPIPath(org, db, branch, keyspace))
+}
+
+func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error) {
+	req, err := s.client.newRequest(http.MethodGet, keyspaceRolloutStatusAPIPath(rolloutReq.Organization, rolloutReq.Database, rolloutReq.Branch, rolloutReq.Keyspace), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	rolloutStatusResponse := &KeyspaceRollout{}
+	if err := s.client.do(ctx, req, rolloutStatusResponse); err != nil {
+		return nil, err
+	}
+
+	return rolloutStatusResponse, nil
 }

@@ -292,3 +292,36 @@ func TestKeyspaces_ResizeStatusEmpty(t *testing.T) {
 	c.Assert(krr, qt.IsNil)
 	c.Assert(err.Error(), qt.Equals, wantError.Error())
 }
+
+func TestKeyspaces_RolloutStatus(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"type":"BranchInfrastructureKeyspace","state":"complete","name":"qux","shards":[{"type":"BranchInfrastructureKeyspaceShard","state":"complete","last_rollout_started_at":"2025-01-17T18:27:25.027Z","last_rollout_finished_at":"2025-01-17T18:28:25.027Z","name":"-80"},{"type":"BranchInfrastructureKeyspaceShard","state":"complete","last_rollout_started_at":"2025-01-17T18:28:25.033Z","last_rollout_finished_at":"2025-01-17T18:29:25.033Z","name":"80-"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	krr, err := client.Keyspaces.RolloutStatus(ctx, &KeyspaceRolloutStatusRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(krr.Name, qt.Equals, "qux")
+	c.Assert(krr.State, qt.Equals, "complete")
+	c.Assert(len(krr.Shards), qt.Equals, int(2))
+	c.Assert(krr.Shards[0].Name, qt.Equals, "-80")
+	c.Assert(krr.Shards[0].State, qt.Equals, "complete")
+	c.Assert(krr.Shards[1].Name, qt.Equals, "80-")
+	c.Assert(krr.Shards[1].State, qt.Equals, "complete")
+}

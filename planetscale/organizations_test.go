@@ -150,7 +150,8 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			"rate": null,
 			"replica_rate": null,
 			"default_vtgate": "VTG_5",
-			"default_vtgate_rate": null
+			"default_vtgate_rate": null,
+			"sort_order": 1
 		}
 	]`
 
@@ -176,6 +177,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			Memory:        "1",
 			Enabled:       true,
 			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
 		},
 	}
 

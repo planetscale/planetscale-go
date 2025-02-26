@@ -45,6 +45,8 @@ type ClusterSKU struct {
 	CPU         string `json:"cpu"`
 	Memory      string `json:"ram"`
 
+	SortOrder int64 `json:"sort_order"`
+
 	Storage *int64 `json:"storage,string"`
 
 	Rate                 *int64  `json:"rate"`

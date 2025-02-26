@@ -23,7 +23,8 @@ func TestRegions_List(t *testing.T) {
 			"display_name": "US East",
 			"location": "Northern Virginia",
 			"provider": "AWS",
-			"enabled": true
+			"enabled": true,
+			"current_default": true
 		}
 	]
 }`
@@ -42,11 +43,12 @@ func TestRegions_List(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	want := []*Region{
 		{
-			Slug:     "us-east",
-			Provider: "AWS",
-			Name:     "US East",
-			Location: "Northern Virginia",
-			Enabled:  true,
+			Slug:      "us-east",
+			Provider:  "AWS",
+			Name:      "US East",
+			Location:  "Northern Virginia",
+			Enabled:   true,
+			IsDefault: true,
 		},
 	}
 

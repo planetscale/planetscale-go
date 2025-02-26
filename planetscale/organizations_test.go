@@ -144,13 +144,13 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			"provider_instance_type": null,
 			"storage": null,
 			"ram": "1",
-			"sort_order": 1,
 			"enabled": true,
 			"provider": null,
 			"rate": null,
 			"replica_rate": null,
 			"default_vtgate": "VTG_5",
-			"default_vtgate_rate": null
+			"default_vtgate_rate": null,
+			"sort_order": 1
 		}
 	]`
 
@@ -176,6 +176,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			Memory:        "1",
 			Enabled:       true,
 			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
 		},
 	}
 
@@ -233,6 +234,7 @@ func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
 			Rate:          Pointer[int64](39),
 			ReplicaRate:   Pointer[int64](13),
 			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
 		},
 	}
 

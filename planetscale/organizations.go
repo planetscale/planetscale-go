@@ -128,10 +128,6 @@ func (o *organizationsService) ListRegions(ctx context.Context, listReq *ListOrg
 	return listResponse.Regions, nil
 }
 
-type listClusterSKUsResponse struct {
-	ClusterSKUs []*ClusterSKU `json:"data"`
-}
-
 func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *ListOrganizationClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
 	path := fmt.Sprintf("%s/%s/cluster-size-skus", organizationsAPIPath, listReq.Organization)
 

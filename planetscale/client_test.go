@@ -162,3 +162,7 @@ func TestDo(t *testing.T) {
 		})
 	}
 }
+
+func Pointer[K any](val K) *K {
+	return &val
+}

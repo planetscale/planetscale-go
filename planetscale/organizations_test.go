@@ -127,3 +127,118 @@ func TestOrganizations_ListRegions(t *testing.T) {
 
 	c.Assert(orgs, qt.DeepEquals, want)
 }
+
+func TestOrganizations_ListClusterSKUs(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+
+		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus")
+		out := `{
+"data": [
+		{
+			"name": "PS_10",
+			"type": "ClusterSizeSku",
+			"display_name": "PS-10",
+			"cpu": "1/8",
+			"provider_instance_type": null,
+			"storage": null,
+			"ram": "1",
+			"sort_order": 1,
+			"enabled": true,
+			"provider": null,
+			"rate": null,
+			"replica_rate": null,
+			"default_vtgate": "VTG_5",
+			"default_vtgate_rate": null
+		}
+	]
+}`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	orgs, err := client.Organizations.ListClusterSKUs(ctx, &ListOrganizationClusterSKUsRequest{
+		Organization: "my-cool-org",
+	})
+
+	c.Assert(err, qt.IsNil)
+	want := []*ClusterSKU{
+		{
+			Name:          "PS_10",
+			DisplayName:   "PS-10",
+			CPU:           "1/8",
+			Memory:        "1",
+			Enabled:       true,
+			DefaultVTGate: "VTG_5",
+		},
+	}
+
+	c.Assert(orgs, qt.DeepEquals, want)
+}
+
+func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+
+		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus?rates=true")
+		out := `{
+"data": [
+		{
+			"name": "PS_10",
+			"type": "ClusterSizeSku",
+			"display_name": "PS-10",
+			"cpu": "1/8",
+			"provider_instance_type": null,
+			"storage": "100",
+			"ram": "1",
+			"sort_order": 1,
+			"enabled": true,
+			"provider": null,
+			"rate": 39,
+			"replica_rate": 13,
+			"default_vtgate": "VTG_5",
+			"default_vtgate_rate": null
+		}
+	]
+}`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	orgs, err := client.Organizations.ListClusterSKUs(ctx, &ListOrganizationClusterSKUsRequest{
+		Organization: "my-cool-org",
+	}, WithRates())
+
+	c.Assert(err, qt.IsNil)
+	want := []*ClusterSKU{
+		{
+			Name:          "PS_10",
+			DisplayName:   "PS-10",
+			CPU:           "1/8",
+			Memory:        "1",
+			Enabled:       true,
+			Storage:       Pointer[int64](100),
+			Rate:          Pointer[int64](39),
+			ReplicaRate:   Pointer[int64](13),
+			DefaultVTGate: "VTG_5",
+		},
+	}
+
+	c.Assert(orgs, qt.DeepEquals, want)
+}

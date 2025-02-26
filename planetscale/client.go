@@ -113,6 +113,16 @@ func WithRates() ListOption {
 	}
 }
 
+// WithRegion returns a ListOption sets the "region" URL parameter.
+func WithRegion(region string) ListOption {
+	return func(opt *ListOptions) error {
+		if len(region) > 0 {
+			opt.URLValues.Set("region", region)
+		}
+		return nil
+	}
+}
+
 // WithPage returns a ListOption that sets the "page" URL parameter.
 func WithPage(page int) ListOption {
 	return func(opt *ListOptions) error {

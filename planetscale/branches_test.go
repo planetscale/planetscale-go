@@ -37,6 +37,7 @@ func TestDatabaseBranches_Create(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID: "planetscale-go-test-db-branch",
 		Name: testBranch,
 		Region: Region{
 			Slug: "us-west",
@@ -73,6 +74,7 @@ func TestDatabaseBranches_List(t *testing.T) {
 	})
 
 	want := []*DatabaseBranch{{
+		ID:        "planetscale-go-test-db-branch",
 		Name:      testBranch,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -132,6 +134,7 @@ func TestDatabaseBranches_Get(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID:        "planetscale-go-test-db-branch",
 		Name:      testBranch,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -248,6 +251,7 @@ func TestBranches_Demote(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID:         "planetscale-go-test-db-branch",
 		Name:       testBranch,
 		Production: false,
 		CreatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -282,6 +286,7 @@ func TestDatabaseBranches_Promote(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID:         "planetscale-go-test-db-branch",
 		Name:       testBranch,
 		Production: true,
 		CreatedAt:  time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
@@ -316,6 +321,7 @@ func TestDatabaseBranches_EnableSafeMigrations(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID:             "planetscale-go-test-db-branch",
 		Name:           testBranch,
 		Production:     true,
 		SafeMigrations: true,
@@ -351,6 +357,7 @@ func TestDatabaseBranches_DisableSafeMigrations(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
+		ID:             "planetscale-go-test-db-branch",
 		Name:           testBranch,
 		Production:     true,
 		SafeMigrations: false,

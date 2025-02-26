@@ -19,6 +19,7 @@ type Actor struct {
 
 // DatabaseBranch represents a database branch.
 type DatabaseBranch struct {
+	ID             string    `json:"id"`
 	Name           string    `json:"name"`
 	ParentBranch   string    `json:"parent_branch"`
 	Actor          Actor     `json:"actor"`

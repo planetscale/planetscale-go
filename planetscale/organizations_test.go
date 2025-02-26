@@ -135,8 +135,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 		w.WriteHeader(200)
 
 		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus")
-		out := `{
-"data": [
+		out := `[
 		{
 			"name": "PS_10",
 			"type": "ClusterSizeSku",
@@ -153,8 +152,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			"default_vtgate": "VTG_5",
 			"default_vtgate_rate": null
 		}
-	]
-}`
+	]`
 
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -191,8 +189,7 @@ func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
 		w.WriteHeader(200)
 
 		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus?rates=true")
-		out := `{
-"data": [
+		out := `[
 		{
 			"name": "PS_10",
 			"type": "ClusterSizeSku",
@@ -209,8 +206,7 @@ func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
 			"default_vtgate": "VTG_5",
 			"default_vtgate_rate": null
 		}
-	]
-}`
+	]`
 
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)

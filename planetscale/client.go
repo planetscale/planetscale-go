@@ -105,6 +105,24 @@ func WithLimit(limit int) ListOption {
 	}
 }
 
+// WithRates returns a ListOption that sets the "rates" URL parameter.
+func WithRates() ListOption {
+	return func(opt *ListOptions) error {
+		opt.URLValues.Set("rates", "true")
+		return nil
+	}
+}
+
+// WithRegion returns a ListOption sets the "region" URL parameter.
+func WithRegion(region string) ListOption {
+	return func(opt *ListOptions) error {
+		if len(region) > 0 {
+			opt.URLValues.Set("region", region)
+		}
+		return nil
+	}
+}
+
 // WithPage returns a ListOption that sets the "page" URL parameter.
 func WithPage(page int) ListOption {
 	return func(opt *ListOptions) error {

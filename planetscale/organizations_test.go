@@ -144,7 +144,6 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			"provider_instance_type": null,
 			"storage": null,
 			"ram": "1",
-			"sort_order": 1,
 			"enabled": true,
 			"provider": null,
 			"rate": null,
@@ -235,6 +234,7 @@ func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
 			Rate:          Pointer[int64](39),
 			ReplicaRate:   Pointer[int64](13),
 			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
 		},
 	}
 

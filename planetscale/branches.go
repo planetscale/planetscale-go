@@ -178,6 +178,14 @@ type DatabaseBranchesService interface {
 	EnableSafeMigrations(context.Context, *EnableSafeMigrationsRequest) (*DatabaseBranch, error)
 	DisableSafeMigrations(context.Context, *DisableSafeMigrationsRequest) (*DatabaseBranch, error)
 	LintSchema(context.Context, *LintSchemaRequest) ([]*SchemaLintError, error)
+	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
+}
+
+// ListBranchClusterSKUsRequest encapsulates the request for getting a list of Cluster SKUs for an organization.
+type ListBranchClusterSKUsRequest struct {
+	Organization string
+	Database     string
+	Branch       string
 }
 
 type databaseBranchesService struct {
@@ -437,6 +445,31 @@ func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintS
 	}
 
 	return lintResp.Errors, nil
+}
+
+func (o *databaseBranchesService) ListClusterSKUs(ctx context.Context, listReq *ListBranchClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
+	path := fmt.Sprintf("%s/cluster-size-skus", databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
+
+	defaultOpts := defaultListOptions()
+	for _, opt := range opts {
+		opt(defaultOpts)
+	}
+
+	if vals := defaultOpts.URLValues.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
+	req, err := o.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	clusterSKUs := []*ClusterSKU{}
+	if err := o.client.do(ctx, req, &clusterSKUs); err != nil {
+		return nil, err
+	}
+
+	return clusterSKUs, nil
 }
 
 func databaseBranchesAPIPath(org, db string) string {

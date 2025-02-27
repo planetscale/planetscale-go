@@ -37,7 +37,7 @@ func TestDatabaseBranches_Create(t *testing.T) {
 	})
 
 	want := &DatabaseBranch{
-		ID: "planetscale-go-test-db-branch",
+		ID:   "planetscale-go-test-db-branch",
 		Name: testBranch,
 		Region: Region{
 			Slug: "us-west",
@@ -438,4 +438,121 @@ func TestDatabaseBranches_LintSchema(t *testing.T) {
 	lintErr := lintErrors[0]
 
 	c.Assert(lintErr, qt.DeepEquals, want)
+}
+
+func TestDatabaseBranches_ListClusterSKUs(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+
+		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/databases/my-cool-db/branches/main/cluster-size-skus")
+		out := `[
+		{
+			"name": "PS_10",
+			"type": "ClusterSizeSku",
+			"display_name": "PS-10",
+			"cpu": "1/8",
+			"provider_instance_type": null,
+			"storage": null,
+			"ram": "1",
+			"enabled": true,
+			"provider": null,
+			"rate": null,
+			"replica_rate": null,
+			"default_vtgate": "VTG_5",
+			"default_vtgate_rate": null,
+			"sort_order": 1
+		}
+	]`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	orgs, err := client.DatabaseBranches.ListClusterSKUs(ctx, &ListBranchClusterSKUsRequest{
+		Organization: "my-cool-org",
+		Database:     "my-cool-db",
+		Branch:       "main",
+	})
+
+	c.Assert(err, qt.IsNil)
+	want := []*ClusterSKU{
+		{
+			Name:          "PS_10",
+			DisplayName:   "PS-10",
+			CPU:           "1/8",
+			Memory:        1,
+			Enabled:       true,
+			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
+		},
+	}
+
+	c.Assert(orgs, qt.DeepEquals, want)
+}
+
+func TestDatabaseBranches_ListClusterSKUsWithRates(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+
+		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/databases/my-cool-db/branches/main/cluster-size-skus?rates=true")
+		out := `[
+		{
+			"name": "PS_10",
+			"type": "ClusterSizeSku",
+			"display_name": "PS-10",
+			"cpu": "1/8",
+			"provider_instance_type": null,
+			"storage": "100",
+			"ram": "1",
+			"sort_order": 1,
+			"enabled": true,
+			"provider": null,
+			"rate": 39,
+			"replica_rate": 13,
+			"default_vtgate": "VTG_5",
+			"default_vtgate_rate": null
+		}
+	]`
+
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	orgs, err := client.DatabaseBranches.ListClusterSKUs(ctx, &ListBranchClusterSKUsRequest{
+		Organization: "my-cool-org",
+		Database:     "my-cool-db",
+		Branch:       "main",
+	}, WithRates())
+
+	c.Assert(err, qt.IsNil)
+	want := []*ClusterSKU{
+		{
+			Name:          "PS_10",
+			DisplayName:   "PS-10",
+			CPU:           "1/8",
+			Memory:        1,
+			Enabled:       true,
+			Storage:       Pointer[int64](100),
+			Rate:          Pointer[int64](39),
+			ReplicaRate:   Pointer[int64](13),
+			DefaultVTGate: "VTG_5",
+			SortOrder:     1,
+		},
+	}
+
+	c.Assert(orgs, qt.DeepEquals, want)
 }

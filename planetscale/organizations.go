@@ -35,7 +35,6 @@ type ListOrganizationRegionsRequest struct {
 // ListOrganizationClusterSKUsRequest encapsulates the request for getting a list of Cluster SKUs for an organization.
 type ListOrganizationClusterSKUsRequest struct {
 	Organization string
-	IncludeRates bool
 }
 
 // ClusterSKU represents a SKU for a PlanetScale cluster

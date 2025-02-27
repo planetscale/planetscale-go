@@ -181,7 +181,7 @@ type DatabaseBranchesService interface {
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
 }
 
-// ListBranchClusterSKUsRequest encapsulates the request for getting a list of Cluster SKUs for an organization.
+// ListBranchClusterSKUsRequest encapsulates the request for getting a list of Cluster SKUs for a branch.
 type ListBranchClusterSKUsRequest struct {
 	Organization string
 	Database     string

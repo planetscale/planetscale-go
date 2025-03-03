@@ -9,14 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Plan string
-
-const (
-	Hobby     Plan = "hobby"
-	Scaler    Plan = "scaler"
-	ScalerPro Plan = "scaler_pro"
-)
-
 type ClusterSize string
 
 const (
@@ -36,7 +28,6 @@ type CreateDatabaseRequest struct {
 	Notes        string      `json:"notes,omitempty"`
 	Region       string      `json:"region,omitempty"`
 	ClusterSize  ClusterSize `json:"cluster_size"`
-	Plan         Plan        `json:"plan"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

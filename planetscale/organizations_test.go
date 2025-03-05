@@ -197,7 +197,7 @@ func TestOrganizations_ListClusterSKUsWithRates(t *testing.T) {
 			"display_name": "PS-10",
 			"cpu": "1/8",
 			"provider_instance_type": null,
-			"storage": "100",
+			"storage": 100,
 			"ram": 1,
 			"sort_order": 1,
 			"enabled": true,

@@ -46,7 +46,7 @@ type ClusterSKU struct {
 
 	SortOrder int64 `json:"sort_order"`
 
-	Storage *int64 `json:"storage,string"`
+	Storage *int64 `json:"storage"`
 
 	Rate                 *int64  `json:"rate"`
 	ReplicaRate          *int64  `json:"replica_rate"`

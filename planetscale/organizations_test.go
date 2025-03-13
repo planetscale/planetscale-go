@@ -144,6 +144,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			"provider_instance_type": null,
 			"storage": null,
 			"ram": 1,
+			"metal": true,
 			"enabled": true,
 			"provider": null,
 			"rate": null,
@@ -177,6 +178,7 @@ func TestOrganizations_ListClusterSKUs(t *testing.T) {
 			Enabled:       true,
 			DefaultVTGate: "VTG_5",
 			SortOrder:     1,
+			Metal:         true,
 		},
 	}
 

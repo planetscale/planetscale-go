@@ -181,7 +181,7 @@ func TestKeyspaces_Resize(t *testing.T) {
 
 	ctx := context.Background()
 
-	size := ClusterSize("PS_10")
+	size := "PS_10"
 	replicas := uint(3)
 
 	krr, err := client.Keyspaces.Resize(ctx, &ResizeKeyspaceRequest{
@@ -200,8 +200,8 @@ func TestKeyspaces_Resize(t *testing.T) {
 	c.Assert(krr.ExtraReplicas, qt.Equals, uint(1))
 	c.Assert(krr.Replicas, qt.Equals, uint(3))
 	c.Assert(krr.PreviousReplicas, qt.Equals, uint(5))
-	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
-	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
+	c.Assert(krr.ClusterSize, qt.Equals, "PS_10")
+	c.Assert(krr.PreviousClusterSize, qt.Equals, "PS_10")
 }
 
 func TestKeyspaces_CancelResize(t *testing.T) {
@@ -257,8 +257,8 @@ func TestKeyspaces_ResizeStatus(t *testing.T) {
 	c.Assert(krr.ExtraReplicas, qt.Equals, uint(0))
 	c.Assert(krr.Replicas, qt.Equals, uint(2))
 	c.Assert(krr.PreviousReplicas, qt.Equals, uint(5))
-	c.Assert(krr.ClusterSize, qt.Equals, ClusterSize("PS_10"))
-	c.Assert(krr.PreviousClusterSize, qt.Equals, ClusterSize("PS_10"))
+	c.Assert(krr.ClusterSize, qt.Equals, "PS_10")
+	c.Assert(krr.PreviousClusterSize, qt.Equals, "PS_10")
 }
 
 func TestKeyspaces_ResizeStatusEmpty(t *testing.T) {

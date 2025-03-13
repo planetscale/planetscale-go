@@ -10,18 +10,18 @@ import (
 )
 
 type Keyspace struct {
-	ID            string      `json:"id"`
-	Name          string      `json:"name"`
-	Shards        int         `json:"shards"`
-	Sharded       bool        `json:"sharded"`
-	Replicas      uint64      `json:"replicas"`
-	ExtraReplicas uint64      `json:"extra_replicas"`
-	ResizePending bool        `json:"resize_pending"`
-	Resizing      bool        `json:"resizing"`
-	Ready         bool        `json:"ready"`
-	ClusterSize   ClusterSize `json:"cluster_rate_name"`
-	CreatedAt     time.Time   `json:"created_at"`
-	UpdatedAt     time.Time   `json:"updated_at"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Shards        int       `json:"shards"`
+	Sharded       bool      `json:"sharded"`
+	Replicas      uint64    `json:"replicas"`
+	ExtraReplicas uint64    `json:"extra_replicas"`
+	ResizePending bool      `json:"resize_pending"`
+	Resizing      bool      `json:"resizing"`
+	Ready         bool      `json:"ready"`
+	ClusterSize   string    `json:"cluster_rate_name"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // VSchema represnts the VSchema for a branch keyspace
@@ -37,13 +37,13 @@ type ListKeyspacesRequest struct {
 }
 
 type CreateKeyspaceRequest struct {
-	Organization  string      `json:"-"`
-	Database      string      `json:"-"`
-	Branch        string      `json:"-"`
-	Name          string      `json:"name"`
-	ClusterSize   ClusterSize `json:"cluster_size"`
-	ExtraReplicas int         `json:"extra_replicas"`
-	Shards        int         `json:"shards"`
+	Organization  string `json:"-"`
+	Database      string `json:"-"`
+	Branch        string `json:"-"`
+	Name          string `json:"name"`
+	ClusterSize   string `json:"cluster_size"`
+	ExtraReplicas int    `json:"extra_replicas"`
+	Shards        int    `json:"shards"`
 }
 
 type GetKeyspaceRequest struct {
@@ -73,12 +73,12 @@ type keyspacesResponse struct {
 }
 
 type ResizeKeyspaceRequest struct {
-	Organization  string       `json:"-"`
-	Database      string       `json:"-"`
-	Branch        string       `json:"-"`
-	Keyspace      string       `json:"-"`
-	ExtraReplicas *uint        `json:"extra_replicas,omitempty"`
-	ClusterSize   *ClusterSize `json:"cluster_size,omitempty"`
+	Organization  string  `json:"-"`
+	Database      string  `json:"-"`
+	Branch        string  `json:"-"`
+	Keyspace      string  `json:"-"`
+	ExtraReplicas *uint   `json:"extra_replicas,omitempty"`
+	ClusterSize   *string `json:"cluster_size,omitempty"`
 }
 
 type KeyspaceResizeRequest struct {
@@ -86,8 +86,8 @@ type KeyspaceResizeRequest struct {
 	State string `json:"state"`
 	Actor *Actor `json:"actor"`
 
-	ClusterSize         ClusterSize `json:"cluster_rate_name"`
-	PreviousClusterSize ClusterSize `json:"previous_cluster_rate_name"`
+	ClusterSize         string `json:"cluster_rate_name"`
+	PreviousClusterSize string `json:"previous_cluster_rate_name"`
 
 	Replicas         uint `json:"replicas"`
 	ExtraReplicas    uint `json:"extra_replicas"`

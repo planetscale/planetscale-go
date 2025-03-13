@@ -55,6 +55,8 @@ type ClusterSKU struct {
 	Enabled              bool    `json:"enabled"`
 	DefaultVTGate        string  `json:"default_vtgate"`
 	DefaultVTGateRate    *int64  `json:"default_vtgate_rate"`
+
+	Metal bool `json:"metal"`
 }
 
 // Organization represents a PlanetScale organization.

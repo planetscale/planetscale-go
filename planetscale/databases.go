@@ -9,25 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ClusterSize string
-
-const (
-	PS10  ClusterSize = "PS_10"
-	PS20  ClusterSize = "PS_20"
-	PS40  ClusterSize = "PS_40"
-	PS80  ClusterSize = "PS_80"
-	PS160 ClusterSize = "PS_160"
-	PS320 ClusterSize = "PS_320"
-	PS400 ClusterSize = "PS_400"
-)
-
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {
 	Organization string
-	Name         string      `json:"name"`
-	Notes        string      `json:"notes,omitempty"`
-	Region       string      `json:"region,omitempty"`
-	ClusterSize  ClusterSize `json:"cluster_size"`
+	Name         string `json:"name"`
+	Notes        string `json:"notes,omitempty"`
+	Region       string `json:"region,omitempty"`
+	ClusterSize  string `json:"cluster_size"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

@@ -109,3 +109,26 @@ type WorkflowVDiffTableReport struct {
 	CreatedAt                  time.Time              `json:"created_at"`
 	UpdatedAt                  time.Time              `json:"updated_at"`
 }
+
+// WorkflowsService is an interface for interacting with the keyspace endpoints of the PlanetScale API
+type WorkflowsService interface {
+	// Create(context.Context, *CreateKeyspaceRequest) (*Keyspace, error)
+	// List(context.Context, *ListKeyspacesRequest) ([]*Keyspace, error)
+	// Get(context.Context, *GetKeyspaceRequest) (*Keyspace, error)
+	// VSchema(context.Context, *GetKeyspaceVSchemaRequest) (*VSchema, error)
+	// UpdateVSchema(context.Context, *UpdateKeyspaceVSchemaRequest) (*VSchema, error)
+	// Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
+	// CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
+	// ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
+	// RolloutStatus(context.Context, *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error)
+}
+
+type workflowsService struct {
+	client *Client
+}
+
+var _ WorkflowsService = &workflowsService{}
+
+func NeWorkflowsService(client *Client) *workflowsService {
+	return &workflowsService{client}
+}

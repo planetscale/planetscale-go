@@ -138,7 +138,7 @@ type workflowsService struct {
 
 var _ WorkflowsService = &workflowsService{}
 
-func NeWorkflowsService(client *Client) *workflowsService {
+func NewWorkflowsService(client *Client) *workflowsService {
 	return &workflowsService{client}
 }
 

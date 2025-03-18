@@ -10,7 +10,7 @@ import (
 )
 
 type Workflow struct {
-	PublicID             string     `json:"id"`
+	ID                   string     `json:"id"`
 	Name                 string     `json:"name"`
 	Number               int        `json:"number"`
 	State                string     `json:"state"`
@@ -29,9 +29,9 @@ type Workflow struct {
 	SwitchPrimariesAt    *time.Time `json:"switch_primaries_at"`
 	VerifyDataAt         *time.Time `json:"verify_data_at"`
 
-	Branch         DatabaseBranch `json:"database_branch"`
-	SourceKeyspace Keyspace       `json:"source_keyspace"`
-	TargetKeyspace Keyspace       `json:"target_keyspace"`
+	Branch         string `json:"database_branch"`
+	SourceKeyspace string `json:"source_keyspace"`
+	TargetKeyspace string `json:"target_keyspace"`
 
 	Actor             Actor  `json:"actor"`
 	VerifyDataBy      *Actor `json:"verify_data_by"`
@@ -43,7 +43,17 @@ type Workflow struct {
 	RetriedBy         *Actor `json:"retried_by"`
 	CutoverBy         *Actor `json:"cutover_by"`
 	ReversedCutoverBy *Actor `json:"reversed_cutover_by"`
+}
 
+type RawWorkflow struct {
+	*Workflow
+	Branch         DatabaseBranch `json:"database_branch"`
+	SourceKeyspace Keyspace       `json:"source_keyspace"`
+	TargetKeyspace Keyspace       `json:"target_keyspace"`
+}
+
+type FullWorkflow struct {
+	*Workflow
 	Streams []WorkflowStream `json:"streams"`
 	Tables  []WorkflowTable  `json:"tables"`
 	VDiff   WorkflowVDiff    `json:"vdiff"`
@@ -142,17 +152,60 @@ func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequ
 	}
 
 	workflows := workflowsResponse{}
+
 	if err := ws.client.do(ctx, req, workflows); err != nil {
 		return nil, err
 	}
 
-	return workflows.Workflows, nil
+	minimizedWorkflows := []*Workflow{}
+
+	for _, w := range workflows.Workflows {
+		minimizedWorkflows = append(minimizedWorkflows, toMinimizedWorkflow(w))
+	}
+
+	return minimizedWorkflows, nil
 }
 
 func workflowsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
 }
 
+func toMinimizedWorkflow(w *RawWorkflow) *Workflow {
+	return &Workflow{
+		ID:                   w.ID,
+		Name:                 w.Name,
+		Number:               w.Number,
+		State:                w.State,
+		CreatedAt:            w.CreatedAt,
+		UpdatedAt:            w.UpdatedAt,
+		StartedAt:            w.StartedAt,
+		CompletedAt:          w.CompletedAt,
+		CancelledAt:          w.CancelledAt,
+		ReversedAt:           w.ReversedAt,
+		RetriedAt:            w.RetriedAt,
+		DataCopycCompletedAt: w.DataCopycCompletedAt,
+		CutoverAt:            w.CutoverAt,
+		ReplicasSwitched:     w.ReplicasSwitched,
+		PrimariesSwitched:    w.PrimariesSwitched,
+		SwitchReplicasAt:     w.SwitchReplicasAt,
+		SwitchPrimariesAt:    w.SwitchPrimariesAt,
+		VerifyDataAt:         w.VerifyDataAt,
+		Branch:               w.Branch.Name,
+		SourceKeyspace:       w.SourceKeyspace.Name,
+		TargetKeyspace:       w.TargetKeyspace.Name,
+		Actor:                w.Actor,
+		VerifyDataBy:         w.VerifyDataBy,
+		ReversedBy:           w.ReversedBy,
+		SwitchReplicasBy:     w.SwitchReplicasBy,
+		SwitchPrimariesBy:    w.SwitchPrimariesBy,
+		CancelledBy:          w.CancelledBy,
+		CompletedBy:          w.CompletedBy,
+		RetriedBy:            w.RetriedBy,
+		CutoverBy:            w.CutoverBy,
+		ReversedCutoverBy:    w.ReversedCutoverBy,
+	}
+}
+
 type workflowsResponse struct {
-	Workflows []*Workflow `json:"data"`
+	Workflows []*RawWorkflow `json:"data"`
 }

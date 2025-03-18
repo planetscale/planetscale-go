@@ -29,7 +29,7 @@ type Workflow struct {
 	SwitchPrimariesAt    *time.Time `json:"switch_primaries_at"`
 	VerifyDataAt         *time.Time `json:"verify_data_at"`
 
-	Branch         DatabaseBranch `json:"database_branch"`
+	Branch         DatabaseBranch `json:"branch"`
 	SourceKeyspace Keyspace       `json:"source_keyspace"`
 	TargetKeyspace Keyspace       `json:"target_keyspace"`
 
@@ -58,7 +58,7 @@ type WorkflowStream struct {
 	SourceShard          string              `json:"source_shard"`
 	Position             string              `json:"position"`
 	StopPosition         string              `json:"stop_position"`
-	RowsCopied           string              `json:"rows_copied"`
+	RowsCopied           int64               `json:"rows_copied"`
 	ComponentThrottled   *string             `json:"component_throttled"`
 	ComponentThrottledAt *time.Time          `json:"component_throttled_at"`
 	PrimaryServing       bool                `json:"primary_serving"`
@@ -99,20 +99,20 @@ type WorkflowVDiff struct {
 }
 
 type WorkflowVDiffTableReport struct {
-	PublicID                   string                 `json:"id"`
-	TableName                  string                 `json:"table_name"`
-	Shard                      string                 `json:"shard"`
-	MismatchedRowsCount        int64                  `json:"mismatched_rows_count"`
-	ExtraSourceRowsCount       int64                  `json:"extra_source_rows_count"`
-	ExtraTargetRowsCount       int64                  `json:"extra_target_rows_count"`
-	ExtraSourceRows            map[string]interface{} `json:"extra_source_rows"`
-	ExtraTargetRows            map[string]interface{} `json:"extra_target_rows"`
-	MismatchedRows             map[string]interface{} `json:"mismatched_rows"`
-	SampleExtraSourceRowsQuery string                 `json:"sample_extra_source_rows_query"`
-	SampleExtraTargetRowsQuery string                 `json:"sample_extra_target_rows_query"`
-	SampleMismatchedRowsQuery  string                 `json:"sample_mismatched_rows_query"`
-	CreatedAt                  time.Time              `json:"created_at"`
-	UpdatedAt                  time.Time              `json:"updated_at"`
+	PublicID                   string        `json:"id"`
+	TableName                  string        `json:"table_name"`
+	Shard                      string        `json:"shard"`
+	MismatchedRowsCount        int64         `json:"mismatched_rows_count"`
+	ExtraSourceRowsCount       int64         `json:"extra_source_rows_count"`
+	ExtraTargetRowsCount       int64         `json:"extra_target_rows_count"`
+	ExtraSourceRows            []interface{} `json:"extra_source_rows"`
+	ExtraTargetRows            []interface{} `json:"extra_target_rows"`
+	MismatchedRows             []interface{} `json:"mismatched_rows"`
+	SampleExtraSourceRowsQuery string        `json:"sample_extra_source_rows_query"`
+	SampleExtraTargetRowsQuery string        `json:"sample_extra_target_rows_query"`
+	SampleMismatchedRowsQuery  string        `json:"sample_mismatched_rows_query"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
 }
 
 type ListWorkflowsRequest struct {

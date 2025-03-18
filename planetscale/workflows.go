@@ -1,7 +1,12 @@
 package planetscale
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type Workflow struct {
@@ -110,17 +115,14 @@ type WorkflowVDiffTableReport struct {
 	UpdatedAt                  time.Time              `json:"updated_at"`
 }
 
+type ListWorkflowsRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+}
+
 // WorkflowsService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type WorkflowsService interface {
-	// Create(context.Context, *CreateKeyspaceRequest) (*Keyspace, error)
-	// List(context.Context, *ListKeyspacesRequest) ([]*Keyspace, error)
-	// Get(context.Context, *GetKeyspaceRequest) (*Keyspace, error)
-	// VSchema(context.Context, *GetKeyspaceVSchemaRequest) (*VSchema, error)
-	// UpdateVSchema(context.Context, *UpdateKeyspaceVSchemaRequest) (*VSchema, error)
-	// Resize(context.Context, *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error)
-	// CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
-	// ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
-	// RolloutStatus(context.Context, *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error)
+	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
 }
 
 type workflowsService struct {
@@ -131,4 +133,26 @@ var _ WorkflowsService = &workflowsService{}
 
 func NeWorkflowsService(client *Client) *workflowsService {
 	return &workflowsService{client}
+}
+
+func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequest) ([]*Workflow, error) {
+	req, err := ws.client.newRequest(http.MethodGet, workflowsAPIPath(listReq.Organization, listReq.Database), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflows := workflowsResponse{}
+	if err := ws.client.do(ctx, req, workflows); err != nil {
+		return nil, err
+	}
+
+	return workflows.Workflows, nil
+}
+
+func workflowsAPIPath(org, db string) string {
+	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
+}
+
+type workflowsResponse struct {
+	Workflows []*Workflow `json:"data"`
 }

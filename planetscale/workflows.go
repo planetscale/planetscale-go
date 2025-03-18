@@ -126,7 +126,7 @@ type GetWorkflowRequest struct {
 	WorkflowNumber int    `json:"-"`
 }
 
-// WorkflowsService is an interface for interacting with the keyspace endpoints of the PlanetScale API
+// WorkflowsService is an interface for interacting with the workflow endpoints of the PlanetScale API
 type WorkflowsService interface {
 	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)

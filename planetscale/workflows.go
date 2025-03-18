@@ -142,6 +142,10 @@ func NewWorkflowsService(client *Client) *workflowsService {
 	return &workflowsService{client}
 }
 
+type workflowsResponse struct {
+	Workflows []*Workflow `json:"data"`
+}
+
 func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequest) ([]*Workflow, error) {
 	req, err := ws.client.newRequest(http.MethodGet, workflowsAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
@@ -178,8 +182,4 @@ func workflowsAPIPath(org, db string) string {
 
 func workflowAPIPath(org, db string, number int) string {
 	return fmt.Sprintf("%s/%d", workflowsAPIPath(org, db), number)
-}
-
-type workflowsResponse struct {
-	Workflows []*Workflow `json:"data"`
 }

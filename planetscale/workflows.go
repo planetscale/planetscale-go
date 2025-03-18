@@ -144,7 +144,7 @@ func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequ
 		return nil, errors.Wrap(err, "error creating http request")
 	}
 
-	workflows := workflowsResponse{}
+	workflows := &workflowsResponse{}
 
 	if err := ws.client.do(ctx, req, workflows); err != nil {
 		return nil, err

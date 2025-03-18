@@ -43,13 +43,10 @@ type Workflow struct {
 	RetriedBy         *Actor `json:"retried_by"`
 	CutoverBy         *Actor `json:"cutover_by"`
 	ReversedCutoverBy *Actor `json:"reversed_cutover_by"`
-}
 
-type FullWorkflow struct {
-	*Workflow
-	Streams []WorkflowStream `json:"streams"`
-	Tables  []WorkflowTable  `json:"tables"`
-	VDiff   WorkflowVDiff    `json:"vdiff"`
+	Streams *[]WorkflowStream `json:"streams"`
+	Tables  *[]WorkflowTable  `json:"tables"`
+	VDiff   *WorkflowVDiff    `json:"vdiff"`
 }
 
 type WorkflowStream struct {
@@ -123,9 +120,16 @@ type ListWorkflowsRequest struct {
 	Database     string `json:"-"`
 }
 
+type GetWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber int    `json:"-"`
+}
+
 // WorkflowsService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type WorkflowsService interface {
 	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
+	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -153,8 +157,27 @@ func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequ
 	return workflows.Workflows, nil
 }
 
+func (ws *workflowsService) Get(ctx context.Context, getReq *GetWorkflowRequest) (*Workflow, error) {
+	req, err := ws.client.newRequest(http.MethodGet, workflowAPIPath(getReq.Organization, getReq.Database, getReq.WorkflowNumber), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
 func workflowsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
+}
+
+func workflowAPIPath(org, db string, number int) string {
+	return fmt.Sprintf("%s/%d", workflowsAPIPath(org, db), number)
 }
 
 type workflowsResponse struct {

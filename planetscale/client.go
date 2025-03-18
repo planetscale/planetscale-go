@@ -59,6 +59,7 @@ type Client struct {
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
 	Keyspaces        KeyspacesService
+	Workflows        WorkflowsService
 }
 
 // ListOptions are options for listing responses.
@@ -275,6 +276,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.DeployRequests = &deployRequestsService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}
 	c.Keyspaces = &keyspacesService{client: c}
+	c.Workflows = &workflowsService{client: c}
 
 	return c, nil
 }

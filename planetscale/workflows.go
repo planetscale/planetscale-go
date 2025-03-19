@@ -141,6 +141,7 @@ type WorkflowsService interface {
 	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
 	Create(context.Context, *CreateWorkflowRequest) (*Workflow, error)
+	VerifyData(context.Context, *GetWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -205,7 +206,7 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 
 func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/verify_data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
-	req, err := ws.client.newRequest(http.MethodGet, path, nil)
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")

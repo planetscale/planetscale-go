@@ -203,6 +203,23 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 	return workflow, nil
 }
 
+func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/verify_data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodGet, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
 func workflowsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
 }

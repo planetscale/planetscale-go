@@ -140,7 +140,7 @@ func TestWorfklows_VerifyData(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(workflow.ID, qt.Equals, wantID)
 	c.Assert(workflow.Name, qt.Equals, "shard-table")
-	c.Assert(workflow.Number, qt.Equals, 1)
+	c.Assert(workflow.Number, qt.Equals, uint64(1))
 	c.Assert(workflow.SourceKeyspace.Name, qt.Equals, "source-keyspace")
 	c.Assert(workflow.TargetKeyspace.Name, qt.Equals, "target-keyspace")
 	c.Assert(workflow.Branch.Name, qt.Equals, "branch")

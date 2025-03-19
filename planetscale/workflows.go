@@ -126,10 +126,21 @@ type GetWorkflowRequest struct {
 	WorkflowNumber int    `json:"-"`
 }
 
+type CreateWorkflowRequest struct {
+	Organization   string   `json:"-"`
+	Database       string   `json:"-"`
+	Branch         string   `json:"branch_name"`
+	Name           string   `json:"name"`
+	SourceKeyspace string   `json:"source_keyspace"`
+	TargetKeyspace string   `json:"target_keyspace"`
+	Tables         []string `json:"tables"`
+}
+
 // WorkflowsService is an interface for interacting with the workflow endpoints of the PlanetScale API
 type WorkflowsService interface {
 	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	Create(context.Context, *CreateWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -163,6 +174,22 @@ func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequ
 
 func (ws *workflowsService) Get(ctx context.Context, getReq *GetWorkflowRequest) (*Workflow, error) {
 	req, err := ws.client.newRequest(http.MethodGet, workflowAPIPath(getReq.Organization, getReq.Database, getReq.WorkflowNumber), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflowRequest) (*Workflow, error) {
+	req, err := ws.client.newRequest(http.MethodPost, workflowsAPIPath(createReq.Organization, createReq.Database), createReq)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating http request")
 	}

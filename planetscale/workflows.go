@@ -44,8 +44,8 @@ type Workflow struct {
 	CutoverBy         *Actor `json:"cutover_by"`
 	ReversedCutoverBy *Actor `json:"reversed_cutover_by"`
 
-	Streams *[]WorkflowStream `json:"streams"`
-	Tables  *[]WorkflowTable  `json:"tables"`
+	Streams []*WorkflowStream `json:"streams"`
+	Tables  []*WorkflowTable  `json:"tables"`
 	VDiff   *WorkflowVDiff    `json:"vdiff"`
 }
 

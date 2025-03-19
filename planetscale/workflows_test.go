@@ -69,6 +69,6 @@ func TestWorkflows_Get(t *testing.T) {
 	c.Assert(workflow.TargetKeyspace.Name, qt.Equals, "target-keyspace")
 	c.Assert(workflow.Branch.Name, qt.Equals, "branch")
 	c.Assert(workflow.VDiff.State, qt.Equals, "pending")
-	c.Assert(len(*workflow.Streams), qt.Equals, 1)
-	c.Assert(len(*workflow.Tables), qt.Equals, 1)
+	c.Assert(len(workflow.Streams), qt.Equals, 1)
+	c.Assert(len(workflow.Tables), qt.Equals, 1)
 }

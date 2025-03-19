@@ -10,24 +10,24 @@ import (
 )
 
 type Workflow struct {
-	ID                   string     `json:"id"`
-	Name                 string     `json:"name"`
-	Number               uint64     `json:"number"`
-	State                string     `json:"state"`
-	CreatedAt            time.Time  `json:"created_at"`
-	UpdatedAt            time.Time  `json:"updated_at"`
-	StartedAt            *time.Time `json:"started_at"`
-	CompletedAt          *time.Time `json:"completed_at"`
-	CancelledAt          *time.Time `json:"cancelled_at"`
-	ReversedAt           *time.Time `json:"reversed_at"`
-	RetriedAt            *time.Time `json:"retried_at"`
-	DataCopycCompletedAt *time.Time `json:"data_copy_completed_at"`
-	CutoverAt            *time.Time `json:"cutover_at"`
-	ReplicasSwitched     bool       `json:"replicas_switched"`
-	PrimariesSwitched    bool       `json:"primaries_switched"`
-	SwitchReplicasAt     *time.Time `json:"switch_replicas_at"`
-	SwitchPrimariesAt    *time.Time `json:"switch_primaries_at"`
-	VerifyDataAt         *time.Time `json:"verify_data_at"`
+	ID                  string     `json:"id"`
+	Name                string     `json:"name"`
+	Number              uint64     `json:"number"`
+	State               string     `json:"state"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           time.Time  `json:"updated_at"`
+	StartedAt           *time.Time `json:"started_at"`
+	CompletedAt         *time.Time `json:"completed_at"`
+	CancelledAt         *time.Time `json:"cancelled_at"`
+	ReversedAt          *time.Time `json:"reversed_at"`
+	RetriedAt           *time.Time `json:"retried_at"`
+	DataCopyCompletedAt *time.Time `json:"data_copy_completed_at"`
+	CutoverAt           *time.Time `json:"cutover_at"`
+	ReplicasSwitched    bool       `json:"replicas_switched"`
+	PrimariesSwitched   bool       `json:"primaries_switched"`
+	SwitchReplicasAt    *time.Time `json:"switch_replicas_at"`
+	SwitchPrimariesAt   *time.Time `json:"switch_primaries_at"`
+	VerifyDataAt        *time.Time `json:"verify_data_at"`
 
 	Branch         DatabaseBranch `json:"branch"`
 	SourceKeyspace Keyspace       `json:"source_keyspace"`

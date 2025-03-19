@@ -10,24 +10,24 @@ import (
 )
 
 type Workflow struct {
-	ID                   string     `json:"id"`
-	Name                 string     `json:"name"`
-	Number               int        `json:"number"`
-	State                string     `json:"state"`
-	CreatedAt            time.Time  `json:"created_at"`
-	UpdatedAt            time.Time  `json:"updated_at"`
-	StartedAt            *time.Time `json:"started_at"`
-	CompletedAt          *time.Time `json:"completed_at"`
-	CancelledAt          *time.Time `json:"cancelled_at"`
-	ReversedAt           *time.Time `json:"reversed_at"`
-	RetriedAt            *time.Time `json:"retried_at"`
-	DataCopycCompletedAt *time.Time `json:"data_copy_completed_at"`
-	CutoverAt            *time.Time `json:"cutover_at"`
-	ReplicasSwitched     bool       `json:"replicas_switched"`
-	PrimariesSwitched    bool       `json:"primaries_switched"`
-	SwitchReplicasAt     *time.Time `json:"switch_replicas_at"`
-	SwitchPrimariesAt    *time.Time `json:"switch_primaries_at"`
-	VerifyDataAt         *time.Time `json:"verify_data_at"`
+	ID                  string     `json:"id"`
+	Name                string     `json:"name"`
+	Number              uint64     `json:"number"`
+	State               string     `json:"state"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           time.Time  `json:"updated_at"`
+	StartedAt           *time.Time `json:"started_at"`
+	CompletedAt         *time.Time `json:"completed_at"`
+	CancelledAt         *time.Time `json:"cancelled_at"`
+	ReversedAt          *time.Time `json:"reversed_at"`
+	RetriedAt           *time.Time `json:"retried_at"`
+	DataCopyCompletedAt *time.Time `json:"data_copy_completed_at"`
+	CutoverAt           *time.Time `json:"cutover_at"`
+	ReplicasSwitched    bool       `json:"replicas_switched"`
+	PrimariesSwitched   bool       `json:"primaries_switched"`
+	SwitchReplicasAt    *time.Time `json:"switch_replicas_at"`
+	SwitchPrimariesAt   *time.Time `json:"switch_primaries_at"`
+	VerifyDataAt        *time.Time `json:"verify_data_at"`
 
 	Branch         DatabaseBranch `json:"branch"`
 	SourceKeyspace Keyspace       `json:"source_keyspace"`
@@ -44,8 +44,8 @@ type Workflow struct {
 	CutoverBy         *Actor `json:"cutover_by"`
 	ReversedCutoverBy *Actor `json:"reversed_cutover_by"`
 
-	Streams *[]WorkflowStream `json:"streams"`
-	Tables  *[]WorkflowTable  `json:"tables"`
+	Streams []*WorkflowStream `json:"streams"`
+	Tables  []*WorkflowTable  `json:"tables"`
 	VDiff   *WorkflowVDiff    `json:"vdiff"`
 }
 
@@ -80,9 +80,9 @@ type WorkflowTable struct {
 	Name           string    `json:"name"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-	RowsCopied     int64     `json:"rows_copied"`
-	RowsTotal      int64     `json:"rows_total"`
-	RowsPercentage int       `json:"rows_percentage"`
+	RowsCopied     uint64    `json:"rows_copied"`
+	RowsTotal      uint64    `json:"rows_total"`
+	RowsPercentage uint      `json:"rows_percentage"`
 }
 
 type WorkflowVDiff struct {
@@ -93,8 +93,8 @@ type WorkflowVDiff struct {
 	StartedAt          *time.Time                 `json:"started_at"`
 	CompletedAt        *time.Time                 `json:"completed_at"`
 	HasMismatch        bool                       `json:"has_mismatch"`
-	ProgressPercentage int                        `json:"progress_percentage"`
-	EtaSeconds         int64                      `json:"eta_seconds"`
+	ProgressPercentage uint                       `json:"progress_percentage"`
+	EtaSeconds         uint64                     `json:"eta_seconds"`
 	TableReports       []WorkflowVDiffTableReport `json:"table_reports"`
 }
 
@@ -123,7 +123,7 @@ type ListWorkflowsRequest struct {
 type GetWorkflowRequest struct {
 	Organization   string `json:"-"`
 	Database       string `json:"-"`
-	WorkflowNumber int    `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
 }
 
 type CreateWorkflowRequest struct {
@@ -225,6 +225,6 @@ func workflowsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
 }
 
-func workflowAPIPath(org, db string, number int) string {
+func workflowAPIPath(org, db string, number uint64) string {
 	return fmt.Sprintf("%s/%d", workflowsAPIPath(org, db), number)
 }

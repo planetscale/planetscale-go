@@ -35,7 +35,7 @@ func TestWorkflows_List(t *testing.T) {
 	c.Assert(len(workflows), qt.Equals, 1)
 	c.Assert(workflows[0].ID, qt.Equals, wantID)
 	c.Assert(workflows[0].Name, qt.Equals, "shard-table")
-	c.Assert(workflows[0].Number, qt.Equals, 1)
+	c.Assert(workflows[0].Number, qt.Equals, uint64(1))
 }
 
 func TestWorkflows_Get(t *testing.T) {
@@ -64,13 +64,13 @@ func TestWorkflows_Get(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(workflow.ID, qt.Equals, wantID)
 	c.Assert(workflow.Name, qt.Equals, "shard-table")
-	c.Assert(workflow.Number, qt.Equals, 1)
+	c.Assert(workflow.Number, qt.Equals, uint64(1))
 	c.Assert(workflow.SourceKeyspace.Name, qt.Equals, "source-keyspace")
 	c.Assert(workflow.TargetKeyspace.Name, qt.Equals, "target-keyspace")
 	c.Assert(workflow.Branch.Name, qt.Equals, "branch")
 	c.Assert(workflow.VDiff.State, qt.Equals, "pending")
-	c.Assert(len(*workflow.Streams), qt.Equals, 1)
-	c.Assert(len(*workflow.Tables), qt.Equals, 1)
+	c.Assert(len(workflow.Streams), qt.Equals, 1)
+	c.Assert(len(workflow.Tables), qt.Equals, 1)
 }
 
 func TestWorkflows_Create(t *testing.T) {

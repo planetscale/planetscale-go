@@ -142,6 +142,8 @@ type WorkflowsService interface {
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
 	Create(context.Context, *CreateWorkflowRequest) (*Workflow, error)
 	VerifyData(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	SwitchReplicas(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	SwitchPrimaries(context.Context, *GetWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -206,6 +208,40 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 
 func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/verify_data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/switch-replicas", workflowAPIPath(switchReplicasReq.Organization, switchReplicasReq.Database, switchReplicasReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimariesReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/switch-primaries", workflowAPIPath(switchPrimariesReq.Organization, switchPrimariesReq.Database, switchPrimariesReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {

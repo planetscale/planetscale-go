@@ -135,6 +135,7 @@ func TestWorkflows_CreateWithNewOptions(t *testing.T) {
 		}
 		err = json.NewDecoder(r.Body).Decode(&request)
 		c.Assert(err, qt.IsNil)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/foo/databases/bar/workflows")
 		c.Assert(*request.GlobalKeyspace, qt.Equals, "baz")
 		c.Assert(*request.DeferSecondaryKeys, qt.Equals, true)
 		c.Assert(*request.OnDDL, qt.Equals, "EXEC_IGNORE")

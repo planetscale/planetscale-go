@@ -193,7 +193,7 @@ func TestWorfklows_VerifyData(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.VerifyData(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.VerifyData(ctx, &VerifyDataWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -230,7 +230,7 @@ func TestWorkflows_SwitchReplicas(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.SwitchReplicas(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.SwitchReplicas(ctx, &SwitchReplicasWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -267,7 +267,7 @@ func TestWorkflows_SwitchPrimaries(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.SwitchPrimaries(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.SwitchPrimaries(ctx, &SwitchPrimariesWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -304,7 +304,7 @@ func TestWorkflows_ReverseTraffic(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.ReverseTraffic(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.ReverseTraffic(ctx, &ReverseTrafficWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -324,11 +324,6 @@ func TestWorkflows_ReverseTraffic(t *testing.T) {
 	c.Assert(len(workflow.Tables), qt.Equals, 1)
 }
 
-// patch "/workflows/:number/cutover", to: "workflows#cutover", as: :workflow_cutover
-// patch "/workflows/:number/reverse-cutover", to: "workflows#reverse_cutover", as: :workflow_reverse_cutover
-// patch "/workflows/:number/complete", to: "workflows#complete", as: :workflow_complete
-// patch "/workflows/:number/retry", to: "workflows#retry", as: :workflow_retry
-
 func TestWorkflows_Cutover(t *testing.T) {
 	c := qt.New(t)
 
@@ -346,7 +341,7 @@ func TestWorkflows_Cutover(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.Cutover(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.Cutover(ctx, &CutoverWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -383,7 +378,7 @@ func TestWorkflows_ReverseCutover(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.ReverseCutover(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.ReverseCutover(ctx, &ReverseCutoverWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -420,7 +415,7 @@ func TestWorkflows_Complete(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.Complete(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.Complete(ctx, &CompleteWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -457,7 +452,7 @@ func TestWorkflows_Retry(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.Retry(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.Retry(ctx, &RetryWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,
@@ -494,7 +489,7 @@ func TestWorkflows_Cancel(t *testing.T) {
 
 	ctx := context.Background()
 
-	workflow, err := client.Workflows.Cancel(ctx, &GetWorkflowRequest{
+	workflow, err := client.Workflows.Cancel(ctx, &CancelWorkflowRequest{
 		Organization:   "foo",
 		Database:       "bar",
 		WorkflowNumber: 1,

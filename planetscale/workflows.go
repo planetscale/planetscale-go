@@ -126,6 +126,60 @@ type GetWorkflowRequest struct {
 	WorkflowNumber uint64 `json:"-"`
 }
 
+type VerifyDataWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type SwitchReplicasWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type SwitchPrimariesWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type ReverseTrafficWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type CutoverWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type ReverseCutoverWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type CompleteWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type RetryWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
+type CancelWorkflowRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	WorkflowNumber uint64 `json:"-"`
+}
+
 type CreateWorkflowRequest struct {
 	Organization       string   `json:"-"`
 	Database           string   `json:"-"`
@@ -144,15 +198,15 @@ type WorkflowsService interface {
 	List(context.Context, *ListWorkflowsRequest) ([]*Workflow, error)
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
 	Create(context.Context, *CreateWorkflowRequest) (*Workflow, error)
-	VerifyData(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	SwitchReplicas(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	SwitchPrimaries(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	ReverseTraffic(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	Cutover(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	ReverseCutover(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	Complete(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	Retry(context.Context, *GetWorkflowRequest) (*Workflow, error)
-	Cancel(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	VerifyData(context.Context, *VerifyDataWorkflowRequest) (*Workflow, error)
+	SwitchReplicas(context.Context, *SwitchReplicasWorkflowRequest) (*Workflow, error)
+	SwitchPrimaries(context.Context, *SwitchPrimariesWorkflowRequest) (*Workflow, error)
+	ReverseTraffic(context.Context, *ReverseTrafficWorkflowRequest) (*Workflow, error)
+	Cutover(context.Context, *CutoverWorkflowRequest) (*Workflow, error)
+	ReverseCutover(context.Context, *ReverseCutoverWorkflowRequest) (*Workflow, error)
+	Complete(context.Context, *CompleteWorkflowRequest) (*Workflow, error)
+	Retry(context.Context, *RetryWorkflowRequest) (*Workflow, error)
+	Cancel(context.Context, *CancelWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -215,7 +269,7 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 	return workflow, nil
 }
 
-func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *VerifyDataWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/verify-data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -232,7 +286,7 @@ func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWo
 	return workflow, nil
 }
 
-func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasReq *SwitchReplicasWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/switch-replicas", workflowAPIPath(switchReplicasReq.Organization, switchReplicasReq.Database, switchReplicasReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -249,7 +303,7 @@ func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasRe
 	return workflow, nil
 }
 
-func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimariesReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimariesReq *SwitchPrimariesWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/switch-primaries", workflowAPIPath(switchPrimariesReq.Organization, switchPrimariesReq.Database, switchPrimariesReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -266,7 +320,7 @@ func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimaries
 	return workflow, nil
 }
 
-func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficReq *ReverseTrafficWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/reverse-traffic", workflowAPIPath(reverseTrafficReq.Organization, reverseTrafficReq.Database, reverseTrafficReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -283,7 +337,7 @@ func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficRe
 	return workflow, nil
 }
 
-func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *CutoverWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/cutover", workflowAPIPath(cutoverReq.Organization, cutoverReq.Database, cutoverReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -300,7 +354,7 @@ func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *GetWorkflow
 	return workflow, nil
 }
 
-func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverReq *ReverseCutoverWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/reverse-cutover", workflowAPIPath(reverseCutoverReq.Organization, reverseCutoverReq.Database, reverseCutoverReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -317,7 +371,7 @@ func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverRe
 	return workflow, nil
 }
 
-func (ws *workflowsService) Complete(ctx context.Context, completeReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) Complete(ctx context.Context, completeReq *CompleteWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/complete", workflowAPIPath(completeReq.Organization, completeReq.Database, completeReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -334,7 +388,7 @@ func (ws *workflowsService) Complete(ctx context.Context, completeReq *GetWorkfl
 	return workflow, nil
 }
 
-func (ws *workflowsService) Retry(ctx context.Context, retryReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) Retry(ctx context.Context, retryReq *RetryWorkflowRequest) (*Workflow, error) {
 	path := fmt.Sprintf("%s/retry", workflowAPIPath(retryReq.Organization, retryReq.Database, retryReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
@@ -351,7 +405,7 @@ func (ws *workflowsService) Retry(ctx context.Context, retryReq *GetWorkflowRequ
 	return workflow, nil
 }
 
-func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *GetWorkflowRequest) (*Workflow, error) {
+func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *CancelWorkflowRequest) (*Workflow, error) {
 	path := workflowAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.WorkflowNumber)
 	req, err := ws.client.newRequest(http.MethodDelete, path, nil)
 

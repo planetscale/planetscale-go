@@ -145,6 +145,14 @@ type WorkflowsService interface {
 	Get(context.Context, *GetWorkflowRequest) (*Workflow, error)
 	Create(context.Context, *CreateWorkflowRequest) (*Workflow, error)
 	VerifyData(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	SwitchReplicas(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	SwitchPrimaries(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	ReverseTraffic(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	Cutover(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	ReverseCutover(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	Complete(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	Retry(context.Context, *GetWorkflowRequest) (*Workflow, error)
+	Cancel(context.Context, *GetWorkflowRequest) (*Workflow, error)
 }
 
 type workflowsService struct {
@@ -208,7 +216,7 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 }
 
 func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWorkflowRequest) (*Workflow, error) {
-	path := fmt.Sprintf("%s/verify_data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
+	path := fmt.Sprintf("%s/verify-data", workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber))
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
@@ -224,6 +232,141 @@ func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *GetWo
 	return workflow, nil
 }
 
+func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/switch-replicas", workflowAPIPath(switchReplicasReq.Organization, switchReplicasReq.Database, switchReplicasReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimariesReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/switch-primaries", workflowAPIPath(switchPrimariesReq.Organization, switchPrimariesReq.Database, switchPrimariesReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/reverse-traffic", workflowAPIPath(reverseTrafficReq.Organization, reverseTrafficReq.Database, reverseTrafficReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/cutover", workflowAPIPath(cutoverReq.Organization, cutoverReq.Database, cutoverReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/reverse-cutover", workflowAPIPath(reverseCutoverReq.Organization, reverseCutoverReq.Database, reverseCutoverReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) Complete(ctx context.Context, completeReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/complete", workflowAPIPath(completeReq.Organization, completeReq.Database, completeReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) Retry(ctx context.Context, retryReq *GetWorkflowRequest) (*Workflow, error) {
+	path := fmt.Sprintf("%s/retry", workflowAPIPath(retryReq.Organization, retryReq.Database, retryReq.WorkflowNumber))
+	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
+
+func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *GetWorkflowRequest) (*Workflow, error) {
+	path := workflowAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.WorkflowNumber)
+	req, err := ws.client.newRequest(http.MethodDelete, path, nil)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	workflow := &Workflow{}
+
+	if err := ws.client.do(ctx, req, workflow); err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
 func workflowsAPIPath(org, db string) string {
 	return fmt.Sprintf("%s/%s/workflows", databasesAPIPath(org), db)
 }

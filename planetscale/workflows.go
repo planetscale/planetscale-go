@@ -127,13 +127,16 @@ type GetWorkflowRequest struct {
 }
 
 type CreateWorkflowRequest struct {
-	Organization   string   `json:"-"`
-	Database       string   `json:"-"`
-	Branch         string   `json:"branch_name"`
-	Name           string   `json:"name"`
-	SourceKeyspace string   `json:"source_keyspace"`
-	TargetKeyspace string   `json:"target_keyspace"`
-	Tables         []string `json:"tables"`
+	Organization       string   `json:"-"`
+	Database           string   `json:"-"`
+	Branch             string   `json:"branch_name"`
+	Name               string   `json:"name"`
+	SourceKeyspace     string   `json:"source_keyspace"`
+	TargetKeyspace     string   `json:"target_keyspace"`
+	Tables             []string `json:"tables"`
+	GlobalKeyspace     *string  `json:"global_keyspace"`
+	DeferSecondaryKeys *bool    `json:"defer_secondary_keys"`
+	OnDDL              *string  `json:"on_ddl"`
 }
 
 // WorkflowsService is an interface for interacting with the workflow endpoints of the PlanetScale API

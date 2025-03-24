@@ -140,7 +140,7 @@ type UpdateKeyspaceSettingsRequest struct {
 	Database                         string                            `json:"-"`
 	Branch                           string                            `json:"-"`
 	Keyspace                         string                            `json:"-"`
-	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"io_constraints,omitempty"`
+	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints,omitempty"`
 }
 
 type ReplicationDurabilityConstraints struct {

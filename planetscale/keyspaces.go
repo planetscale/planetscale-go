@@ -134,14 +134,15 @@ type KeyspaceRolloutStatusRequest struct {
 }
 
 type UpdateKeyspaceSettingsRequest struct {
-	Organization string            `json:"-"`
-	Database     string            `json:"-"`
-	Branch       string            `json:"-"`
-	Settings     *KeyspaceSettings `json:"settings"`
+	Organization                     string                            `json:"-"`
+	Database                         string                            `json:"-"`
+	Branch                           string                            `json:"-"`
+	Keyspace                         string                            `json:"-"`
+	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"io_constraints,omitempty"`
 }
 
-type KeyspaceSettings struct {
-	ReplicationDurabilityConstraints *string `json:"replication_durability_constraints,omitempty"`
+type ReplicationDurabilityConstraints struct {
+	Strategy string `json:"strategy"`
 }
 
 // KeyspacesService is an interface for interacting with the keyspace endpoints of the PlanetScale API
@@ -323,4 +324,18 @@ func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *Keyspa
 	}
 
 	return rolloutStatusResponse, nil
+}
+
+func (s *keyspacesService) UpdateSettings(ctx context.Context, updateReq *UpdateKeyspaceSettingsRequest) (*Keyspace, error) {
+	req, err := s.client.newRequest(http.MethodPatch, keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace), updateReq)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating http request")
+	}
+
+	keyspace := &Keyspace{}
+	if err := s.client.do(ctx, req, keyspace); err != nil {
+		return nil, err
+	}
+
+	return keyspace, nil
 }

@@ -133,6 +133,17 @@ type KeyspaceRolloutStatusRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type UpdateKeyspaceSettingsRequest struct {
+	Organization string            `json:"-"`
+	Database     string            `json:"-"`
+	Branch       string            `json:"-"`
+	Settings     *KeyspaceSettings `json:"settings"`
+}
+
+type KeyspaceSettings struct {
+	ReplicationDurabilityConstraints *string `json:"replication_durability_constraints,omitempty"`
+}
+
 // KeyspacesService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type KeyspacesService interface {
 	Create(context.Context, *CreateKeyspaceRequest) (*Keyspace, error)
@@ -144,6 +155,7 @@ type KeyspacesService interface {
 	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
 	ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
 	RolloutStatus(context.Context, *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error)
+	UpdateSettings(context.Context, *UpdateKeyspaceSettingsRequest) (*Keyspace, error)
 }
 
 type keyspacesService struct {

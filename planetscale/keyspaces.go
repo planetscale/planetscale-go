@@ -141,10 +141,17 @@ type UpdateKeyspaceSettingsRequest struct {
 	Branch                           string                            `json:"-"`
 	Keyspace                         string                            `json:"-"`
 	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints,omitempty"`
+	BinlogReplication                *BinlogReplication                `json:"binlog_replication,omitempty"`
 }
 
 type ReplicationDurabilityConstraints struct {
 	Strategy string `json:"strategy"`
+}
+
+type BinlogReplication struct {
+	OptimizeInserts           bool `json:"optimize_inserts"`
+	AllowNoBlobBinlogRowImage bool `json:"allow_no_blob_binlog_row_image"`
+	BatchBinlogStatements     bool `json:"batch_binlog_statements"`
 }
 
 // KeyspacesService is an interface for interacting with the keyspace endpoints of the PlanetScale API

@@ -10,18 +10,20 @@ import (
 )
 
 type Keyspace struct {
-	ID            string    `json:"id"`
-	Name          string    `json:"name"`
-	Shards        int       `json:"shards"`
-	Sharded       bool      `json:"sharded"`
-	Replicas      uint64    `json:"replicas"`
-	ExtraReplicas uint64    `json:"extra_replicas"`
-	ResizePending bool      `json:"resize_pending"`
-	Resizing      bool      `json:"resizing"`
-	Ready         bool      `json:"ready"`
-	ClusterSize   string    `json:"cluster_rate_name"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID                               string                            `json:"id"`
+	Name                             string                            `json:"name"`
+	Shards                           int                               `json:"shards"`
+	Sharded                          bool                              `json:"sharded"`
+	Replicas                         uint64                            `json:"replicas"`
+	ExtraReplicas                    uint64                            `json:"extra_replicas"`
+	ResizePending                    bool                              `json:"resize_pending"`
+	Resizing                         bool                              `json:"resizing"`
+	Ready                            bool                              `json:"ready"`
+	ClusterSize                      string                            `json:"cluster_rate_name"`
+	CreatedAt                        time.Time                         `json:"created_at"`
+	UpdatedAt                        time.Time                         `json:"updated_at"`
+	BinlogReplication                *BinlogReplication                `json:"binlog_replication"`
+	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints"`
 }
 
 // VSchema represnts the VSchema for a branch keyspace

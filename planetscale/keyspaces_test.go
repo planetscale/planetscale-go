@@ -325,3 +325,44 @@ func TestKeyspaces_RolloutStatus(t *testing.T) {
 	c.Assert(krr.Shards[1].Name, qt.Equals, "80-")
 	c.Assert(krr.Shards[1].State, qt.Equals, "complete")
 }
+
+func TestKeyspaces_UpdateSettings(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z","binlog_replication":{"optimize_inserts":true,"allow_no_blob_binlog_row_image":true,"batch_binlog_statements":true},"replication_durability_constraints":{"strategy":"maximum"}}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	keyspace, err := client.Keyspaces.UpdateSettings(ctx, &UpdateKeyspaceSettingsRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+		BinlogReplication: &BinlogReplication{
+			OptimizeInserts:           true,
+			AllowNoBlobBinlogRowImage: true,
+			BatchBinlogStatements:     true,
+		},
+		ReplicationDurabilityConstraints: &ReplicationDurabilityConstraints{
+			Strategy: "maximum",
+		},
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(keyspace.ID, qt.Equals, "thisisanid")
+	c.Assert(keyspace.Sharded, qt.Equals, true)
+	c.Assert(keyspace.Shards, qt.Equals, 2)
+	c.Assert(keyspace.BinlogReplication.OptimizeInserts, qt.Equals, true)
+	c.Assert(keyspace.BinlogReplication.AllowNoBlobBinlogRowImage, qt.Equals, true)
+	c.Assert(keyspace.BinlogReplication.BatchBinlogStatements, qt.Equals, true)
+	c.Assert(keyspace.ReplicationDurabilityConstraints.Strategy, qt.Equals, "maximum")
+}

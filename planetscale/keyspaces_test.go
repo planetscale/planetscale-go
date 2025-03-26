@@ -331,7 +331,7 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z","binlog_replication":{"optimize_inserts":true,"allow_no_blob_binlog_row_image":true,"vplayer_batching":true},"replication_durability_constraints":{"strategy":"maximum"}}`
+		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z","vreplication_flags":{"optimize_inserts":true,"allow_no_blob_binlog_row_image":true,"vplayer_batching":true},"replication_durability_constraints":{"strategy":"maximum"}}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.Method, qt.Equals, http.MethodPatch)

@@ -8,18 +8,20 @@ import (
 )
 
 type Keyspace struct {
-	ID            string    `json:"id"`
-	Name          string    `json:"name"`
-	Shards        int       `json:"shards"`
-	Sharded       bool      `json:"sharded"`
-	Replicas      uint64    `json:"replicas"`
-	ExtraReplicas uint64    `json:"extra_replicas"`
-	ResizePending bool      `json:"resize_pending"`
-	Resizing      bool      `json:"resizing"`
-	Ready         bool      `json:"ready"`
-	ClusterSize   string    `json:"cluster_name"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID                               string                            `json:"id"`
+	Name                             string                            `json:"name"`
+	Shards                           int                               `json:"shards"`
+	Sharded                          bool                              `json:"sharded"`
+	Replicas                         uint64                            `json:"replicas"`
+	ExtraReplicas                    uint64                            `json:"extra_replicas"`
+	ResizePending                    bool                              `json:"resize_pending"`
+	Resizing                         bool                              `json:"resizing"`
+	Ready                            bool                              `json:"ready"`
+	ClusterSize                      string                            `json:"cluster_name"`
+	CreatedAt                        time.Time                         `json:"created_at"`
+	UpdatedAt                        time.Time                         `json:"updated_at"`
+	VReplicationFlags                *VReplicationFlags                `json:"vreplication_flags"`
+	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints"`
 }
 
 // VSchema represnts the VSchema for a branch keyspace
@@ -133,6 +135,25 @@ type KeyspaceRolloutStatusRequest struct {
 	Keyspace     string `json:"-"`
 }
 
+type UpdateKeyspaceSettingsRequest struct {
+	Organization                     string                            `json:"-"`
+	Database                         string                            `json:"-"`
+	Branch                           string                            `json:"-"`
+	Keyspace                         string                            `json:"-"`
+	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints,omitempty"`
+	VReplicationFlags                *VReplicationFlags                `json:"vreplication_flags,omitempty"`
+}
+
+type ReplicationDurabilityConstraints struct {
+	Strategy string `json:"strategy"`
+}
+
+type VReplicationFlags struct {
+	OptimizeInserts           bool `json:"optimize_inserts"`
+	AllowNoBlobBinlogRowImage bool `json:"allow_no_blob_binlog_row_image"`
+	VPlayerBatching           bool `json:"vplayer_batching"`
+}
+
 // KeyspacesService is an interface for interacting with the keyspace endpoints of the PlanetScale API
 type KeyspacesService interface {
 	Create(context.Context, *CreateKeyspaceRequest) (*Keyspace, error)
@@ -144,6 +165,7 @@ type KeyspacesService interface {
 	CancelResize(context.Context, *CancelKeyspaceResizeRequest) error
 	ResizeStatus(context.Context, *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error)
 	RolloutStatus(context.Context, *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error)
+	UpdateSettings(context.Context, *UpdateKeyspaceSettingsRequest) (*Keyspace, error)
 }
 
 type keyspacesService struct {
@@ -311,4 +333,18 @@ func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *Keyspa
 	}
 
 	return rolloutStatusResponse, nil
+}
+
+func (s *keyspacesService) UpdateSettings(ctx context.Context, updateReq *UpdateKeyspaceSettingsRequest) (*Keyspace, error) {
+	req, err := s.client.newRequest(http.MethodPatch, keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace), updateReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	keyspace := &Keyspace{}
+	if err := s.client.do(ctx, req, keyspace); err != nil {
+		return nil, err
+	}
+
+	return keyspace, nil
 }

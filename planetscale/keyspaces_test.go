@@ -331,7 +331,7 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z","binlog_replication":{"optimize_inserts":true,"allow_no_blob_binlog_row_image":true,"batch_binlog_statements":true},"replication_durability_constraints":{"strategy":"maximum"}}`
+		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","shards":2,"sharded":true,"created_at":"2022-01-14T15:39:28.394Z","updated_at":"2021-12-20T21:11:07.697Z","binlog_replication":{"optimize_inserts":true,"allow_no_blob_binlog_row_image":true,"vplayer_batching":true},"replication_durability_constraints":{"strategy":"maximum"}}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.Method, qt.Equals, http.MethodPatch)
@@ -350,7 +350,7 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 		VReplicationFlags: &VReplicationFlags{
 			OptimizeInserts:           true,
 			AllowNoBlobBinlogRowImage: true,
-			BatchBinlogStatements:     true,
+			VPlayerBatching:           true,
 		},
 		ReplicationDurabilityConstraints: &ReplicationDurabilityConstraints{
 			Strategy: "maximum",
@@ -363,6 +363,6 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 	c.Assert(keyspace.Shards, qt.Equals, 2)
 	c.Assert(keyspace.VReplicationFlags.OptimizeInserts, qt.Equals, true)
 	c.Assert(keyspace.VReplicationFlags.AllowNoBlobBinlogRowImage, qt.Equals, true)
-	c.Assert(keyspace.VReplicationFlags.BatchBinlogStatements, qt.Equals, true)
+	c.Assert(keyspace.VReplicationFlags.VPlayerBatching, qt.Equals, true)
 	c.Assert(keyspace.ReplicationDurabilityConstraints.Strategy, qt.Equals, "maximum")
 }

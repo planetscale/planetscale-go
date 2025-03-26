@@ -151,7 +151,7 @@ type ReplicationDurabilityConstraints struct {
 type VReplicationFlags struct {
 	OptimizeInserts           bool `json:"optimize_inserts"`
 	AllowNoBlobBinlogRowImage bool `json:"allow_no_blob_binlog_row_image"`
-	BatchBinlogStatements     bool `json:"batch_binlog_statements"`
+	VPlayerBatching           bool `json:"vplayer_batching"`
 }
 
 // KeyspacesService is an interface for interacting with the keyspace endpoints of the PlanetScale API

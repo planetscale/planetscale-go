@@ -17,7 +17,7 @@ type Keyspace struct {
 	ResizePending                    bool                              `json:"resize_pending"`
 	Resizing                         bool                              `json:"resizing"`
 	Ready                            bool                              `json:"ready"`
-	ClusterSize                      string                            `json:"cluster_rate_name"`
+	ClusterSize                      string                            `json:"cluster_name"`
 	CreatedAt                        time.Time                         `json:"created_at"`
 	UpdatedAt                        time.Time                         `json:"updated_at"`
 	VReplicationFlags                *VReplicationFlags                `json:"vreplication_flags"`
@@ -86,8 +86,8 @@ type KeyspaceResizeRequest struct {
 	State string `json:"state"`
 	Actor *Actor `json:"actor"`
 
-	ClusterSize         string `json:"cluster_rate_name"`
-	PreviousClusterSize string `json:"previous_cluster_rate_name"`
+	ClusterSize         string `json:"cluster_name"`
+	PreviousClusterSize string `json:"previous_cluster_name"`
 
 	Replicas         uint `json:"replicas"`
 	ExtraReplicas    uint `json:"extra_replicas"`

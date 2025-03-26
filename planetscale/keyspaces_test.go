@@ -170,7 +170,7 @@ func TestKeyspaces_Resize(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"pending","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"actorid","type":"User","display_name":"Test User"},"cluster_rate_name":"PS_10","extra_replicas":1,"previous_cluster_rate_name":"PS_10","replicas":3,"previous_replicas":5}`
+		out := `{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"pending","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"actorid","type":"User","display_name":"Test User"},"cluster_name":"PS_10","extra_replicas":1,"previous_cluster_name":"PS_10","replicas":3,"previous_replicas":5}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.Method, qt.Equals, http.MethodPut)
@@ -232,7 +232,7 @@ func TestKeyspaces_ResizeStatus(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"completed","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"thisisanid","type":"User","display_name":"Test User"},"cluster_rate_name":"PS_10","extra_replicas":0,"previous_cluster_rate_name":"PS_10","replicas":2,"previous_replicas":5}]}`
+		out := `{"type":"list","current_page":1,"next_page":null,"next_page_url":null,"prev_page":null,"prev_page_url":null,"data":[{"id":"thisisanid","type":"KeyspaceResizeRequest","state":"completed","started_at":"2024-06-25T18:03:09.459Z","completed_at":"2024-06-25T18:04:06.228Z","created_at":"2024-06-25T18:03:09.439Z","updated_at":"2024-06-25T18:04:06.238Z","actor":{"id":"thisisanid","type":"User","display_name":"Test User"},"cluster_name":"PS_10","extra_replicas":0,"previous_cluster_name":"PS_10","replicas":2,"previous_replicas":5}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 		c.Assert(r.Method, qt.Equals, http.MethodGet)

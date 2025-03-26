@@ -118,7 +118,10 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 
 	defaultOpts := defaultListOptions(WithEventFilters(listReq.Events))
 	for _, opt := range opts {
-		opt(defaultOpts)
+		err := opt(defaultOpts)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if vals := defaultOpts.URLValues.Encode(); vals != "" {

@@ -347,7 +347,7 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 		Database:     "bar",
 		Branch:       "baz",
 		Keyspace:     "qux",
-		VReplication: &VReplication{
+		VReplicationFlags: &VReplicationFlags{
 			OptimizeInserts:           true,
 			AllowNoBlobBinlogRowImage: true,
 			BatchBinlogStatements:     true,
@@ -361,8 +361,8 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 	c.Assert(keyspace.ID, qt.Equals, "thisisanid")
 	c.Assert(keyspace.Sharded, qt.Equals, true)
 	c.Assert(keyspace.Shards, qt.Equals, 2)
-	c.Assert(keyspace.VReplication.OptimizeInserts, qt.Equals, true)
-	c.Assert(keyspace.VReplication.AllowNoBlobBinlogRowImage, qt.Equals, true)
-	c.Assert(keyspace.VReplication.BatchBinlogStatements, qt.Equals, true)
+	c.Assert(keyspace.VReplicationFlags.OptimizeInserts, qt.Equals, true)
+	c.Assert(keyspace.VReplicationFlags.AllowNoBlobBinlogRowImage, qt.Equals, true)
+	c.Assert(keyspace.VReplicationFlags.BatchBinlogStatements, qt.Equals, true)
 	c.Assert(keyspace.ReplicationDurabilityConstraints.Strategy, qt.Equals, "maximum")
 }

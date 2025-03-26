@@ -338,7 +338,7 @@ func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *Keyspa
 func (s *keyspacesService) UpdateSettings(ctx context.Context, updateReq *UpdateKeyspaceSettingsRequest) (*Keyspace, error) {
 	req, err := s.client.newRequest(http.MethodPatch, keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace), updateReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	keyspace := &Keyspace{}

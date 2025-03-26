@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type Backup struct {
@@ -78,7 +76,7 @@ func (d *backupsService) Create(ctx context.Context, createReq *CreateBackupRequ
 	path := backupsAPIPath(createReq.Organization, createReq.Database, createReq.Branch)
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	backup := &Backup{}
@@ -94,7 +92,7 @@ func (d *backupsService) Get(ctx context.Context, getReq *GetBackupRequest) (*Ba
 	path := backupAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Backup)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	backup := &Backup{}
@@ -109,7 +107,7 @@ func (d *backupsService) Get(ctx context.Context, getReq *GetBackupRequest) (*Ba
 func (d *backupsService) List(ctx context.Context, listReq *ListBackupsRequest) ([]*Backup, error) {
 	req, err := d.client.newRequest(http.MethodGet, backupsAPIPath(listReq.Organization, listReq.Database, listReq.Branch), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	backups := &backupsResponse{}
@@ -125,7 +123,7 @@ func (d *backupsService) Delete(ctx context.Context, deleteReq *DeleteBackupRequ
 	path := backupAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.Backup)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating http request")
+		return fmt.Errorf("error creating http request: %w", err)
 	}
 
 	err = d.client.do(ctx, req, nil)

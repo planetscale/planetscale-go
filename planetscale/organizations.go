@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const organizationsAPIPath = "v1/organizations"
@@ -87,7 +85,7 @@ func NewOrganizationsService(client *Client) *organizationsService {
 func (o *organizationsService) Get(ctx context.Context, getReq *GetOrganizationRequest) (*Organization, error) {
 	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, getReq.Organization), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for get organization")
+		return nil, fmt.Errorf("error creating request for get organization: %w", err)
 	}
 
 	org := &Organization{}
@@ -102,7 +100,7 @@ func (o *organizationsService) Get(ctx context.Context, getReq *GetOrganizationR
 func (o *organizationsService) List(ctx context.Context) ([]*Organization, error) {
 	req, err := o.client.newRequest(http.MethodGet, organizationsAPIPath, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for list organization")
+		return nil, fmt.Errorf("error creating request for list organization: %w", err)
 	}
 
 	orgResponse := &organizationsResponse{}
@@ -136,7 +134,10 @@ func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *Lis
 
 	defaultOpts := defaultListOptions()
 	for _, opt := range opts {
-		opt(defaultOpts)
+		err := opt(defaultOpts)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if vals := defaultOpts.URLValues.Encode(); vals != "" {
@@ -145,7 +146,7 @@ func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *Lis
 
 	req, err := o.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	clusterSKUs := []*ClusterSKU{}

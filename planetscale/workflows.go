@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type Workflow struct {
@@ -226,7 +224,7 @@ type workflowsResponse struct {
 func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequest) ([]*Workflow, error) {
 	req, err := ws.client.newRequest(http.MethodGet, workflowsAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflows := &workflowsResponse{}
@@ -241,7 +239,7 @@ func (ws *workflowsService) List(ctx context.Context, listReq *ListWorkflowsRequ
 func (ws *workflowsService) Get(ctx context.Context, getReq *GetWorkflowRequest) (*Workflow, error) {
 	req, err := ws.client.newRequest(http.MethodGet, workflowAPIPath(getReq.Organization, getReq.Database, getReq.WorkflowNumber), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -257,7 +255,7 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 	req, err := ws.client.newRequest(http.MethodPost, workflowsAPIPath(createReq.Organization, createReq.Database), createReq)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -274,7 +272,7 @@ func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *Verif
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -291,7 +289,7 @@ func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasRe
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -308,7 +306,7 @@ func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimaries
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -325,7 +323,7 @@ func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficRe
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -342,7 +340,7 @@ func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *CutoverWork
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -359,7 +357,7 @@ func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverRe
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -376,7 +374,7 @@ func (ws *workflowsService) Complete(ctx context.Context, completeReq *CompleteW
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -393,7 +391,7 @@ func (ws *workflowsService) Retry(ctx context.Context, retryReq *RetryWorkflowRe
 	req, err := ws.client.newRequest(http.MethodPatch, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}
@@ -410,7 +408,7 @@ func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *CancelWorkflo
 	req, err := ws.client.newRequest(http.MethodDelete, path, nil)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	workflow := &Workflow{}

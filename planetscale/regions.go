@@ -2,9 +2,8 @@ package planetscale
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 const regionsAPIPath = "v1/regions"
@@ -43,7 +42,7 @@ func NewRegionsSevice(client *Client) *regionsService {
 func (r *regionsService) List(ctx context.Context, listReq *ListRegionsRequest) ([]*Region, error) {
 	req, err := r.client.newRequest(http.MethodGet, regionsAPIPath, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for list regions")
+		return nil, fmt.Errorf("error creating request for list regions: %w", err)
 	}
 
 	regionsResponse := &regionsResponse{}

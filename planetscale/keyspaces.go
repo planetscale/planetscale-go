@@ -20,7 +20,7 @@ type Keyspace struct {
 	ClusterSize                      string                            `json:"cluster_rate_name"`
 	CreatedAt                        time.Time                         `json:"created_at"`
 	UpdatedAt                        time.Time                         `json:"updated_at"`
-	BinlogReplication                *VReplication                     `json:"binlog_replication"`
+	VReplication                     *VReplication                     `json:"vreplication"`
 	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints"`
 }
 
@@ -141,7 +141,7 @@ type UpdateKeyspaceSettingsRequest struct {
 	Branch                           string                            `json:"-"`
 	Keyspace                         string                            `json:"-"`
 	ReplicationDurabilityConstraints *ReplicationDurabilityConstraints `json:"replication_durability_constraints,omitempty"`
-	BinlogReplication                *VReplication                     `json:"vreplication,omitempty"`
+	VReplication                     *VReplication                     `json:"vreplication,omitempty"`
 }
 
 type ReplicationDurabilityConstraints struct {

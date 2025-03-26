@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type Keyspace struct {
@@ -162,7 +160,7 @@ func NewKeyspacesService(client *Client) *keyspacesService {
 func (s *keyspacesService) List(ctx context.Context, listReq *ListKeyspacesRequest) ([]*Keyspace, error) {
 	req, err := s.client.newRequest(http.MethodGet, keyspacesAPIPath(listReq.Organization, listReq.Database, listReq.Branch), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	keyspaces := &keyspacesResponse{}
@@ -177,7 +175,7 @@ func (s *keyspacesService) List(ctx context.Context, listReq *ListKeyspacesReque
 func (s *keyspacesService) Get(ctx context.Context, getReq *GetKeyspaceRequest) (*Keyspace, error) {
 	req, err := s.client.newRequest(http.MethodGet, keyspaceAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Keyspace), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	keyspace := &Keyspace{}
@@ -192,7 +190,7 @@ func (s *keyspacesService) Get(ctx context.Context, getReq *GetKeyspaceRequest) 
 func (s *keyspacesService) Create(ctx context.Context, createReq *CreateKeyspaceRequest) (*Keyspace, error) {
 	req, err := s.client.newRequest(http.MethodPost, keyspacesAPIPath(createReq.Organization, createReq.Database, createReq.Branch), createReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	keyspace := &Keyspace{}
@@ -208,7 +206,7 @@ func (s *keyspacesService) VSchema(ctx context.Context, getReq *GetKeyspaceVSche
 	path := fmt.Sprintf("%s/vschema", keyspaceAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Keyspace))
 	req, err := s.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	vschema := &VSchema{}
@@ -223,7 +221,7 @@ func (s *keyspacesService) UpdateVSchema(ctx context.Context, updateReq *UpdateK
 	path := fmt.Sprintf("%s/vschema", keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace))
 	req, err := s.client.newRequest(http.MethodPatch, path, updateReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	vschema := &VSchema{}
@@ -238,7 +236,7 @@ func (s *keyspacesService) UpdateVSchema(ctx context.Context, updateReq *UpdateK
 func (s *keyspacesService) Resize(ctx context.Context, resizeReq *ResizeKeyspaceRequest) (*KeyspaceResizeRequest, error) {
 	req, err := s.client.newRequest(http.MethodPut, keyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), resizeReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	keyspaceResize := &KeyspaceResizeRequest{}
@@ -253,7 +251,7 @@ func (s *keyspacesService) Resize(ctx context.Context, resizeReq *ResizeKeyspace
 func (s *keyspacesService) CancelResize(ctx context.Context, cancelReq *CancelKeyspaceResizeRequest) error {
 	req, err := s.client.newRequest(http.MethodDelete, keyspaceResizesAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.Branch, cancelReq.Keyspace), nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating http request")
+		return fmt.Errorf("error creating http request: %w", err)
 	}
 
 	return s.client.do(ctx, req, nil)
@@ -278,7 +276,7 @@ type keyspaceResizesResponse struct {
 func (s *keyspacesService) ResizeStatus(ctx context.Context, resizeReq *KeyspaceResizeStatusRequest) (*KeyspaceResizeRequest, error) {
 	req, err := s.client.newRequest(http.MethodGet, keyspaceResizesAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch, resizeReq.Keyspace), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	resizesResponse := &keyspaceResizesResponse{}
@@ -304,7 +302,7 @@ func keyspaceRolloutStatusAPIPath(org, db, branch, keyspace string) string {
 func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error) {
 	req, err := s.client.newRequest(http.MethodGet, keyspaceRolloutStatusAPIPath(rolloutReq.Organization, rolloutReq.Database, rolloutReq.Branch, rolloutReq.Keyspace), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	rolloutStatusResponse := &KeyspaceRollout{}

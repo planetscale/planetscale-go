@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-cleanhttp"
-	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
 

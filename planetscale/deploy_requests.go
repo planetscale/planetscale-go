@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type deployRequestsService struct {
@@ -267,7 +265,7 @@ func NewDeployRequestsService(client *Client) *deployRequestsService {
 func (d *deployRequestsService) Get(ctx context.Context, getReq *GetDeployRequestRequest) (*DeployRequest, error) {
 	req, err := d.client.newRequest(http.MethodGet, deployRequestAPIPath(getReq.Organization, getReq.Database, getReq.Number), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -290,7 +288,7 @@ func (d *deployRequestsService) CloseDeploy(ctx context.Context, closeReq *Close
 
 	req, err := d.client.newRequest(http.MethodPatch, deployRequestAPIPath(closeReq.Organization, closeReq.Database, closeReq.Number), updateReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -306,7 +304,7 @@ func (d *deployRequestsService) Deploy(ctx context.Context, deployReq *PerformDe
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "deploy")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -340,7 +338,7 @@ func (d *deployRequestsService) CancelDeploy(ctx context.Context, deployReq *Can
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "cancel")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -355,7 +353,7 @@ func (d *deployRequestsService) ApplyDeploy(ctx context.Context, applyReq *Apply
 	path := deployRequestActionAPIPath(applyReq.Organization, applyReq.Database, applyReq.Number, "apply-deploy")
 	req, err := d.client.newRequest(http.MethodPost, path, applyReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	drr := &DeployRequest{}
@@ -376,7 +374,7 @@ func (d *deployRequestsService) AutoApplyDeploy(ctx context.Context, autoApplyRe
 	path := deployRequestActionAPIPath(autoApplyReq.Organization, autoApplyReq.Database, autoApplyReq.Number, "auto-apply")
 	req, err := d.client.newRequest(http.MethodPut, path, reqBody)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	drr := &DeployRequest{}
@@ -392,7 +390,7 @@ func (d *deployRequestsService) SkipRevertDeploy(ctx context.Context, deployReq 
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "skip-revert")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -408,7 +406,7 @@ func (d *deployRequestsService) RevertDeploy(ctx context.Context, deployReq *Rev
 	path := deployRequestActionAPIPath(deployReq.Organization, deployReq.Database, deployReq.Number, "revert")
 	req, err := d.client.newRequest(http.MethodPost, path, deployReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dr := &DeployRequest{}
@@ -444,7 +442,7 @@ func (d *deployRequestsService) Diff(ctx context.Context, diffReq *DiffRequest) 
 		nil,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	diffs := &diffResponse{}
@@ -475,7 +473,7 @@ func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployReq
 
 	req, err := d.client.newRequest(http.MethodGet, baseURL, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	drReq := &deployRequestsResponse{}
@@ -503,7 +501,7 @@ func (d *deployRequestsService) CreateReview(ctx context.Context, reviewReq *Rev
 			"reviews",
 		), reqBody)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	drr := &DeployRequestReview{}
@@ -521,7 +519,7 @@ type deployOperationResponse struct {
 func (d *deployRequestsService) GetDeployOperations(ctx context.Context, getReq *GetDeployOperationsRequest) ([]*DeployOperation, error) {
 	req, err := d.client.newRequest(http.MethodGet, deployRequestActionAPIPath(getReq.Organization, getReq.Database, getReq.Number, "operations"), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	resp := &deployOperationResponse{}

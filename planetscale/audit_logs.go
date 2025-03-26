@@ -2,11 +2,10 @@ package planetscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // AuditLogEvent represents an audit log's event type
@@ -128,7 +127,7 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 
 	req, err := o.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for listing audit logs")
+		return nil, fmt.Errorf("error creating request for listing audit logs: %w", err)
 	}
 
 	resp := &CursorPaginatedResponse[*AuditLog]{}

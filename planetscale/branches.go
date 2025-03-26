@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // Actor represents a user or service token
@@ -204,7 +202,7 @@ func (d *databaseBranchesService) Diff(ctx context.Context, diffReq *DiffBranchR
 	path := fmt.Sprintf("%s/diff", databaseBranchAPIPath(diffReq.Organization, diffReq.Database, diffReq.Branch))
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	diffs := &diffResponse{}
@@ -233,7 +231,7 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	schemas := &schemaResponse{}
@@ -249,7 +247,7 @@ func (d *databaseBranchesService) RoutingRules(ctx context.Context, routingRules
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	routingRules := &RoutingRules{}
@@ -265,7 +263,7 @@ func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, update
 
 	req, err := d.client.newRequest(http.MethodPatch, path, updateRoutingRulesReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	routingRules := &RoutingRules{}
@@ -282,7 +280,7 @@ func (d *databaseBranchesService) Create(ctx context.Context, createReq *CreateD
 
 	req, err := d.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for branch database")
+		return nil, fmt.Errorf("error creating request for branch database: %w", err)
 	}
 
 	dbBranch := &DatabaseBranch{}
@@ -298,7 +296,7 @@ func (d *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBr
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dbBranch := &DatabaseBranch{}
@@ -314,7 +312,7 @@ func (d *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBr
 func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error) {
 	req, err := d.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dbBranches := &databaseBranchesResponse{}
@@ -330,7 +328,7 @@ func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteD
 	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating request for delete branch")
+		return fmt.Errorf("error creating request for delete branch: %w", err)
 	}
 
 	err = d.client.do(ctx, req, nil)
@@ -342,7 +340,7 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 	path := fmt.Sprintf("%s/%s/refresh-schema", databaseBranchesAPIPath(refreshReq.Organization, refreshReq.Database), refreshReq.Branch)
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating http request")
+		return fmt.Errorf("error creating http request: %w", err)
 	}
 
 	if err := d.client.do(ctx, req, nil); err != nil {
@@ -357,7 +355,7 @@ func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *Promo
 	path := fmt.Sprintf("%s/promote", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for branch promotion")
+		return nil, fmt.Errorf("error creating request for branch promotion: %w", err)
 	}
 
 	branch := &DatabaseBranch{}
@@ -375,7 +373,7 @@ func (d *databaseBranchesService) EnableSafeMigrations(ctx context.Context, enab
 	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(enableReq.Organization, enableReq.Database, enableReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for enabling safe migrations")
+		return nil, fmt.Errorf("error creating request for enabling safe migrations: %w", err)
 	}
 
 	branch := &DatabaseBranch{}
@@ -393,7 +391,7 @@ func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, dis
 	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(disableReq.Organization, disableReq.Database, disableReq.Branch))
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for disabling safe migrations")
+		return nil, fmt.Errorf("error creating request for disabling safe migrations: %w", err)
 	}
 
 	branch := &DatabaseBranch{}
@@ -412,7 +410,7 @@ func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteR
 	path := fmt.Sprintf("%s/demote", databaseBranchAPIPath(demoteReq.Organization, demoteReq.Database, demoteReq.Branch))
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for branch demotion")
+		return nil, fmt.Errorf("error creating request for branch demotion: %w", err)
 	}
 
 	branch := &DatabaseBranch{}
@@ -435,7 +433,7 @@ func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintS
 	path := fmt.Sprintf("%s/schema/lint", databaseBranchAPIPath(lintReq.Organization, lintReq.Database, lintReq.Branch))
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for linting branch schema")
+		return nil, fmt.Errorf("error creating request for linting branch schema: %w", err)
 	}
 
 	lintResp := &lintSchemaResponse{}
@@ -461,7 +459,7 @@ func (o *databaseBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 
 	req, err := o.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	clusterSKUs := []*ClusterSKU{}

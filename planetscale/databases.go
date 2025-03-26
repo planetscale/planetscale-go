@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // CreateDatabaseRequest encapsulates the request for creating a new database.
@@ -107,7 +105,7 @@ func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequ
 
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	dbResponse := databasesResponse{}
@@ -122,7 +120,7 @@ func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequ
 func (ds *databasesService) Create(ctx context.Context, createReq *CreateDatabaseRequest) (*Database, error) {
 	req, err := ds.client.newRequest(http.MethodPost, databasesAPIPath(createReq.Organization), createReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for create database")
+		return nil, fmt.Errorf("error creating request for create database: %w", err)
 	}
 
 	db := &Database{}
@@ -138,7 +136,7 @@ func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest)
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(getReq.Organization), getReq.Database)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for get database")
+		return nil, fmt.Errorf("error creating request for get database: %w", err)
 	}
 
 	db := &Database{}
@@ -154,7 +152,7 @@ func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabas
 	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.Database)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating request for delete database")
+		return nil, fmt.Errorf("error creating request for delete database: %w", err)
 	}
 
 	var dbr *DatabaseDeletionRequest

@@ -347,7 +347,7 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 		Database:     "bar",
 		Branch:       "baz",
 		Keyspace:     "qux",
-		BinlogReplication: &BinlogReplication{
+		BinlogReplication: &VReplication{
 			OptimizeInserts:           true,
 			AllowNoBlobBinlogRowImage: true,
 			BatchBinlogStatements:     true,

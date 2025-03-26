@@ -1,11 +1,10 @@
 module github.com/planetscale/planetscale-go
 
-go 1.23.2
+go 1.24.1
 
 require (
 	github.com/frankban/quicktest v1.14.6
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/pkg/errors v0.9.1
 	golang.org/x/oauth2 v0.28.0
 )
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type DatabaseBranchPassword struct {
@@ -106,7 +104,7 @@ func (d *passwordsService) Create(ctx context.Context, createReq *DatabaseBranch
 	path := passwordsBranchAPIPath(createReq.Organization, createReq.Database, createReq.Branch)
 	req, err := d.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	password := &DatabaseBranchPassword{}
@@ -122,7 +120,7 @@ func (d *passwordsService) Delete(ctx context.Context, deleteReq *DeleteDatabase
 	path := passwordBranchAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating http request")
+		return fmt.Errorf("error creating http request: %w", err)
 	}
 
 	err = d.client.do(ctx, req, nil)
@@ -134,7 +132,7 @@ func (d *passwordsService) Get(ctx context.Context, getReq *GetDatabaseBranchPas
 	path := passwordBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	password := &DatabaseBranchPassword{}
@@ -155,7 +153,7 @@ func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranch
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request to list passwords")
+		return nil, fmt.Errorf("error creating http request to list passwords: %w", err)
 	}
 
 	passwordsResp := &passwordsResponse{}
@@ -170,7 +168,7 @@ func (d *passwordsService) Renew(ctx context.Context, renewReq *RenewDatabaseBra
 	path := passwordRenewAPIPath(renewReq.Organization, renewReq.Database, renewReq.Branch, renewReq.PasswordId)
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating http request")
+		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
 	password := &DatabaseBranchPassword{}

@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/frankban/quicktest v1.14.6
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	golang.org/x/oauth2 v0.28.0
+	golang.org/x/oauth2 v0.29.0
 )
 
 require (

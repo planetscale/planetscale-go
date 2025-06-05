@@ -226,6 +226,53 @@ func TestPasswords_ListEmpty(t *testing.T) {
 	c.Assert(passwords, qt.HasLen, 0)
 }
 
+func TestPasswords_ListWithPagination(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify pagination parameters are included in the request
+		c.Assert(r.URL.Query().Get("page"), qt.Equals, "2")
+		c.Assert(r.URL.Query().Get("per_page"), qt.Equals, "50")
+
+		w.WriteHeader(200)
+		out := `{
+    "data":
+    [
+        {
+            "id": "4rwwvrxk2o99",
+            "name": "planetscale-go-test-password",
+            "created_at": "2021-01-14T10:19:23.000Z"
+        }
+    ]
+}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "planetscale-go-test-db"
+
+	passwords, err := client.Passwords.List(ctx, &ListDatabaseBranchPasswordRequest{
+		Organization: org,
+		Database:     db,
+	}, WithPage(2), WithPerPage(50))
+
+	want := []*DatabaseBranchPassword{
+		{
+			Name:      "planetscale-go-test-password",
+			PublicID:  testPasswordID,
+			CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(passwords, qt.DeepEquals, want)
+}
+
 func TestPasswords_Get(t *testing.T) {
 	c := qt.New(t)
 

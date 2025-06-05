@@ -77,6 +77,7 @@ type RenewDatabaseBranchPasswordRequest struct {
 // Database Branch Passwords API endpoint.
 type PasswordsService interface {
 	Create(context.Context, *DatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
+	// List returns passwords with optional pagination support via ListOption parameters
 	List(context.Context, *ListDatabaseBranchPasswordRequest, ...ListOption) ([]*DatabaseBranchPassword, error)
 	Get(context.Context, *GetDatabaseBranchPasswordRequest) (*DatabaseBranchPassword, error)
 	Delete(context.Context, *DeleteDatabaseBranchPasswordRequest) error
@@ -151,7 +152,7 @@ func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranch
 		path = passwordBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch, "")
 	}
 
-	defaultOpts := defaultListOptions(WithPerPage(100))
+	defaultOpts := defaultListOptions(WithPerPage(50))
 	for _, opt := range opts {
 		err := opt(defaultOpts)
 		if err != nil {

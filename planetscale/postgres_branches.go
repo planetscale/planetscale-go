@@ -24,14 +24,12 @@ type PostgresBranchSchemaRequest struct{}
 
 type ListPostgresBranchClusterSKUsRequest struct{}
 
+// PostgresBranchSchema encapsulates the schema of a Postgres branch.
 type PostgresBranchSchema struct {
 	Name string `json:"name"`
 	Raw  string `json:"raw"`
 	HTML string `json:"html"`
 }
-
-// TBD on if we want to use this or standardize on the `ClusterSKU` type. Probably should standardize, honestly.
-type PostgresBranchClusterSKU struct{}
 
 type PostgresBranchesService interface {
 	Create(context.Context, *CreatePostgresBranchRequest) (*PostgresBranch, error)
@@ -39,5 +37,5 @@ type PostgresBranchesService interface {
 	Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error)
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error)
-	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest) ([]*PostgresBranchClusterSKU, error)
+	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest) ([]*ClusterSKU, error)
 }

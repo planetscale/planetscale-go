@@ -61,6 +61,7 @@ func NewPostgresBranchesService(client *Client) *postgresBranchesService {
 	}
 }
 
+// Create creates a new Postgres branch in the specified organization and database.
 func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreatePostgresBranchRequest) (*PostgresBranch, error) {
 	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
 	req, err := p.client.newRequest(http.MethodPost, path, createReq)
@@ -76,8 +77,8 @@ func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreateP
 	return b, nil
 }
 
-// Delete implements PostgresBranchesService.
-func (p *postgresBranchesService) Delete(context.Context, *DeletePostgresBranchRequest) error {
+// List returns a list of Postgres branches for the specified organization and database.
+func (p *postgresBranchesService) List(context.Context, *ListPostgresBranchesRequest) ([]*PostgresBranch, error) {
 	panic("unimplemented")
 }
 
@@ -86,8 +87,8 @@ func (p *postgresBranchesService) Get(context.Context, *GetPostgresBranchRequest
 	panic("unimplemented")
 }
 
-// List implements PostgresBranchesService.
-func (p *postgresBranchesService) List(context.Context, *ListPostgresBranchesRequest) ([]*PostgresBranch, error) {
+// Delete implements PostgresBranchesService.
+func (p *postgresBranchesService) Delete(context.Context, *DeletePostgresBranchRequest) error {
 	panic("unimplemented")
 }
 

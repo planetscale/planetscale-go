@@ -55,6 +55,7 @@ type Client struct {
 	DataImports      DataImportsService
 	Organizations    OrganizationsService
 	Passwords        PasswordsService
+	PostgresBranches PostgresBranchesService
 	Regions          RegionsService
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
@@ -277,6 +278,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.ServiceTokens = &serviceTokenService{client: c}
 	c.Keyspaces = &keyspacesService{client: c}
 	c.Workflows = &workflowsService{client: c}
+	c.PostgresBranches = &postgresBranchesService{client: c}
 
 	return c, nil
 }

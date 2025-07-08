@@ -25,7 +25,10 @@ type CreatePostgresBranchRequest struct {
 	ClusterName  string `json:"cluster_name,omitempty"`
 }
 
-type ListPostgresBranchesRequest struct{}
+type ListPostgresBranchesRequest struct {
+	Organization string
+	Database     string
+}
 
 type GetPostgresBranchRequest struct{}
 

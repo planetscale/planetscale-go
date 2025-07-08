@@ -4,14 +4,28 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type PostgresBranch struct {
-	ID                  string `json:"id"`
-	Name                string `json:"name"`
-	ClusterName         string `json:"cluster_name"`
-	ClusterDisplayName  string `json:"cluster_display_name"`
-	ClusterArchitecture string `json:"cluster_architecture"`
+	ID                  string    `json:"id"`
+	Name                string    `json:"name"`
+	ClusterName         string    `json:"cluster_name"`
+	ClusterDisplayName  string    `json:"cluster_display_name"`
+	ClusterArchitecture string    `json:"cluster_architecture"`
+	ClusterIOPS         int       `json:"cluster_iops"`
+	State               string    `json:"state"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
+	Actor               Actor     `json:"actor"`
+	Production          bool      `json:"production"`
+	Ready               bool      `json:"ready"`
+	ParentBranch        string    `json:"parent_branch"`
+	Region              Region    `json:"region"`
+}
+
+type postgresBranchesResponse struct {
+	Branches []*PostgresBranch `json:"data"`
 }
 
 // CreatePostgresBranchRequest encapsulates the request to create a Postgres branch.
@@ -30,11 +44,23 @@ type ListPostgresBranchesRequest struct {
 	Database     string
 }
 
-type GetPostgresBranchRequest struct{}
+type GetPostgresBranchRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
 
-type DeletePostgresBranchRequest struct{}
+type DeletePostgresBranchRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
 
-type PostgresBranchSchemaRequest struct{}
+type PostgresBranchSchemaRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
 
 // PostgresBranchSchema encapsulates the schema of a Postgres branch.
 type PostgresBranchSchema struct {
@@ -49,7 +75,7 @@ type PostgresBranchesService interface {
 	Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error)
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error)
-	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest) ([]*ClusterSKU, error)
+	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
 }
 
 type postgresBranchesService struct {
@@ -66,7 +92,7 @@ func NewPostgresBranchesService(client *Client) *postgresBranchesService {
 
 // Create creates a new Postgres branch in the specified organization and database.
 func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreatePostgresBranchRequest) (*PostgresBranch, error) {
-	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
+	path := postgresBranchesAPIPath(createReq.Organization, createReq.Database)
 	req, err := p.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
@@ -81,26 +107,97 @@ func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreateP
 }
 
 // List returns a list of Postgres branches for the specified organization and database.
-func (p *postgresBranchesService) List(context.Context, *ListPostgresBranchesRequest) ([]*PostgresBranch, error) {
-	panic("unimplemented")
+func (p *postgresBranchesService) List(ctx context.Context, listReq *ListPostgresBranchesRequest) ([]*PostgresBranch, error) {
+	req, err := p.client.newRequest(http.MethodGet, postgresBranchesAPIPath(listReq.Organization, listReq.Database), nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	pgBranches := &postgresBranchesResponse{}
+	if err := p.client.do(ctx, req, &pgBranches); err != nil {
+		return nil, err
+	}
+
+	return pgBranches.Branches, nil
 }
 
-// Get implements PostgresBranchesService.
-func (p *postgresBranchesService) Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error) {
-	panic("unimplemented")
+// Get returns a single Postgres branch for the specified organization, database, and branch.
+func (p *postgresBranchesService) Get(ctx context.Context, getReq *GetPostgresBranchRequest) (*PostgresBranch, error) {
+	path := fmt.Sprintf("%s/%s", postgresBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	pgBranch := &PostgresBranch{}
+	if err := p.client.do(ctx, req, &pgBranch); err != nil {
+		return nil, err
+	}
+
+	return pgBranch, nil
 }
 
-// Delete implements PostgresBranchesService.
-func (p *postgresBranchesService) Delete(context.Context, *DeletePostgresBranchRequest) error {
-	panic("unimplemented")
+// Delete deletes a Postgres branch from the specified organization and database.
+func (p *postgresBranchesService) Delete(ctx context.Context, deleteReq *DeletePostgresBranchRequest) error {
+	path := fmt.Sprintf("%s/%s", postgresBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
+	req, err := p.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("error creating http request: %w", err)
+	}
+
+	err = p.client.do(ctx, req, nil)
+	return err
 }
 
-// ListClusterSKUs implements PostgresBranchesService.
-func (p *postgresBranchesService) ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest) ([]*ClusterSKU, error) {
-	panic("unimplemented")
+// ListClusterSKUs returns a list of cluster SKUs for the specified Postgres branch.
+func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *ListBranchClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
+	path := fmt.Sprintf("%s/cluster-size-skus", postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
+
+	defaultOpts := defaultListOptions()
+	for _, opt := range opts {
+		err := opt(defaultOpts)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if vals := defaultOpts.URLValues.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	clusterSKUs := []*ClusterSKU{}
+	if err := p.client.do(ctx, req, &clusterSKUs); err != nil {
+		return nil, err
+	}
+
+	return clusterSKUs, nil
 }
 
-// Schema implements PostgresBranchesService.
-func (p *postgresBranchesService) Schema(context.Context, *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error) {
-	panic("unimplemented")
+// Schema returns the schema for the specified Postgres branch.
+func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error) {
+	path := fmt.Sprintf("%s/schema", postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	schema := &PostgresBranchSchema{}
+	if err := p.client.do(ctx, req, &schema); err != nil {
+		return nil, err
+	}
+
+	return schema, nil
+}
+
+func postgresBranchesAPIPath(org, db string) string {
+	return fmt.Sprintf("%s/%s/branches", databasesAPIPath(org), db)
+}
+
+func postgresBranchAPIPath(org, db, branch string) string {
+	return fmt.Sprintf("%s/%s", postgresBranchesAPIPath(org, db), branch)
 }

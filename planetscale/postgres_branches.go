@@ -2,6 +2,8 @@ package planetscale
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 )
 
 type PostgresBranch struct {
@@ -12,7 +14,16 @@ type PostgresBranch struct {
 	ClusterArchitecture string `json:"cluster_architecture"`
 }
 
-type CreatePostgresBranchRequest struct{}
+// CreatePostgresBranchRequest encapsulates the request to create a Postgres branch.
+type CreatePostgresBranchRequest struct {
+	Organization string `json:"organization"`
+	Database     string `json:"database"`
+	Branch       string `json:"branch"`
+	Region       string `json:"region,omitempty"`
+	Name         string `json:"name"`
+	BackupID     string `json:"backup_id,omitempty"`
+	ClusterName  string `json:"cluster_name,omitempty"`
+}
 
 type ListPostgresBranchesRequest struct{}
 
@@ -50,8 +61,19 @@ func NewPostgresBranchesService(client *Client) *postgresBranchesService {
 	}
 }
 
-func (p *postgresBranchesService) Create(ctx context.Context, req *CreatePostgresBranchRequest) (*PostgresBranch, error) {
-	panic("unimplemented")
+func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreatePostgresBranchRequest) (*PostgresBranch, error) {
+	path := databaseBranchesAPIPath(createReq.Organization, createReq.Database)
+	req, err := p.client.newRequest(http.MethodPost, path, createReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	b := &PostgresBranch{}
+	if err := p.client.do(ctx, req, b); err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 // Delete implements PostgresBranchesService.

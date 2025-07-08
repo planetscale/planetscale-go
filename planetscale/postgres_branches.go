@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -60,6 +61,7 @@ type PostgresBranchSchemaRequest struct {
 	Organization string
 	Database     string
 	Branch       string
+	Namespace    string `json:"-"`
 }
 
 // PostgresBranchSchema encapsulates the schema of a Postgres branch.
@@ -181,6 +183,15 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 // Schema returns the schema for the specified Postgres branch.
 func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error) {
 	path := fmt.Sprintf("%s/schema", postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	v := url.Values{}
+	if schemaReq.Namespace != "" {
+		v.Set("namespace", schemaReq.Namespace)
+	}
+
+	if vals := v.Encode(); vals != "" {
+		path += "?" + vals
+	}
+
 	req, err := p.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)

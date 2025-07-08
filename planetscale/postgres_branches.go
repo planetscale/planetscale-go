@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// PostgresBranch represents a Postgres branch in the PlanetScale API.
 type PostgresBranch struct {
 	ID                  string    `json:"id"`
 	Name                string    `json:"name"`
@@ -23,6 +24,7 @@ type PostgresBranch struct {
 	Ready               bool      `json:"ready"`
 	ParentBranch        string    `json:"parent_branch"`
 	Region              Region    `json:"region"`
+	Kind                string    `json:"kind"`
 }
 
 type postgresBranchesResponse struct {
@@ -40,23 +42,27 @@ type CreatePostgresBranchRequest struct {
 	ClusterName  string `json:"cluster_name,omitempty"`
 }
 
+// ListPostgresBranchesRequest encapsulates the request to list Postgres branches for a database.
 type ListPostgresBranchesRequest struct {
 	Organization string
 	Database     string
 }
 
+// GetPostgresBranchRequest encapsulates the request to get a specific Postgres branch.
 type GetPostgresBranchRequest struct {
 	Organization string
 	Database     string
 	Branch       string
 }
 
+// DeletePostgresBranchRequest encapsulates the request to delete a Postgres branch.
 type DeletePostgresBranchRequest struct {
 	Organization string
 	Database     string
 	Branch       string
 }
 
+// PostgresBranchSchemaRequest encapsulates the request to get the schema of a Postgres branch.
 type PostgresBranchSchemaRequest struct {
 	Organization string
 	Database     string

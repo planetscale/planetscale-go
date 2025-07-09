@@ -77,12 +77,17 @@ type PostgresBranchSchema struct {
 	HTML string `json:"html"`
 }
 
+// postgresBranchSchemaResponse returns the schemas
+type postgresBranchSchemaResponse struct {
+	Schemas []*PostgresBranchSchema `json:"data"`
+}
+
 type PostgresBranchesService interface {
 	Create(context.Context, *CreatePostgresBranchRequest) (*PostgresBranch, error)
 	List(context.Context, *ListPostgresBranchesRequest) ([]*PostgresBranch, error)
 	Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error)
 	Delete(context.Context, *DeletePostgresBranchRequest) error
-	Schema(context.Context, *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error)
+	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
 }
 
@@ -187,7 +192,7 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 }
 
 // Schema returns the schema for the specified Postgres branch.
-func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) (*PostgresBranchSchema, error) {
+func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error) {
 	path := fmt.Sprintf("%s/schema", postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
 	v := url.Values{}
 	if schemaReq.Namespace != "" {
@@ -203,12 +208,12 @@ func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *Postgre
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
-	schema := &PostgresBranchSchema{}
-	if err := p.client.do(ctx, req, &schema); err != nil {
+	schemas := &postgresBranchSchemaResponse{}
+	if err := p.client.do(ctx, req, &schemas); err != nil {
 		return nil, err
 	}
 
-	return schema, nil
+	return schemas.Schemas, nil
 }
 
 func postgresBranchesAPIPath(org, db string) string {

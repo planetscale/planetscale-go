@@ -124,7 +124,7 @@ func TestPostgresBranches_Schema(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"name": "test_schema", "raw": "CREATE TABLE test...", "html": "<div>CREATE TABLE test...</div>"}`
+		out := `{"data": [{"name": "test_schema", "raw": "CREATE TABLE test...", "html": "<div>CREATE TABLE test...</div>"}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -134,20 +134,22 @@ func TestPostgresBranches_Schema(t *testing.T) {
 
 	ctx := context.Background()
 
-	schema, err := client.PostgresBranches.Schema(ctx, &PostgresBranchSchemaRequest{
+	schemas, err := client.PostgresBranches.Schema(ctx, &PostgresBranchSchemaRequest{
 		Organization: "my-org",
 		Database:     "postgres-test-db",
 		Branch:       testPostgresBranch,
 	})
 
-	want := &PostgresBranchSchema{
-		Name: "test_schema",
-		Raw:  "CREATE TABLE test...",
-		HTML: "<div>CREATE TABLE test...</div>",
+	want := []*PostgresBranchSchema{
+		{
+			Name: "test_schema",
+			Raw:  "CREATE TABLE test...",
+			HTML: "<div>CREATE TABLE test...</div>",
+		},
 	}
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(schema, qt.DeepEquals, want)
+	c.Assert(schemas, qt.DeepEquals, want)
 }
 
 func TestPostgresBranches_ListClusterSKUs(t *testing.T) {

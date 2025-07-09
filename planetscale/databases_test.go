@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,8 +62,13 @@ func TestDatabases_CreatePostgres(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["kind"], qt.Equals, "postgresql")
+
 		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"This is a test DB created from the planetscale-go API library","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": { "slug": "us-west", "display_name": "US West" },"state":"ready","kind":"postgresql"}`
-		_, err := w.Write([]byte(out))
+		_, err = w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
 
@@ -79,7 +85,7 @@ func TestDatabases_CreatePostgres(t *testing.T) {
 		Region:       "us-west",
 		Name:         name,
 		Notes:        notes,
-		Kind:         "postgressql",
+		Kind:         "postgresql",
 	})
 
 	want := &Database{

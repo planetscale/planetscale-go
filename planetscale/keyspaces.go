@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -225,8 +226,8 @@ func (s *keyspacesService) Create(ctx context.Context, createReq *CreateKeyspace
 
 // VSchema returns the VSchema for a keyspace in a branch
 func (s *keyspacesService) VSchema(ctx context.Context, getReq *GetKeyspaceVSchemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/vschema", keyspaceAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Keyspace))
-	req, err := s.client.newRequest(http.MethodGet, path, nil)
+	pathStr := path.Join(keyspaceAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.Keyspace), "vschema")
+	req, err := s.client.newRequest(http.MethodGet, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -240,8 +241,8 @@ func (s *keyspacesService) VSchema(ctx context.Context, getReq *GetKeyspaceVSche
 }
 
 func (s *keyspacesService) UpdateVSchema(ctx context.Context, updateReq *UpdateKeyspaceVSchemaRequest) (*VSchema, error) {
-	path := fmt.Sprintf("%s/vschema", keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace))
-	req, err := s.client.newRequest(http.MethodPatch, path, updateReq)
+	pathStr := path.Join(keyspaceAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch, updateReq.Keyspace), "vschema")
+	req, err := s.client.newRequest(http.MethodPatch, pathStr, updateReq)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -280,15 +281,15 @@ func (s *keyspacesService) CancelResize(ctx context.Context, cancelReq *CancelKe
 }
 
 func keyspacesAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/keyspaces", databaseBranchAPIPath(org, db, branch))
+	return path.Join(databaseBranchAPIPath(org, db, branch), "keyspaces")
 }
 
 func keyspaceAPIPath(org, db, branch, keyspace string) string {
-	return fmt.Sprintf("%s/%s", keyspacesAPIPath(org, db, branch), keyspace)
+	return path.Join(keyspacesAPIPath(org, db, branch), keyspace)
 }
 
 func keyspaceResizesAPIPath(org, db, branch, keyspace string) string {
-	return fmt.Sprintf("%s/resizes", keyspaceAPIPath(org, db, branch, keyspace))
+	return path.Join(keyspaceAPIPath(org, db, branch, keyspace), "resizes")
 }
 
 type keyspaceResizesResponse struct {
@@ -318,7 +319,7 @@ func (s *keyspacesService) ResizeStatus(ctx context.Context, resizeReq *Keyspace
 }
 
 func keyspaceRolloutStatusAPIPath(org, db, branch, keyspace string) string {
-	return fmt.Sprintf("%s/rollout-status", keyspaceAPIPath(org, db, branch, keyspace))
+	return path.Join(keyspaceAPIPath(org, db, branch, keyspace), "rollout-status")
 }
 
 func (s *keyspacesService) RolloutStatus(ctx context.Context, rolloutReq *KeyspaceRolloutStatusRequest) (*KeyspaceRollout, error) {

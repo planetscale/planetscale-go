@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 )
 
@@ -200,7 +201,7 @@ func NewDatabaseBranchesService(client *Client) *databaseBranchesService {
 }
 
 func (d *databaseBranchesService) Diff(ctx context.Context, diffReq *DiffBranchRequest) ([]*Diff, error) {
-	path := fmt.Sprintf("%s/diff", databaseBranchAPIPath(diffReq.Organization, diffReq.Database, diffReq.Branch))
+	path := path.Join(databaseBranchAPIPath(diffReq.Organization, diffReq.Database, diffReq.Branch), "diff")
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
@@ -244,7 +245,7 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 }
 
 func (d *databaseBranchesService) RoutingRules(ctx context.Context, routingRulesReq *BranchRoutingRulesRequest) (*RoutingRules, error) {
-	path := fmt.Sprintf("%s/routing-rules", databaseBranchAPIPath(routingRulesReq.Organization, routingRulesReq.Database, routingRulesReq.Branch))
+	path := path.Join(databaseBranchAPIPath(routingRulesReq.Organization, routingRulesReq.Database, routingRulesReq.Branch), "routing-rules")
 
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -260,7 +261,7 @@ func (d *databaseBranchesService) RoutingRules(ctx context.Context, routingRules
 }
 
 func (d *databaseBranchesService) UpdateRoutingRules(ctx context.Context, updateRoutingRulesReq *UpdateBranchRoutingRulesRequest) (*RoutingRules, error) {
-	path := fmt.Sprintf("%s/routing-rules", databaseBranchAPIPath(updateRoutingRulesReq.Organization, updateRoutingRulesReq.Database, updateRoutingRulesReq.Branch))
+	path := path.Join(databaseBranchAPIPath(updateRoutingRulesReq.Organization, updateRoutingRulesReq.Database, updateRoutingRulesReq.Branch), "routing-rules")
 
 	req, err := d.client.newRequest(http.MethodPatch, path, updateRoutingRulesReq)
 	if err != nil {
@@ -294,7 +295,7 @@ func (d *databaseBranchesService) Create(ctx context.Context, createReq *CreateD
 
 // Get returns a database branch for an organization's database.
 func (d *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBranchRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
+	path := path.Join(databaseBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
@@ -326,7 +327,7 @@ func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabas
 
 // Delete deletes a database branch from an organization's database.
 func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchRequest) error {
-	path := fmt.Sprintf("%s/%s", databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
+	path := path.Join(databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request for delete branch: %w", err)
@@ -338,7 +339,7 @@ func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteD
 
 // RefreshSchema refreshes the schema for a
 func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq *RefreshSchemaRequest) error {
-	path := fmt.Sprintf("%s/%s/refresh-schema", databaseBranchesAPIPath(refreshReq.Organization, refreshReq.Database), refreshReq.Branch)
+	path := path.Join(databaseBranchesAPIPath(refreshReq.Organization, refreshReq.Database), refreshReq.Branch, "refresh-schema")
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http request: %w", err)
@@ -353,7 +354,7 @@ func (d *databaseBranchesService) RefreshSchema(ctx context.Context, refreshReq 
 
 // Promote promotes a branch from development to production.
 func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *PromoteRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/promote", databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch))
+	path := path.Join(databaseBranchAPIPath(promoteReq.Organization, promoteReq.Database, promoteReq.Branch), "promote")
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for branch promotion: %w", err)
@@ -371,7 +372,7 @@ func (d *databaseBranchesService) Promote(ctx context.Context, promoteReq *Promo
 // EnableSafeMigrations enables safe migrations for a production branch. This
 // will prevent DDL statements from being performed on the branch.
 func (d *databaseBranchesService) EnableSafeMigrations(ctx context.Context, enableReq *EnableSafeMigrationsRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(enableReq.Organization, enableReq.Database, enableReq.Branch))
+	path := path.Join(databaseBranchAPIPath(enableReq.Organization, enableReq.Database, enableReq.Branch), "safe-migrations")
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for enabling safe migrations: %w", err)
@@ -389,7 +390,7 @@ func (d *databaseBranchesService) EnableSafeMigrations(ctx context.Context, enab
 // DisableSafeMigrations disables safe migrations for a production branch. This
 // will allow DDL statements to be performed on the branch.
 func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, disableReq *DisableSafeMigrationsRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/safe-migrations", databaseBranchAPIPath(disableReq.Organization, disableReq.Database, disableReq.Branch))
+	path := path.Join(databaseBranchAPIPath(disableReq.Organization, disableReq.Database, disableReq.Branch), "safe-migrations")
 	req, err := d.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for disabling safe migrations: %w", err)
@@ -408,7 +409,7 @@ func (d *databaseBranchesService) DisableSafeMigrations(ctx context.Context, dis
 // to an Enterprise organization, it will return a demote request and require a
 // second call by a different admin in order to complete demotion.
 func (d *databaseBranchesService) Demote(ctx context.Context, demoteReq *DemoteRequest) (*DatabaseBranch, error) {
-	path := fmt.Sprintf("%s/demote", databaseBranchAPIPath(demoteReq.Organization, demoteReq.Database, demoteReq.Branch))
+	path := path.Join(databaseBranchAPIPath(demoteReq.Organization, demoteReq.Database, demoteReq.Branch), "demote")
 	req, err := d.client.newRequest(http.MethodPost, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for branch demotion: %w", err)
@@ -431,7 +432,7 @@ type lintSchemaResponse struct {
 // LintSchema lints the current schema of a branch and returns any errors that
 // may be present.
 func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintSchemaRequest) ([]*SchemaLintError, error) {
-	path := fmt.Sprintf("%s/schema/lint", databaseBranchAPIPath(lintReq.Organization, lintReq.Database, lintReq.Branch))
+	path := path.Join(databaseBranchAPIPath(lintReq.Organization, lintReq.Database, lintReq.Branch), "schema", "lint")
 	req, err := d.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for linting branch schema: %w", err)
@@ -447,7 +448,7 @@ func (d *databaseBranchesService) LintSchema(ctx context.Context, lintReq *LintS
 }
 
 func (o *databaseBranchesService) ListClusterSKUs(ctx context.Context, listReq *ListBranchClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
-	path := fmt.Sprintf("%s/cluster-size-skus", databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
+	path := path.Join(databaseBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch), "cluster-size-skus")
 
 	defaultOpts := defaultListOptions()
 	for _, opt := range opts {
@@ -475,9 +476,9 @@ func (o *databaseBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 }
 
 func databaseBranchesAPIPath(org, db string) string {
-	return fmt.Sprintf("%s/%s/branches", databasesAPIPath(org), db)
+	return path.Join(databasesAPIPath(org), db, "branches")
 }
 
 func databaseBranchAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/%s", databaseBranchesAPIPath(org, db), branch)
+	return path.Join(databaseBranchesAPIPath(org, db), branch)
 }

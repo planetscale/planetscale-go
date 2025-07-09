@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -192,17 +193,17 @@ func (d *passwordsService) Renew(ctx context.Context, renewReq *RenewDatabaseBra
 }
 
 func passwordBranchAPIPath(org, db, branch, password string) string {
-	return fmt.Sprintf("%s/%s", passwordsBranchAPIPath(org, db, branch), password)
+	return path.Join(passwordsBranchAPIPath(org, db, branch), password)
 }
 
 func passwordsBranchAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/passwords", databaseBranchAPIPath(org, db, branch))
+	return path.Join(databaseBranchAPIPath(org, db, branch), "passwords")
 }
 
 func passwordsAPIPath(org, db string) string {
-	return fmt.Sprintf("%s/%s/passwords", databasesAPIPath(org), db)
+	return path.Join(databasesAPIPath(org), db, "passwords")
 }
 
 func passwordRenewAPIPath(org, db, branch, password string) string {
-	return fmt.Sprintf("%s/renew", passwordBranchAPIPath(org, db, branch, password))
+	return path.Join(passwordBranchAPIPath(org, db, branch, password), "renew")
 }

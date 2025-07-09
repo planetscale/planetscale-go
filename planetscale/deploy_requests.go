@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 )
 
@@ -531,14 +532,14 @@ func (d *deployRequestsService) GetDeployOperations(ctx context.Context, getReq 
 }
 
 func deployRequestsAPIPath(org, db string) string {
-	return fmt.Sprintf("%s/%s/deploy-requests", databasesAPIPath(org), db)
+	return path.Join(databasesAPIPath(org), db, "deploy-requests")
 }
 
 // deployRequestAPIPath gets the base path for accessing a single deploy request
 func deployRequestAPIPath(org string, db string, number uint64) string {
-	return fmt.Sprintf("%s/%s/deploy-requests/%d", databasesAPIPath(org), db, number)
+	return path.Join(databasesAPIPath(org), db, "deploy-requests", fmt.Sprintf("%d", number))
 }
 
-func deployRequestActionAPIPath(org string, db string, number uint64, path string) string {
-	return fmt.Sprintf("%s/%s", deployRequestAPIPath(org, db, number), path)
+func deployRequestActionAPIPath(org string, db string, number uint64, actionPath string) string {
+	return path.Join(deployRequestAPIPath(org, db, number), actionPath)
 }

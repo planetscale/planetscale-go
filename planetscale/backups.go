@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -131,9 +132,9 @@ func (d *backupsService) Delete(ctx context.Context, deleteReq *DeleteBackupRequ
 }
 
 func backupsAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/backups", databaseBranchAPIPath(org, db, branch))
+	return path.Join(databaseBranchAPIPath(org, db, branch), "backups")
 }
 
 func backupAPIPath(org, db, branch, backup string) string {
-	return fmt.Sprintf("%s/%s", backupsAPIPath(org, db, branch), backup)
+	return path.Join(backupsAPIPath(org, db, branch), backup)
 }

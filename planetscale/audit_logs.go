@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -142,5 +143,5 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 }
 
 func auditlogsAPIPath(org string) string {
-	return fmt.Sprintf("%s/%s/audit-log", organizationsAPIPath, org)
+	return path.Join(organizationsAPIPath, org, "audit-log")
 }

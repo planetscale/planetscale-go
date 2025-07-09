@@ -105,11 +105,7 @@ func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequ
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

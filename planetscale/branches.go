@@ -227,11 +227,7 @@ func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchS
 		v.Add("keyspace", schemaReq.Keyspace)
 	}
 
-	if vals := v.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	req, err := d.client.newRequest(http.MethodGet, path, nil, WithQueryParams(v))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -458,11 +454,7 @@ func (o *databaseBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := o.client.newRequest(http.MethodGet, path, nil)
+	req, err := o.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

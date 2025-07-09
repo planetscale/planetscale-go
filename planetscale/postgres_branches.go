@@ -175,11 +175,7 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -200,11 +196,7 @@ func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *Postgre
 		v.Set("namespace", schemaReq.Namespace)
 	}
 
-	if vals := v.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(v))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

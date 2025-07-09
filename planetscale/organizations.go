@@ -141,11 +141,7 @@ func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *Lis
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := o.client.newRequest(http.MethodGet, path, nil)
+	req, err := o.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

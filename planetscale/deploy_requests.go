@@ -468,11 +468,7 @@ func (d *deployRequestsService) List(ctx context.Context, listReq *ListDeployReq
 		queryParams.Set("into_branch", listReq.IntoBranch)
 	}
 
-	if len(queryParams) > 0 {
-		baseURL += "?" + queryParams.Encode()
-	}
-
-	req, err := d.client.newRequest(http.MethodGet, baseURL, nil)
+	req, err := d.client.newRequest(http.MethodGet, baseURL, nil, WithQueryParams(queryParams))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

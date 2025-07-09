@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -124,11 +125,7 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := o.client.newRequest(http.MethodGet, path, nil)
+	req, err := o.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for listing audit logs: %w", err)
 	}
@@ -142,5 +139,5 @@ func (o *auditlogsService) List(ctx context.Context, listReq *ListAuditLogsReque
 }
 
 func auditlogsAPIPath(org string) string {
-	return fmt.Sprintf("%s/%s/audit-log", organizationsAPIPath, org)
+	return path.Join(organizationsAPIPath, org, "audit-log")
 }

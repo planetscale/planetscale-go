@@ -2,8 +2,8 @@ package planetscale
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"path"
 )
 
 var _ ServiceTokenService = &serviceTokenService{}
@@ -193,17 +193,17 @@ type serviceTokenGrantsResponse struct {
 }
 
 func serviceTokenAccessAPIPath(org, id string) string {
-	return fmt.Sprintf("%s/%s/access", serviceTokensAPIPath(org), id)
+	return path.Join(serviceTokensAPIPath(org), id, "access")
 }
 
 func serviceTokenGrantsAPIPath(org, id string) string {
-	return fmt.Sprintf("%s/%s/grants", serviceTokensAPIPath(org), id)
+	return path.Join(serviceTokensAPIPath(org), id, "grants")
 }
 
 func serviceTokensAPIPath(org string) string {
-	return fmt.Sprintf("v1/organizations/%s/service-tokens", org)
+	return path.Join("v1/organizations", org, "service-tokens")
 }
 
 func serviceTokenAPIPath(org, id string) string {
-	return fmt.Sprintf("%s/%s", serviceTokensAPIPath(org), id)
+	return path.Join(serviceTokensAPIPath(org), id)
 }

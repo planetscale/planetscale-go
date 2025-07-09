@@ -388,10 +388,35 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 	return nil
 }
 
-func (c *Client) newRequest(method string, path string, body interface{}) (*http.Request, error) {
+// RequestOption allows for customizing HTTP requests
+type RequestOption func(*requestOptions)
+
+type requestOptions struct {
+	queryParams url.Values
+}
+
+// WithQueryParams sets query parameters for the request
+func WithQueryParams(params url.Values) RequestOption {
+	return func(opts *requestOptions) {
+		opts.queryParams = params
+	}
+}
+
+func (c *Client) newRequest(method string, path string, body interface{}, opts ...RequestOption) (*http.Request, error) {
 	u, err := c.baseURL.Parse(path)
 	if err != nil {
 		return nil, err
+	}
+
+	// Apply options
+	reqOpts := &requestOptions{}
+	for _, opt := range opts {
+		opt(reqOpts)
+	}
+
+	// Set query parameters if provided
+	if reqOpts.queryParams != nil {
+		u.RawQuery = reqOpts.queryParams.Encode()
 	}
 
 	var req *http.Request

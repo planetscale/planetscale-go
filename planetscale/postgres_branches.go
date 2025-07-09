@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 )
 
@@ -136,7 +137,7 @@ func (p *postgresBranchesService) List(ctx context.Context, listReq *ListPostgre
 
 // Get returns a single Postgres branch for the specified organization, database, and branch.
 func (p *postgresBranchesService) Get(ctx context.Context, getReq *GetPostgresBranchRequest) (*PostgresBranch, error) {
-	path := fmt.Sprintf("%s/%s", postgresBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
+	path := path.Join(postgresBranchesAPIPath(getReq.Organization, getReq.Database), getReq.Branch)
 	req, err := p.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
@@ -152,7 +153,7 @@ func (p *postgresBranchesService) Get(ctx context.Context, getReq *GetPostgresBr
 
 // Delete deletes a Postgres branch from the specified organization and database.
 func (p *postgresBranchesService) Delete(ctx context.Context, deleteReq *DeletePostgresBranchRequest) error {
-	path := fmt.Sprintf("%s/%s", postgresBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
+	path := path.Join(postgresBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
 	req, err := p.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http request: %w", err)
@@ -164,7 +165,7 @@ func (p *postgresBranchesService) Delete(ctx context.Context, deleteReq *DeleteP
 
 // ListClusterSKUs returns a list of cluster SKUs for the specified Postgres branch.
 func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *ListBranchClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
-	path := fmt.Sprintf("%s/cluster-size-skus", postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch))
+	path := path.Join(postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch), "cluster-size-skus")
 
 	defaultOpts := defaultListOptions()
 	for _, opt := range opts {
@@ -174,11 +175,7 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -193,17 +190,13 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 
 // Schema returns the schema for the specified Postgres branch.
 func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error) {
-	path := fmt.Sprintf("%s/schema", postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	path := path.Join(postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch), "schema")
 	v := url.Values{}
 	if schemaReq.Namespace != "" {
 		v.Set("namespace", schemaReq.Namespace)
 	}
 
-	if vals := v.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(v))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -217,9 +210,9 @@ func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *Postgre
 }
 
 func postgresBranchesAPIPath(org, db string) string {
-	return fmt.Sprintf("%s/%s/branches", databasesAPIPath(org), db)
+	return path.Join(databasesAPIPath(org), db, "branches")
 }
 
 func postgresBranchAPIPath(org, db, branch string) string {
-	return fmt.Sprintf("%s/%s", postgresBranchesAPIPath(org, db), branch)
+	return path.Join(postgresBranchesAPIPath(org, db), branch)
 }

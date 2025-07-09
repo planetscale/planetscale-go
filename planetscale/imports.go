@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -243,8 +244,8 @@ type dataImportsService struct {
 // TestDataImportSource will check an external database for compatibility with PlanetScale
 func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *TestDataImportSourceRequest) (*TestDataImportSourceResponse, error) {
 	request.Connection.SSLMode = request.Connection.SSLVerificationMode.String()
-	path := fmt.Sprintf("/v1/organizations/%s/data-imports/test-connection", request.Organization)
-	req, err := d.client.newRequest(http.MethodPost, path, request)
+	pathStr := path.Join("/v1/organizations", request.Organization, "data-imports/test-connection")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, request)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -264,8 +265,8 @@ func (d *dataImportsService) TestDataImportSource(ctx context.Context, request *
 
 func (d *dataImportsService) StartDataImport(ctx context.Context, request *StartDataImportRequest) (*DataImport, error) {
 	request.Connection.SSLMode = request.Connection.SSLVerificationMode.String()
-	path := fmt.Sprintf("/v1/organizations/%s/data-imports/new", request.Organization)
-	req, err := d.client.newRequest(http.MethodPost, path, request)
+	pathStr := path.Join("/v1/organizations", request.Organization, "data-imports/new")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, request)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -279,8 +280,8 @@ func (d *dataImportsService) StartDataImport(ctx context.Context, request *Start
 }
 
 func (d *dataImportsService) GetDataImportStatus(ctx context.Context, getReq *GetImportStatusRequest) (*DataImport, error) {
-	path := dataImportAPIPath(getReq.Organization, getReq.Database)
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	pathStr := dataImportAPIPath(getReq.Organization, getReq.Database)
+	req, err := d.client.newRequest(http.MethodGet, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for get database: %w", err)
 	}
@@ -296,8 +297,8 @@ func (d *dataImportsService) GetDataImportStatus(ctx context.Context, getReq *Ge
 }
 
 func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *CancelDataImportRequest) error {
-	path := fmt.Sprintf("%s/cancel", dataImportAPIPath(cancelReq.Organization, cancelReq.Database))
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	pathStr := path.Join(dataImportAPIPath(cancelReq.Organization, cancelReq.Database), "cancel")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, nil)
 	if err != nil {
 		return fmt.Errorf("error creating http request: %w", err)
 	}
@@ -310,8 +311,8 @@ func (d *dataImportsService) CancelDataImport(ctx context.Context, cancelReq *Ca
 }
 
 func (d *dataImportsService) MakePlanetScalePrimary(ctx context.Context, request *MakePlanetScalePrimaryRequest) (*DataImport, error) {
-	path := fmt.Sprintf("%s/begin-switch-traffic", dataImportAPIPath(request.Organization, request.Database))
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	pathStr := path.Join(dataImportAPIPath(request.Organization, request.Database), "begin-switch-traffic")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -325,8 +326,8 @@ func (d *dataImportsService) MakePlanetScalePrimary(ctx context.Context, request
 }
 
 func (d *dataImportsService) MakePlanetScaleReplica(ctx context.Context, request *MakePlanetScaleReplicaRequest) (*DataImport, error) {
-	path := fmt.Sprintf("%s/begin-reverse-traffic", dataImportAPIPath(request.Organization, request.Database))
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	pathStr := path.Join(dataImportAPIPath(request.Organization, request.Database), "begin-reverse-traffic")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -340,8 +341,8 @@ func (d *dataImportsService) MakePlanetScaleReplica(ctx context.Context, request
 }
 
 func (d *dataImportsService) DetachExternalDatabase(ctx context.Context, request *DetachExternalDatabaseRequest) (*DataImport, error) {
-	path := fmt.Sprintf("%s/detach-external-database", dataImportAPIPath(request.Organization, request.Database))
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	pathStr := path.Join(dataImportAPIPath(request.Organization, request.Database), "detach-external-database")
+	req, err := d.client.newRequest(http.MethodPost, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -356,5 +357,5 @@ func (d *dataImportsService) DetachExternalDatabase(ctx context.Context, request
 }
 
 func dataImportAPIPath(organization, database string) string {
-	return fmt.Sprintf("/v1/organizations/%s/databases/%s/data-imports", organization, database)
+	return path.Join("/v1/organizations", organization, "databases", database, "data-imports")
 }

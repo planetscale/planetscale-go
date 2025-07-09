@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -104,11 +105,7 @@ func (ds *databasesService) List(ctx context.Context, listReq *ListDatabasesRequ
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := ds.client.newRequest(http.MethodGet, path, nil)
+	req, err := ds.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -138,7 +135,7 @@ func (ds *databasesService) Create(ctx context.Context, createReq *CreateDatabas
 }
 
 func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest) (*Database, error) {
-	path := fmt.Sprintf("%s/%s", databasesAPIPath(getReq.Organization), getReq.Database)
+	path := path.Join(databasesAPIPath(getReq.Organization), getReq.Database)
 	req, err := ds.client.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for get database: %w", err)
@@ -154,7 +151,7 @@ func (ds *databasesService) Get(ctx context.Context, getReq *GetDatabaseRequest)
 }
 
 func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseRequest) (*DatabaseDeletionRequest, error) {
-	path := fmt.Sprintf("%s/%s", databasesAPIPath(deleteReq.Organization), deleteReq.Database)
+	path := path.Join(databasesAPIPath(deleteReq.Organization), deleteReq.Database)
 	req, err := ds.client.newRequest(http.MethodDelete, path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for delete database: %w", err)
@@ -170,5 +167,5 @@ func (ds *databasesService) Delete(ctx context.Context, deleteReq *DeleteDatabas
 }
 
 func databasesAPIPath(org string) string {
-	return fmt.Sprintf("v1/organizations/%s/databases", org)
+	return path.Join("v1/organizations", org, "databases")
 }

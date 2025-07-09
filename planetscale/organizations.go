@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -83,7 +84,7 @@ func NewOrganizationsService(client *Client) *organizationsService {
 
 // Get fetches a single organization by name.
 func (o *organizationsService) Get(ctx context.Context, getReq *GetOrganizationRequest) (*Organization, error) {
-	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s", organizationsAPIPath, getReq.Organization), nil)
+	req, err := o.client.newRequest(http.MethodGet, path.Join(organizationsAPIPath, getReq.Organization), nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for get organization: %w", err)
 	}
@@ -116,7 +117,7 @@ type listRegionsResponse struct {
 }
 
 func (o *organizationsService) ListRegions(ctx context.Context, listReq *ListOrganizationRegionsRequest) ([]*Region, error) {
-	req, err := o.client.newRequest(http.MethodGet, fmt.Sprintf("%s/%s/regions", organizationsAPIPath, listReq.Organization), nil)
+	req, err := o.client.newRequest(http.MethodGet, path.Join(organizationsAPIPath, listReq.Organization, "regions"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func (o *organizationsService) ListRegions(ctx context.Context, listReq *ListOrg
 }
 
 func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *ListOrganizationClusterSKUsRequest, opts ...ListOption) ([]*ClusterSKU, error) {
-	path := fmt.Sprintf("%s/%s/cluster-size-skus", organizationsAPIPath, listReq.Organization)
+	path := path.Join(organizationsAPIPath, listReq.Organization, "cluster-size-skus")
 
 	defaultOpts := defaultListOptions()
 	for _, opt := range opts {
@@ -140,11 +141,7 @@ func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *Lis
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := o.client.newRequest(http.MethodGet, path, nil)
+	req, err := o.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

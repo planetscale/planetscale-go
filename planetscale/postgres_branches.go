@@ -194,7 +194,7 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 
 // Schema returns the schema for the specified Postgres branch.
 func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error) {
-	path := fmt.Sprintf("%s/schema", postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	path := path.Join(postgresBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch), "schema")
 	v := url.Values{}
 	if schemaReq.Namespace != "" {
 		v.Set("namespace", schemaReq.Namespace)

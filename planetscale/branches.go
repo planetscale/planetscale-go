@@ -221,7 +221,7 @@ type schemaResponse struct {
 }
 
 func (d *databaseBranchesService) Schema(ctx context.Context, schemaReq *BranchSchemaRequest) ([]*Diff, error) {
-	path := fmt.Sprintf("%s/schema", databaseBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch))
+	path := path.Join(databaseBranchAPIPath(schemaReq.Organization, schemaReq.Database, schemaReq.Branch), "schema")
 	v := url.Values{}
 	if schemaReq.Keyspace != "" {
 		v.Add("keyspace", schemaReq.Keyspace)

@@ -34,6 +34,7 @@ type ListOrganizationRegionsRequest struct {
 // ListOrganizationClusterSKUsRequest encapsulates the request for getting a list of Cluster SKUs for an organization.
 type ListOrganizationClusterSKUsRequest struct {
 	Organization string
+	Postgres     bool
 }
 
 // ClusterSKU represents a SKU for a PlanetScale cluster
@@ -139,6 +140,10 @@ func (o *organizationsService) ListClusterSKUs(ctx context.Context, listReq *Lis
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if listReq.Postgres {
+		defaultOpts.URLValues.Set("postgresql", "true")
 	}
 
 	req, err := o.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))

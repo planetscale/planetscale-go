@@ -12,7 +12,7 @@ type DatabaseEngine string
 
 const (
 	DatabaseEngineMySQL    DatabaseEngine = "mysql"
-	DatabaseEnginePostgres                = "postgresql"
+	DatabaseEnginePostgres DatabaseEngine = "postgresql"
 )
 
 // CreateDatabaseRequest encapsulates the request for creating a new database.

@@ -8,23 +8,12 @@ import (
 	"time"
 )
 
-type DatabaseEngine int
+type DatabaseEngine string
 
 const (
-	DatabaseEngineMySQL DatabaseEngine = iota
-	DatabaseEnginePostgres
+	DatabaseEngineMySQL    DatabaseEngine = "mysql"
+	DatabaseEnginePostgres                = "postgresql"
 )
-
-func (de DatabaseEngine) String() string {
-	switch de {
-	case DatabaseEngineMySQL:
-		return "mysql"
-	case DatabaseEnginePostgres:
-		return "postgresql"
-	default:
-		return "mysql"
-	}
-}
 
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {

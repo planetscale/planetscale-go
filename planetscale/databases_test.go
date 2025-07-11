@@ -85,7 +85,7 @@ func TestDatabases_CreatePostgres(t *testing.T) {
 		Region:       "us-west",
 		Name:         name,
 		Notes:        notes,
-		Engine:       DatabaseEnginePostgres,
+		Kind:         DatabaseEnginePostgres,
 	})
 
 	want := &Database{

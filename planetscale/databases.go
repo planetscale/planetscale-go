@@ -14,7 +14,7 @@ type CreateDatabaseRequest struct {
 	Name         string `json:"name"`
 	Notes        string `json:"notes,omitempty"`
 	Region       string `json:"region,omitempty"`
-	ClusterSize  string `json:"cluster_size"`
+	ClusterSize  string `json:"cluster_size,omitempty"`
 	Kind         string `json:"kind,omitempty"`
 }
 

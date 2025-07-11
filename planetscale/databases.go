@@ -8,14 +8,21 @@ import (
 	"time"
 )
 
+type DatabaseEngine string
+
+const (
+	DatabaseEngineMySQL    DatabaseEngine = "mysql"
+	DatabaseEnginePostgres DatabaseEngine = "postgresql"
+)
+
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {
 	Organization string
-	Name         string `json:"name"`
-	Notes        string `json:"notes,omitempty"`
-	Region       string `json:"region,omitempty"`
-	ClusterSize  string `json:"cluster_size,omitempty"`
-	Kind         string `json:"kind,omitempty"`
+	Name         string         `json:"name"`
+	Notes        string         `json:"notes,omitempty"`
+	Region       string         `json:"region,omitempty"`
+	ClusterSize  string         `json:"cluster_size,omitempty"`
+	Kind         DatabaseEngine `json:"kind,omitempty"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.
@@ -67,14 +74,14 @@ const (
 
 // Database represents a PlanetScale database
 type Database struct {
-	Name      string        `json:"name"`
-	Notes     string        `json:"notes"`
-	Region    Region        `json:"region"`
-	State     DatabaseState `json:"state"`
-	Kind      string        `json:"kind"`
-	HtmlURL   string        `json:"html_url"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+	Name      string         `json:"name"`
+	Notes     string         `json:"notes"`
+	Region    Region         `json:"region"`
+	State     DatabaseState  `json:"state"`
+	Kind      DatabaseEngine `json:"kind"`
+	HtmlURL   string         `json:"html_url"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
 // Database represents a list of PlanetScale databases

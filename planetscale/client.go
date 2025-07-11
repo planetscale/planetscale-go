@@ -115,6 +115,16 @@ func WithRates() ListOption {
 	}
 }
 
+// WithDatabaseEngine returns a ListOption that sets the "engine" URL parameter
+func WithDatabaseEngine(engine string) ListOption {
+	return func(opt *ListOptions) error {
+		if len(engine) > 0 {
+			opt.URLValues.Set("engine", engine)
+		}
+		return nil
+	}
+}
+
 // WithRegion returns a ListOption sets the "region" URL parameter.
 func WithRegion(region string) ListOption {
 	return func(opt *ListOptions) error {

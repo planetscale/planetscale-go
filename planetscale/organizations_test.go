@@ -191,7 +191,7 @@ func TestOrganizations_ListClusterSKUsPostgres(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 
-		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus?postgresql=true")
+		c.Assert(r.URL.String(), qt.Equals, "/v1/organizations/my-cool-org/cluster-size-skus?engine=postgresql")
 		out := `[
 		{
 			"name": "PS_10",
@@ -224,8 +224,7 @@ func TestOrganizations_ListClusterSKUsPostgres(t *testing.T) {
 
 	orgs, err := client.Organizations.ListClusterSKUs(ctx, &ListOrganizationClusterSKUsRequest{
 		Organization: "my-cool-org",
-		Postgres:     true,
-	})
+	}, WithDatabaseEngine("postgresql"))
 
 	c.Assert(err, qt.IsNil)
 	want := []*ClusterSKU{

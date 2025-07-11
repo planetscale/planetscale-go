@@ -8,14 +8,32 @@ import (
 	"time"
 )
 
+type DatabaseEngine int
+
+const (
+	DatabaseEngineMySQL DatabaseEngine = iota
+	DatabaseEnginePostgres
+)
+
+func (de DatabaseEngine) String() string {
+	switch de {
+	case DatabaseEngineMySQL:
+		return "mysql"
+	case DatabaseEnginePostgres:
+		return "postgresql"
+	default:
+		return "mysql"
+	}
+}
+
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {
 	Organization string
-	Name         string `json:"name"`
-	Notes        string `json:"notes,omitempty"`
-	Region       string `json:"region,omitempty"`
-	ClusterSize  string `json:"cluster_size,omitempty"`
-	Kind         string `json:"kind,omitempty"`
+	Name         string         `json:"name"`
+	Notes        string         `json:"notes,omitempty"`
+	Region       string         `json:"region,omitempty"`
+	ClusterSize  string         `json:"cluster_size,omitempty"`
+	Kind         DatabaseEngine `json:"kind,omitempty"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

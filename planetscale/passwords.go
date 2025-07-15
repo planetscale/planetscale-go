@@ -161,11 +161,7 @@ func (d *passwordsService) List(ctx context.Context, listReq *ListDatabaseBranch
 		}
 	}
 
-	if vals := defaultOpts.URLValues.Encode(); vals != "" {
-		path += "?" + vals
-	}
-
-	req, err := d.client.newRequest(http.MethodGet, path, nil)
+	req, err := d.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request to list passwords: %w", err)
 	}

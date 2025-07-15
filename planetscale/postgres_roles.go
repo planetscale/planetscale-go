@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 )
 
 // PostgresRole represents a PostgreSQL role in PlanetScale.
 type PostgresRole struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	AccessHostURL string `json:"access_host_url"`
-	DatabaseName  string `json:"database_name"`
-	Password      string `json:"password"`
-	Actor         Actor  `json:"actor"`
-	Username      string `json:"username"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	AccessHostURL string    `json:"access_host_url"`
+	DatabaseName  string    `json:"database_name"`
+	Password      string    `json:"password"`
+	Actor         Actor     `json:"actor"`
+	Username      string    `json:"username"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 // ResetDefaultRoleRequest encapsulates the request for resetting the default role of a Postgres database branch.

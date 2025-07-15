@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	qt "github.com/frankban/quicktest"
 )
@@ -20,7 +21,8 @@ func TestResetDefaultRole(t *testing.T) {
 			"database_name": "postgres",
 			"password": "secure-password",
 			"actor": {"id": "actor-id", "display_name": "actor-name"},
-			"username": "postgres"
+			"username": "postgres",
+			"created_at": "2025-07-15T10:19:23.000Z"
 		}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -48,6 +50,7 @@ func TestResetDefaultRole(t *testing.T) {
 		Password:      "secure-password",
 		Actor:         Actor{ID: "actor-id", Name: "actor-name"},
 		Username:      "postgres",
+		CreatedAt:     time.Date(2025, time.July, 15, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)

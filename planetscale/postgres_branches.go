@@ -78,6 +78,28 @@ type PostgresBranchSchema struct {
 	HTML string `json:"html"`
 }
 
+type PostgresBranchParameter struct {
+	Type              string    `json:"type"`
+	Name              string    `json:"name"`
+	DisplayName       string    `json:"display_name"`
+	Namespace         string    `json:"namespace"`
+	Category          string    `json:"category"`
+	Description       string    `json:"description"`
+	Extension         bool      `json:"extension"`
+	Internal          bool      `json:"internal"`
+	ParameterType     string    `json:"parameter_type"`
+	DefaultValue      string    `json:"default_value"`
+	Value             string    `json:"value"`
+	Required          bool      `json:"required"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	Restart           bool      `json:"restart"`
+	Max               *int      `json:"max,omitempty"`
+	Min               *int      `json:"min,omitempty"`
+	URL               *string   `json:"url,omitempty"`
+	Actor             Actor     `json:"actor"`
+}
+
 // postgresBranchSchemaResponse returns the schemas
 type postgresBranchSchemaResponse struct {
 	Schemas []*PostgresBranchSchema `json:"data"`

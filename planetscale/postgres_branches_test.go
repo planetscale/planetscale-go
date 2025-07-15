@@ -205,3 +205,86 @@ func TestPostgresBranches_ListClusterSKUs(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(skus, qt.DeepEquals, want)
 }
+
+func TestPostgresBranches_Parameters(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		out := `[
+		{
+			"type": "PostgresClusterParameter",
+			"name": "peers",
+			"display_name": "Number of processes",
+			"namespace": "psbouncer",
+			"category": "PSBouncer",
+			"description": "Sets the number of PSBouncer processes that will run on each node in this branch's cluster.\n",
+			"extension": false,
+			"internal": false,
+			"parameter_type": "integer",
+			"default_value": "1",
+			"value": "1",
+			"required": true,
+			"created_at": "2025-06-13T15:03:14.578Z",
+			"updated_at": "2025-07-08T21:13:37.019Z",
+			"restart": true,
+			"max": 4,
+			"min": 1,
+			"url": null,
+			"actor": {
+				"id": "somepublicid",
+				"type": "User",
+				"display_name": "Test User",
+				"avatar_url": ""
+			}
+		}
+	]`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	parameters, err := client.PostgresBranches.Parameters(ctx, &GetPostgresBranchParametersRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+	})
+
+	maxPeers := 4
+	minPeers := 1
+
+	want := []*PostgresBranchParameter{
+		{
+			Type:          "PostgresClusterParameter",
+			Name:          "peers",
+			DisplayName:   "Number of processes",
+			Namespace:     "psbouncer",
+			Category:      "PSBouncer",
+			Description:   "Sets the number of PSBouncer processes that will run on each node in this branch's cluster.\n",
+			Extension:     false,
+			Internal:      false,
+			ParameterType: "integer",
+			DefaultValue:  "1",
+			Value:         "1",
+			Required:      true,
+			CreatedAt:     time.Date(2025, time.June, 13, 15, 3, 14, 578000000, time.UTC),
+			UpdatedAt:     time.Date(2025, time.July, 8, 21, 13, 37, 19000000, time.UTC),
+			Restart:       true,
+			Max:           &maxPeers,
+			Min:           &minPeers,
+			URL:           nil,
+			Actor: Actor{
+				ID:   "somepublicid",
+				Type: "User",
+				Name: "Test User",
+			},
+		},
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(parameters, qt.DeepEquals, want)
+}

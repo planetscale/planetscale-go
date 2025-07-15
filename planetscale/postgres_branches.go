@@ -78,26 +78,32 @@ type PostgresBranchSchema struct {
 	HTML string `json:"html"`
 }
 
+type GetPostgresBranchParametersRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+}
+
 type PostgresBranchParameter struct {
-	Type              string    `json:"type"`
-	Name              string    `json:"name"`
-	DisplayName       string    `json:"display_name"`
-	Namespace         string    `json:"namespace"`
-	Category          string    `json:"category"`
-	Description       string    `json:"description"`
-	Extension         bool      `json:"extension"`
-	Internal          bool      `json:"internal"`
-	ParameterType     string    `json:"parameter_type"`
-	DefaultValue      string    `json:"default_value"`
-	Value             string    `json:"value"`
-	Required          bool      `json:"required"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	Restart           bool      `json:"restart"`
-	Max               *int      `json:"max,omitempty"`
-	Min               *int      `json:"min,omitempty"`
-	URL               *string   `json:"url,omitempty"`
-	Actor             Actor     `json:"actor"`
+	Type          string    `json:"type"`
+	Name          string    `json:"name"`
+	DisplayName   string    `json:"display_name"`
+	Namespace     string    `json:"namespace"`
+	Category      string    `json:"category"`
+	Description   string    `json:"description"`
+	Extension     bool      `json:"extension"`
+	Internal      bool      `json:"internal"`
+	ParameterType string    `json:"parameter_type"`
+	DefaultValue  string    `json:"default_value"`
+	Value         string    `json:"value"`
+	Required      bool      `json:"required"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Restart       bool      `json:"restart"`
+	Max           *int      `json:"max,omitempty"`
+	Min           *int      `json:"min,omitempty"`
+	URL           *string   `json:"url,omitempty"`
+	Actor         Actor     `json:"actor"`
 }
 
 // postgresBranchSchemaResponse returns the schemas
@@ -112,6 +118,7 @@ type PostgresBranchesService interface {
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
+	Parameters(context.Context, *GetPostgresBranchParametersRequest) ([]*PostgresBranchParameter, error)
 }
 
 type postgresBranchesService struct {
@@ -229,6 +236,22 @@ func (p *postgresBranchesService) Schema(ctx context.Context, schemaReq *Postgre
 	}
 
 	return schemas.Schemas, nil
+}
+
+// Parameters returns the configured parameters for the specified Postgres branch.
+func (p *postgresBranchesService) Parameters(ctx context.Context, paramsReq *GetPostgresBranchParametersRequest) ([]*PostgresBranchParameter, error) {
+	path := path.Join(postgresBranchAPIPath(paramsReq.Organization, paramsReq.Database, paramsReq.Branch), "parameters")
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	parameters := []*PostgresBranchParameter{}
+	if err := p.client.do(ctx, req, &parameters); err != nil {
+		return nil, err
+	}
+
+	return parameters, nil
 }
 
 func postgresBranchesAPIPath(org, db string) string {

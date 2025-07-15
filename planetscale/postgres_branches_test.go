@@ -90,7 +90,7 @@ func TestPostgresBranches_Get(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}`
+		out := `{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z","replicas":1}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -113,6 +113,7 @@ func TestPostgresBranches_Get(t *testing.T) {
 		Name:      testPostgresBranch,
 		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		Replicas:  1,
 	}
 
 	c.Assert(err, qt.IsNil)

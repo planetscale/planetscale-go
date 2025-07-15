@@ -47,7 +47,7 @@ func NewPostgresRolesService(client *Client) *postgresRolesService {
 // ResetDefaultRole resets the default role for a PostgreSQL database branch.
 func (p *postgresRolesService) ResetDefaultRole(ctx context.Context, resetReq *ResetDefaultRoleRequest) (*PostgresRole, error) {
 	pathStr := path.Join(postgresBranchRolesAPIPath(resetReq.Organization, resetReq.Database, resetReq.Branch), "reset-default")
-	req, err := p.client.newRequest(http.MethodPost, pathStr, nil)
+	req, err := p.client.newRequest(http.MethodPost, pathStr, resetReq)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

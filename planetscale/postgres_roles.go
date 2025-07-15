@@ -29,7 +29,7 @@ type ResetDefaultRoleRequest struct {
 
 // PostgresRolesService defines the interface for managing PostgreSQL roles in PlanetScale.
 type PostgresRolesService interface {
-	ResetDefaultRole(context.Context, ResetDefaultRoleRequest) (*PostgresRole, error)
+	ResetDefaultRole(context.Context, *ResetDefaultRoleRequest) (*PostgresRole, error)
 }
 
 type postgresRolesService struct {
@@ -45,7 +45,7 @@ func NewPostgresRolesService(client *Client) *postgresRolesService {
 }
 
 // ResetDefaultRole resets the default role for a PostgreSQL database branch.
-func (p *postgresRolesService) ResetDefaultRole(ctx context.Context, resetReq ResetDefaultRoleRequest) (*PostgresRole, error) {
+func (p *postgresRolesService) ResetDefaultRole(ctx context.Context, resetReq *ResetDefaultRoleRequest) (*PostgresRole, error) {
 	pathStr := path.Join(postgresBranchRolesAPIPath(resetReq.Organization, resetReq.Database, resetReq.Branch), "reset-default")
 	req, err := p.client.newRequest(http.MethodPost, pathStr, nil)
 	if err != nil {

@@ -36,7 +36,7 @@ func TestResetDefaultRole(t *testing.T) {
 	db := "my-db"
 	branch := "my-branch"
 
-	role, err := client.PostgresRoles.ResetDefaultRole(ctx, ResetDefaultRoleRequest{
+	role, err := client.PostgresRoles.ResetDefaultRole(ctx, &ResetDefaultRoleRequest{
 		Organization: org,
 		Database:     db,
 		Branch:       branch,

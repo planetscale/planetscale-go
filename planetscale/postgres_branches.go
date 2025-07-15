@@ -26,6 +26,7 @@ type PostgresBranch struct {
 	ParentBranch        string    `json:"parent_branch"`
 	Region              Region    `json:"region"`
 	Kind                string    `json:"kind"`
+	Replicas            int       `json:"replicas"`
 }
 
 type postgresBranchesResponse struct {

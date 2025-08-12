@@ -259,7 +259,7 @@ func TestPostgresRoles_Create(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(r.Method, qt.Equals, "POST")
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles")
-		
+
 		// Verify request body
 		body, err := io.ReadAll(r.Body)
 		c.Assert(err, qt.IsNil)
@@ -269,7 +269,7 @@ func TestPostgresRoles_Create(t *testing.T) {
 		c.Assert(reqBody.Name, qt.Equals, "new-role")
 		c.Assert(reqBody.TTL, qt.Equals, 3600)
 		c.Assert(reqBody.InheritedRoles, qt.DeepEquals, []string{"pg_read_all_data", "pg_write_all_data"})
-		
+
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -321,7 +321,7 @@ func TestPostgresRoles_Update(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(r.Method, qt.Equals, "PATCH")
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz")
-		
+
 		// Verify request body
 		body, err := io.ReadAll(r.Body)
 		c.Assert(err, qt.IsNil)
@@ -329,7 +329,7 @@ func TestPostgresRoles_Update(t *testing.T) {
 		err = json.Unmarshal(body, &reqBody)
 		c.Assert(err, qt.IsNil)
 		c.Assert(reqBody.Name, qt.Equals, "updated-role")
-		
+
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -429,7 +429,7 @@ func TestPostgresRoles_Delete(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Assert(r.Method, qt.Equals, "DELETE")
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz")
-		
+
 		// Verify request body
 		body, err := io.ReadAll(r.Body)
 		c.Assert(err, qt.IsNil)
@@ -437,7 +437,7 @@ func TestPostgresRoles_Delete(t *testing.T) {
 		err = json.Unmarshal(body, &reqBody)
 		c.Assert(err, qt.IsNil)
 		c.Assert(reqBody.Successor, qt.Equals, "default")
-		
+
 		w.WriteHeader(204)
 	}))
 

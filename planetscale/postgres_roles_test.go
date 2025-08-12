@@ -405,6 +405,7 @@ func TestPostgresRoles_Delete(t *testing.T) {
 		Database:     db,
 		Branch:       branch,
 		RoleId:       testRoleID,
+		Successor:    "default",
 	})
 
 	c.Assert(err, qt.IsNil)

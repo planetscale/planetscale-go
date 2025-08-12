@@ -71,7 +71,8 @@ type DeletePostgresRoleRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
-	RoleId       string
+	RoleId       string `json:"-"`
+	Successor    string `json:"successor,omitempty"`
 }
 
 // ResetDefaultRoleRequest encapsulates the request for resetting the default role of a Postgres database branch.
@@ -212,7 +213,7 @@ func (p *postgresRolesService) Renew(ctx context.Context, renewReq *RenewPostgre
 // Delete role credentials for a database branch.
 func (p *postgresRolesService) Delete(ctx context.Context, deleteReq *DeletePostgresRoleRequest) error {
 	pathStr := postgresBranchRoleAPIPath(deleteReq.Organization, deleteReq.Database, deleteReq.Branch, deleteReq.RoleId)
-	req, err := p.client.newRequest(http.MethodDelete, pathStr, nil)
+	req, err := p.client.newRequest(http.MethodDelete, pathStr, deleteReq)
 	if err != nil {
 		return fmt.Errorf("error creating http request: %w", err)
 	}

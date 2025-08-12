@@ -64,7 +64,6 @@ type RenewPostgresRoleRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	RoleId       string `json:"-"`
-	TTL          int    `json:"ttl,omitempty"`
 }
 
 // DeletePostgresRoleRequest encapsulates the request for deleting role credentials for a database branch.

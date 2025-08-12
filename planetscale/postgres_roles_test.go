@@ -369,7 +369,6 @@ func TestPostgresRoles_Renew(t *testing.T) {
 		Database:     db,
 		Branch:       branch,
 		RoleId:       testRoleID,
-		TTL:          7200,
 	})
 
 	want := &PostgresRole{

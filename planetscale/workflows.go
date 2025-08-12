@@ -254,7 +254,6 @@ func (ws *workflowsService) Get(ctx context.Context, getReq *GetWorkflowRequest)
 
 func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflowRequest) (*Workflow, error) {
 	req, err := ws.client.newRequest(http.MethodPost, workflowsAPIPath(createReq.Organization, createReq.Database), createReq)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -271,7 +270,6 @@ func (ws *workflowsService) Create(ctx context.Context, createReq *CreateWorkflo
 func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *VerifyDataWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(verifyDataReq.Organization, verifyDataReq.Database, verifyDataReq.WorkflowNumber), "verify-data")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -288,7 +286,6 @@ func (ws *workflowsService) VerifyData(ctx context.Context, verifyDataReq *Verif
 func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasReq *SwitchReplicasWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(switchReplicasReq.Organization, switchReplicasReq.Database, switchReplicasReq.WorkflowNumber), "switch-replicas")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -305,7 +302,6 @@ func (ws *workflowsService) SwitchReplicas(ctx context.Context, switchReplicasRe
 func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimariesReq *SwitchPrimariesWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(switchPrimariesReq.Organization, switchPrimariesReq.Database, switchPrimariesReq.WorkflowNumber), "switch-primaries")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -322,7 +318,6 @@ func (ws *workflowsService) SwitchPrimaries(ctx context.Context, switchPrimaries
 func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficReq *ReverseTrafficWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(reverseTrafficReq.Organization, reverseTrafficReq.Database, reverseTrafficReq.WorkflowNumber), "reverse-traffic")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -339,7 +334,6 @@ func (ws *workflowsService) ReverseTraffic(ctx context.Context, reverseTrafficRe
 func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *CutoverWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(cutoverReq.Organization, cutoverReq.Database, cutoverReq.WorkflowNumber), "cutover")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -356,7 +350,6 @@ func (ws *workflowsService) Cutover(ctx context.Context, cutoverReq *CutoverWork
 func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverReq *ReverseCutoverWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(reverseCutoverReq.Organization, reverseCutoverReq.Database, reverseCutoverReq.WorkflowNumber), "reverse-cutover")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -373,7 +366,6 @@ func (ws *workflowsService) ReverseCutover(ctx context.Context, reverseCutoverRe
 func (ws *workflowsService) Complete(ctx context.Context, completeReq *CompleteWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(completeReq.Organization, completeReq.Database, completeReq.WorkflowNumber), "complete")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -390,7 +382,6 @@ func (ws *workflowsService) Complete(ctx context.Context, completeReq *CompleteW
 func (ws *workflowsService) Retry(ctx context.Context, retryReq *RetryWorkflowRequest) (*Workflow, error) {
 	pathStr := path.Join(workflowAPIPath(retryReq.Organization, retryReq.Database, retryReq.WorkflowNumber), "retry")
 	req, err := ws.client.newRequest(http.MethodPatch, pathStr, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -407,7 +398,6 @@ func (ws *workflowsService) Retry(ctx context.Context, retryReq *RetryWorkflowRe
 func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *CancelWorkflowRequest) (*Workflow, error) {
 	path := workflowAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.WorkflowNumber)
 	req, err := ws.client.newRequest(http.MethodDelete, path, nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -420,6 +410,7 @@ func (ws *workflowsService) Cancel(ctx context.Context, cancelReq *CancelWorkflo
 
 	return workflow, nil
 }
+
 func workflowsAPIPath(org, db string) string {
 	return path.Join(databasesAPIPath(org), db, "workflows")
 }

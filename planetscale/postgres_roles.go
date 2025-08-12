@@ -41,11 +41,12 @@ type GetPostgresRoleRequest struct {
 
 // CreatePostgresRoleRequest encapsulates the request for creating role credentials for a database branch.
 type CreatePostgresRoleRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-	Name         string `json:"name"`
-	TTL          int    `json:"ttl,omitempty"`
+	Organization    string   `json:"-"`
+	Database        string   `json:"-"`
+	Branch          string   `json:"-"`
+	Name            string   `json:"name"`
+	TTL             int      `json:"ttl,omitempty"`
+	InheritedRoles  []string `json:"inherited_roles,omitempty"`
 }
 
 // UpdatePostgresRoleRequest encapsulates the request for updating a role name for a database branch.

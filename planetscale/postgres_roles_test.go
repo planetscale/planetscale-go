@@ -268,11 +268,12 @@ func TestPostgresRoles_Create(t *testing.T) {
 	branch := "my-branch"
 
 	role, err := client.PostgresRoles.Create(ctx, &CreatePostgresRoleRequest{
-		Organization: org,
-		Database:     db,
-		Branch:       branch,
-		Name:         "new-role",
-		TTL:          3600,
+		Organization:   org,
+		Database:       db,
+		Branch:         branch,
+		Name:           "new-role",
+		TTL:            3600,
+		InheritedRoles: []string{"pg_read_all_data", "pg_write_all_data"},
 	})
 
 	want := &PostgresRole{

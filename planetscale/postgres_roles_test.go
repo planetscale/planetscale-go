@@ -2,7 +2,9 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +18,8 @@ const testRoleID = "AbC123xYz"
 func TestResetDefaultRole(t *testing.T) {
 	c := qt.New(t)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "POST")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/reset-default")
 		w.WriteHeader(200)
 		out := `{
 			"id": "role-id",
@@ -64,6 +68,8 @@ func TestPostgresRoles_List(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "GET")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles")
 		w.WriteHeader(200)
 		out := `{
     "data":
@@ -115,6 +121,8 @@ func TestPostgresRoles_ListEmpty(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "GET")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles")
 		w.WriteHeader(200)
 		out := `{"data":[]}`
 		_, err := w.Write([]byte(out))
@@ -143,6 +151,8 @@ func TestPostgresRoles_ListWithPagination(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "GET")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles")
 		// Verify pagination parameters are included in the request
 		c.Assert(r.URL.Query().Get("page"), qt.Equals, "2")
 		c.Assert(r.URL.Query().Get("per_page"), qt.Equals, "50")
@@ -198,6 +208,8 @@ func TestPostgresRoles_Get(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "GET")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz")
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -245,6 +257,19 @@ func TestPostgresRoles_Create(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "POST")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles")
+		
+		// Verify request body
+		body, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		var reqBody CreatePostgresRoleRequest
+		err = json.Unmarshal(body, &reqBody)
+		c.Assert(err, qt.IsNil)
+		c.Assert(reqBody.Name, qt.Equals, "new-role")
+		c.Assert(reqBody.TTL, qt.Equals, 3600)
+		c.Assert(reqBody.InheritedRoles, qt.DeepEquals, []string{"pg_read_all_data", "pg_write_all_data"})
+		
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -255,8 +280,8 @@ func TestPostgresRoles_Create(t *testing.T) {
     "username": "new-user",
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testRoleID)
-		_, err := w.Write([]byte(out))
-		c.Assert(err, qt.IsNil)
+		_, writeErr := w.Write([]byte(out))
+		c.Assert(writeErr, qt.IsNil)
 	}))
 
 	client, err := NewClient(WithBaseURL(ts.URL))
@@ -294,6 +319,17 @@ func TestPostgresRoles_Update(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "PATCH")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz")
+		
+		// Verify request body
+		body, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		var reqBody UpdatePostgresRoleRequest
+		err = json.Unmarshal(body, &reqBody)
+		c.Assert(err, qt.IsNil)
+		c.Assert(reqBody.Name, qt.Equals, "updated-role")
+		
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -304,8 +340,8 @@ func TestPostgresRoles_Update(t *testing.T) {
     "username": "existing-user",
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testRoleID)
-		_, err := w.Write([]byte(out))
-		c.Assert(err, qt.IsNil)
+		_, writeErr := w.Write([]byte(out))
+		c.Assert(writeErr, qt.IsNil)
 	}))
 
 	client, err := NewClient(WithBaseURL(ts.URL))
@@ -342,6 +378,8 @@ func TestPostgresRoles_Renew(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "POST")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz/renew")
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
     "id": "%s",
@@ -389,6 +427,17 @@ func TestPostgresRoles_Delete(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "DELETE")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz")
+		
+		// Verify request body
+		body, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		var reqBody DeletePostgresRoleRequest
+		err = json.Unmarshal(body, &reqBody)
+		c.Assert(err, qt.IsNil)
+		c.Assert(reqBody.Successor, qt.Equals, "default")
+		
 		w.WriteHeader(204)
 	}))
 

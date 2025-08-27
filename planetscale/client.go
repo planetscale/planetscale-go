@@ -116,6 +116,14 @@ func WithRates() ListOption {
 	}
 }
 
+// WithPostgreSQL returns a ListOption that sets the "postgresql" URL parameter.
+func WithPostgreSQL() ListOption {
+	return func(opt *ListOptions) error {
+		opt.URLValues.Set("postgresql", "true")
+		return nil
+	}
+}
+
 // WithRegion returns a ListOption sets the "region" URL parameter.
 func WithRegion(region string) ListOption {
 	return func(opt *ListOptions) error {

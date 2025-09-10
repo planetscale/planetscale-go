@@ -1,6 +1,6 @@
 ---
 name: golang.org/x/oauth2
-version: v0.3.0
+version: v0.30.0
 type: go
 summary: Package oauth2 provides support for making OAuth2 authorized and authenticated
   HTTP requests, as specified in RFC 6749.
@@ -9,7 +9,7 @@ license: bsd-3-clause
 licenses:
 - sources: LICENSE
   text: |
-    Copyright (c) 2009 The Go Authors. All rights reserved.
+    Copyright 2009 The Go Authors.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
@@ -21,7 +21,7 @@ licenses:
     copyright notice, this list of conditions and the following disclaimer
     in the documentation and/or other materials provided with the
     distribution.
-       * Neither the name of Google Inc. nor the names of its
+       * Neither the name of Google LLC nor the names of its
     contributors may be used to endorse or promote products derived from
     this software without specific prior written permission.
 

@@ -165,7 +165,7 @@ type RoutingRules struct {
 // Database Branch API endpoint.
 type DatabaseBranchesService interface {
 	Create(context.Context, *CreateDatabaseBranchRequest) (*DatabaseBranch, error)
-	List(context.Context, *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error)
+	List(context.Context, *ListDatabaseBranchesRequest, ...ListOption) ([]*DatabaseBranch, error)
 	Get(context.Context, *GetDatabaseBranchRequest) (*DatabaseBranch, error)
 	Delete(context.Context, *DeleteDatabaseBranchRequest) error
 	Diff(context.Context, *DiffBranchRequest) ([]*Diff, error)
@@ -307,8 +307,18 @@ func (d *databaseBranchesService) Get(ctx context.Context, getReq *GetDatabaseBr
 
 // List returns all of the branches for an organization's
 // database.
-func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest) ([]*DatabaseBranch, error) {
-	req, err := d.client.newRequest(http.MethodGet, databaseBranchesAPIPath(listReq.Organization, listReq.Database), nil)
+func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabaseBranchesRequest, opts ...ListOption) ([]*DatabaseBranch, error) {
+	path := databaseBranchesAPIPath(listReq.Organization, listReq.Database)
+
+	defaultOpts := defaultListOptions(WithPerPage(100))
+	for _, opt := range opts {
+		err := opt(defaultOpts)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := d.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

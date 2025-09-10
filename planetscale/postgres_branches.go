@@ -86,7 +86,7 @@ type postgresBranchSchemaResponse struct {
 
 type PostgresBranchesService interface {
 	Create(context.Context, *CreatePostgresBranchRequest) (*PostgresBranch, error)
-	List(context.Context, *ListPostgresBranchesRequest) ([]*PostgresBranch, error)
+	List(context.Context, *ListPostgresBranchesRequest, ...ListOption) ([]*PostgresBranch, error)
 	Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error)
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
@@ -122,8 +122,18 @@ func (p *postgresBranchesService) Create(ctx context.Context, createReq *CreateP
 }
 
 // List returns a list of Postgres branches for the specified organization and database.
-func (p *postgresBranchesService) List(ctx context.Context, listReq *ListPostgresBranchesRequest) ([]*PostgresBranch, error) {
-	req, err := p.client.newRequest(http.MethodGet, postgresBranchesAPIPath(listReq.Organization, listReq.Database), nil)
+func (p *postgresBranchesService) List(ctx context.Context, listReq *ListPostgresBranchesRequest, opts ...ListOption) ([]*PostgresBranch, error) {
+	path := postgresBranchesAPIPath(listReq.Organization, listReq.Database)
+
+	defaultOpts := defaultListOptions(WithPerPage(100))
+	for _, opt := range opts {
+		err := opt(defaultOpts)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(*defaultOpts.URLValues))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

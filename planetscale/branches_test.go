@@ -110,6 +110,75 @@ func TestDatabaseBranches_ListEmpty(t *testing.T) {
 	c.Assert(db, qt.HasLen, 0)
 }
 
+func TestDatabaseBranches_ListWithPagination(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("limit"), qt.Equals, "10")
+		c.Assert(r.URL.Query().Get("starting_after"), qt.Equals, "test-branch")
+		w.WriteHeader(200)
+		out := `{"data":[{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchesRequest{
+		Organization: org,
+		Database:     name,
+	}, WithLimit(10), WithStartingAfter("test-branch"))
+
+	want := []*DatabaseBranch{{
+		ID:        "planetscale-go-test-db-branch",
+		Name:      testBranch,
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
+func TestDatabaseBranches_ListWithDefaultPerPage(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("per_page"), qt.Equals, "100")
+		w.WriteHeader(200)
+		out := `{"data":[{"id":"planetscale-go-test-db-branch","type":"database_branch","name":"planetscale-go-test-db-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "planetscale-go-test-db"
+
+	db, err := client.DatabaseBranches.List(ctx, &ListDatabaseBranchesRequest{
+		Organization: org,
+		Database:     name,
+	})
+
+	want := []*DatabaseBranch{{
+		ID:        "planetscale-go-test-db-branch",
+		Name:      testBranch,
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
 func TestDatabaseBranches_Get(t *testing.T) {
 	c := qt.New(t)
 

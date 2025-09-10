@@ -85,6 +85,75 @@ func TestPostgresBranches_List(t *testing.T) {
 	c.Assert(branches, qt.DeepEquals, want)
 }
 
+func TestPostgresBranches_ListWithPagination(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("limit"), qt.Equals, "10")
+		c.Assert(r.URL.Query().Get("starting_after"), qt.Equals, "test-branch")
+		w.WriteHeader(200)
+		out := `{"data":[{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "postgres-test-db"
+
+	branches, err := client.PostgresBranches.List(ctx, &ListPostgresBranchesRequest{
+		Organization: org,
+		Database:     name,
+	}, WithLimit(10), WithStartingAfter("test-branch"))
+
+	want := []*PostgresBranch{{
+		ID:        "postgres-test-branch",
+		Name:      testPostgresBranch,
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(branches, qt.DeepEquals, want)
+}
+
+func TestPostgresBranches_ListWithDefaultPerPage(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("per_page"), qt.Equals, "100")
+		w.WriteHeader(200)
+		out := `{"data":[{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	name := "postgres-test-db"
+
+	branches, err := client.PostgresBranches.List(ctx, &ListPostgresBranchesRequest{
+		Organization: org,
+		Database:     name,
+	})
+
+	want := []*PostgresBranch{{
+		ID:        "postgres-test-branch",
+		Name:      testPostgresBranch,
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(branches, qt.DeepEquals, want)
+}
+
 func TestPostgresBranches_Get(t *testing.T) {
 	c := qt.New(t)
 

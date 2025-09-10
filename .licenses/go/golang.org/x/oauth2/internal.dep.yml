@@ -1,14 +1,14 @@
 ---
 name: golang.org/x/oauth2/internal
-version: v0.3.0
+version: v0.30.0
 type: go
-summary: Package internal contains support packages for oauth2 package.
+summary: Package internal contains support packages for golang.org/x/oauth2.
 homepage: https://pkg.go.dev/golang.org/x/oauth2/internal
 license: bsd-3-clause
 licenses:
-- sources: oauth2@v0.3.0/LICENSE
+- sources: oauth2@v0.30.0/LICENSE
   text: |
-    Copyright (c) 2009 The Go Authors. All rights reserved.
+    Copyright 2009 The Go Authors.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
@@ -20,7 +20,7 @@ licenses:
     copyright notice, this list of conditions and the following disclaimer
     in the documentation and/or other materials provided with the
     distribution.
-       * Neither the name of Google Inc. nor the names of its
+       * Neither the name of Google LLC nor the names of its
     contributors may be used to endorse or promote products derived from
     this software without specific prior written permission.
 

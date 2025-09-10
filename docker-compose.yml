@@ -6,11 +6,3 @@ services:
     volumes:
       - .:/work
     working_dir: /work
-
-  licensing:
-    build:
-      context: ./docker
-      dockerfile: Dockerfile.licensed
-    volumes:
-      - .:/work
-    working_dir: /work

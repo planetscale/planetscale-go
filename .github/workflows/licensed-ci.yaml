@@ -23,6 +23,6 @@ jobs:
 
       - uses: licensee/setup-licensed@0d52e575b3258417672be0dff2f115d7db8771d8 # v1.3.2
         with:
-          version: "4.x"
+          version: "5.x"
 
       - uses: licensee/licensed-ci@98eef7c23bcf8211e108781a9594e969da913e89 # v1.11.2

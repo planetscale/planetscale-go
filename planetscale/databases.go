@@ -23,7 +23,7 @@ type CreateDatabaseRequest struct {
 	Region       string         `json:"region,omitempty"`
 	ClusterSize  string         `json:"cluster_size,omitempty"`
 	Kind         DatabaseEngine `json:"kind,omitempty"`
-	Replicas     int            `json:"replicas,omitempty"`
+	Replicas     *int           `json:"replicas,omitempty"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

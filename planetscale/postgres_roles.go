@@ -82,6 +82,23 @@ type ResetDefaultRoleRequest struct {
 	Branch       string `json:"-"`
 }
 
+// ResetPostgresRolePasswordRequest encapsulates the request for resetting a role's password for a database branch.
+type ResetPostgresRolePasswordRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	RoleId       string `json:"-"`
+}
+
+// ReassignPostgresRoleObjectsRequest encapsulates the request for reassigning objects owned by one role to another role.
+type ReassignPostgresRoleObjectsRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	RoleId       string `json:"-"`
+	Successor    string `json:"successor"`
+}
+
 // PostgresRolesService defines the interface for managing PostgreSQL roles in PlanetScale.
 type PostgresRolesService interface {
 	List(context.Context, *ListPostgresRolesRequest, ...ListOption) ([]*PostgresRole, error)
@@ -91,6 +108,8 @@ type PostgresRolesService interface {
 	Renew(context.Context, *RenewPostgresRoleRequest) (*PostgresRole, error)
 	Delete(context.Context, *DeletePostgresRoleRequest) error
 	ResetDefaultRole(context.Context, *ResetDefaultRoleRequest) (*PostgresRole, error)
+	ResetPassword(context.Context, *ResetPostgresRolePasswordRequest) (*PostgresRole, error)
+	ReassignObjects(context.Context, *ReassignPostgresRoleObjectsRequest) error
 }
 
 type postgresRolesService struct {
@@ -222,8 +241,44 @@ func (p *postgresRolesService) Delete(ctx context.Context, deleteReq *DeletePost
 	return err
 }
 
+// ResetPassword resets a role's password for a database branch.
+func (p *postgresRolesService) ResetPassword(ctx context.Context, resetReq *ResetPostgresRolePasswordRequest) (*PostgresRole, error) {
+	pathStr := postgresBranchRoleResetPasswordAPIPath(resetReq.Organization, resetReq.Database, resetReq.Branch, resetReq.RoleId)
+	req, err := p.client.newRequest(http.MethodPost, pathStr, resetReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	role := &PostgresRole{}
+	if err := p.client.do(ctx, req, &role); err != nil {
+		return nil, err
+	}
+
+	return role, nil
+}
+
+// ReassignObjects reassigns objects owned by one role to another role.
+func (p *postgresRolesService) ReassignObjects(ctx context.Context, reassignReq *ReassignPostgresRoleObjectsRequest) error {
+	pathStr := postgresBranchRoleReassignObjectsAPIPath(reassignReq.Organization, reassignReq.Database, reassignReq.Branch, reassignReq.RoleId)
+	req, err := p.client.newRequest(http.MethodPost, pathStr, reassignReq)
+	if err != nil {
+		return fmt.Errorf("error creating http request: %w", err)
+	}
+
+	err = p.client.do(ctx, req, nil)
+	return err
+}
+
 func postgresBranchRoleRenewAPIPath(org, db, branch, roleId string) string {
 	return path.Join(postgresBranchRoleAPIPath(org, db, branch, roleId), "renew")
+}
+
+func postgresBranchRoleResetPasswordAPIPath(org, db, branch, roleId string) string {
+	return path.Join(postgresBranchRoleAPIPath(org, db, branch, roleId), "reset")
+}
+
+func postgresBranchRoleReassignObjectsAPIPath(org, db, branch, roleId string) string {
+	return path.Join(postgresBranchRoleAPIPath(org, db, branch, roleId), "reassign")
 }
 
 func postgresBranchRoleAPIPath(org, db, branch, roleId string) string {

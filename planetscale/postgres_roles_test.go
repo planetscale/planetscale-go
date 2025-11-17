@@ -459,3 +459,89 @@ func TestPostgresRoles_Delete(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 }
+
+func TestPostgresRoles_ResetPassword(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "POST")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz/reset")
+		w.WriteHeader(200)
+		out := fmt.Sprintf(`{
+    "id": "%s",
+    "name": "existing-role",
+    "access_host_url": "test.planetscale.com",
+    "database_name": "test-db",
+    "password": "new-reset-password",
+    "username": "existing-user",
+    "created_at": "2021-01-14T10:19:23.000Z"
+}`, testRoleID)
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "my-db"
+	branch := "my-branch"
+
+	role, err := client.PostgresRoles.ResetPassword(ctx, &ResetPostgresRolePasswordRequest{
+		Organization: org,
+		Database:     db,
+		Branch:       branch,
+		RoleId:       testRoleID,
+	})
+
+	want := &PostgresRole{
+		ID:            testRoleID,
+		Name:          "existing-role",
+		AccessHostURL: "test.planetscale.com",
+		DatabaseName:  "test-db",
+		Password:      "new-reset-password",
+		Username:      "existing-user",
+		CreatedAt:     time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(role, qt.DeepEquals, want)
+}
+
+func TestPostgresRoles_ReassignObjects(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, "POST")
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/roles/AbC123xYz/reassign")
+
+		// Verify request body
+		body, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		var reqBody ReassignPostgresRoleObjectsRequest
+		err = json.Unmarshal(body, &reqBody)
+		c.Assert(err, qt.IsNil)
+		c.Assert(reqBody.Successor, qt.Equals, "new-owner-role")
+
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	org := "my-org"
+	db := "my-db"
+	branch := "my-branch"
+
+	err = client.PostgresRoles.ReassignObjects(ctx, &ReassignPostgresRoleObjectsRequest{
+		Organization: org,
+		Database:     db,
+		Branch:       branch,
+		RoleId:       testRoleID,
+		Successor:    "new-owner-role",
+	})
+
+	c.Assert(err, qt.IsNil)
+}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	qt "github.com/frankban/quicktest"
 )
@@ -15,7 +16,7 @@ func TestServiceTokens_Create(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"id":"test-id","type":"ServiceToken","token":"d2980bbd91a4ab878601ef0573a7af7b1b15e705"}`
+		out := `{"id":"test-id","type":"ServiceToken","token":"d2980bbd91a4ab878601ef0573a7af7b1b15e705","name":"my-token","created_at":"2021-01-14T10:19:23.000Z","last_used_at":"2021-01-15T12:30:00.000Z"}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -28,10 +29,15 @@ func TestServiceTokens_Create(t *testing.T) {
 	snapshot, err := client.ServiceTokens.Create(ctx, &CreateServiceTokenRequest{
 		Organization: testOrg,
 	})
+	tokenName := "my-token"
+	lastUsedAt := time.Date(2021, 1, 15, 12, 30, 0, 0, time.UTC)
 	want := &ServiceToken{
-		ID:    "test-id",
-		Type:  "ServiceToken",
-		Token: "d2980bbd91a4ab878601ef0573a7af7b1b15e705",
+		ID:         "test-id",
+		Type:       "ServiceToken",
+		Token:      "d2980bbd91a4ab878601ef0573a7af7b1b15e705",
+		Name:       &tokenName,
+		CreatedAt:  time.Date(2021, 1, 14, 10, 19, 23, 0, time.UTC),
+		LastUsedAt: &lastUsedAt,
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -77,7 +83,7 @@ func TestServiceTokens_List(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"txhc257pxjuc","type":"ServiceToken","token":null}]}`
+		out := `{"type":"list","next_page":null,"prev_page":null,"data":[{"id":"txhc257pxjuc","type":"ServiceToken","token":null,"name":"list-token","created_at":"2021-01-14T10:19:23.000Z","last_used_at":null}]}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
 	}))
@@ -90,10 +96,13 @@ func TestServiceTokens_List(t *testing.T) {
 	snapshot, err := client.ServiceTokens.List(ctx, &ListServiceTokensRequest{
 		Organization: testOrg,
 	})
+	tokenName := "list-token"
 	want := []*ServiceToken{
 		{
-			ID:   "txhc257pxjuc",
-			Type: "ServiceToken",
+			ID:        "txhc257pxjuc",
+			Type:      "ServiceToken",
+			Name:      &tokenName,
+			CreatedAt: time.Date(2021, 1, 14, 10, 19, 23, 0, time.UTC),
 		},
 	}
 

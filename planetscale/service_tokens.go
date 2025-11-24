@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"path"
+	"time"
 )
 
 var _ ServiceTokenService = &serviceTokenService{}
@@ -112,7 +113,8 @@ func (s *serviceTokenService) DeleteAccess(ctx context.Context, delReq *DeleteSe
 }
 
 type CreateServiceTokenRequest struct {
-	Organization string `json:"-"`
+	Organization string  `json:"-"`
+	Name         *string `json:"name,omitempty"`
 }
 
 type ListServiceTokenGrantsRequest struct {
@@ -149,9 +151,12 @@ type DeleteServiceTokenAccessRequest struct {
 }
 
 type ServiceToken struct {
-	ID    string `json:"id"`
-	Type  string `json:"type"`
-	Token string `json:"token"`
+	ID         string     `json:"id"`
+	Type       string     `json:"type"`
+	Token      string     `json:"token"`
+	Name       *string    `json:"name"`
+	CreatedAt  time.Time  `json:"created_at"`
+	LastUsedAt *time.Time `json:"last_used_at"`
 }
 
 type ServiceTokenGrant struct {

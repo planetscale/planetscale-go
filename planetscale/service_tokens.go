@@ -26,7 +26,7 @@ type serviceTokenService struct {
 }
 
 func (s *serviceTokenService) Create(ctx context.Context, createReq *CreateServiceTokenRequest) (*ServiceToken, error) {
-	req, err := s.client.newRequest(http.MethodPost, serviceTokensAPIPath(createReq.Organization), nil)
+	req, err := s.client.newRequest(http.MethodPost, serviceTokensAPIPath(createReq.Organization), createReq)
 	if err != nil {
 		return nil, err
 	}

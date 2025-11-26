@@ -62,6 +62,7 @@ type Client struct {
 	ServiceTokens    ServiceTokenService
 	Keyspaces        KeyspacesService
 	Workflows        WorkflowsService
+	Webhooks         WebhooksService
 }
 
 // ListOptions are options for listing responses.
@@ -289,6 +290,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.Workflows = &workflowsService{client: c}
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
+	c.Webhooks = &webhooksService{client: c}
 
 	return c, nil
 }

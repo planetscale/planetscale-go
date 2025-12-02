@@ -46,7 +46,6 @@ type CreateDatabaseBranchRequest struct {
 	BackupID     string `json:"backup_id,omitempty"`
 	SeedData     string `json:"seed_data,omitempty"`
 	ClusterSize  string `json:"cluster_size,omitempty"`
-	MajorVersion string `json:"major_version,omitempty"`
 }
 
 // ListDatabaseBranchesRequest encapsulates the request for listing the branches

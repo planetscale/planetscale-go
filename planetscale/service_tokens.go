@@ -158,6 +158,7 @@ type ServiceToken struct {
 	Name       *string    `json:"name"`
 	CreatedAt  time.Time  `json:"created_at"`
 	LastUsedAt *time.Time `json:"last_used_at"`
+	ExpiresAt  *time.Time `json:"expires_at"`
 }
 
 type ServiceTokenGrant struct {

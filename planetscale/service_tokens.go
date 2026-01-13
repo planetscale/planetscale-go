@@ -115,6 +115,7 @@ func (s *serviceTokenService) DeleteAccess(ctx context.Context, delReq *DeleteSe
 type CreateServiceTokenRequest struct {
 	Organization string  `json:"-"`
 	Name         *string `json:"name,omitempty"`
+	TTL          *int    `json:"ttl,omitempty"`
 }
 
 type ListServiceTokenGrantsRequest struct {
@@ -157,6 +158,7 @@ type ServiceToken struct {
 	Name       *string    `json:"name"`
 	CreatedAt  time.Time  `json:"created_at"`
 	LastUsedAt *time.Time `json:"last_used_at"`
+	ExpiresAt  *time.Time `json:"expires_at"`
 }
 
 type ServiceTokenGrant struct {

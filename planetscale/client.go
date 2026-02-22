@@ -61,13 +61,14 @@ type Client struct {
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
 	Keyspaces        KeyspacesService
-	Webhooks         WebhooksService
-	Materialize      MaterializeService
-	Workflows        WorkflowsService
-	Vtctld           VtctldService
-	VDiff            VDiffService
-	LookupVindex     LookupVindexService
-	MoveTables       MoveTablesService
+	Webhooks             WebhooksService
+	Materialize          MaterializeService
+	Workflows            WorkflowsService
+	Vtctld               VtctldService
+	VDiff                VDiffService
+	LookupVindex         LookupVindexService
+	MoveTables           MoveTablesService
+	BranchInfrastructure BranchInfrastructureService
 }
 
 // ListOptions are options for listing responses.
@@ -301,6 +302,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.VDiff = &vdiffService{client: c}
 	c.LookupVindex = &lookupVindexService{client: c}
 	c.MoveTables = &moveTablesService{client: c}
+	c.BranchInfrastructure = &branchInfrastructureService{client: c}
 
 	return c, nil
 }

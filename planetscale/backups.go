@@ -29,6 +29,11 @@ type CreateBackupRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
+
+	Name           string `json:"name,omitempty"`
+	RetentionUnit  string `json:"retention_unit,omitempty"`
+	RetentionValue int    `json:"retention_value,omitempty"`
+	Emergency      bool   `json:"emergency,omitempty"`
 }
 
 type ListBackupsRequest struct {
@@ -75,7 +80,7 @@ func NewBackupsService(client *Client) *backupsService {
 // Creates a new backup for a branch.
 func (d *backupsService) Create(ctx context.Context, createReq *CreateBackupRequest) (*Backup, error) {
 	path := backupsAPIPath(createReq.Organization, createReq.Database, createReq.Branch)
-	req, err := d.client.newRequest(http.MethodPost, path, nil)
+	req, err := d.client.newRequest(http.MethodPost, path, createReq)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

@@ -61,8 +61,9 @@ type Client struct {
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
 	Keyspaces        KeyspacesService
-	Workflows        WorkflowsService
-	Webhooks         WebhooksService
+	Workflows    WorkflowsService
+	Webhooks     WebhooksService
+	Materialize  MaterializeService
 }
 
 // ListOptions are options for listing responses.
@@ -291,6 +292,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Webhooks = &webhooksService{client: c}
+	c.Materialize = &materializeService{client: c}
 
 	return c, nil
 }

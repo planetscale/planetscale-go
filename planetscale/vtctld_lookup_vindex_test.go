@@ -10,6 +10,10 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
+func boolPtr(v bool) *bool {
+	return &v
+}
+
 func TestLookupVindex_Create(t *testing.T) {
 	c := qt.New(t)
 
@@ -22,6 +26,7 @@ func TestLookupVindex_Create(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["name"], qt.Equals, "my-vindex")
 		c.Assert(body["table_keyspace"], qt.Equals, "my-keyspace")
+		c.Assert(body["ignore_nulls"], qt.Equals, false)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -39,6 +44,7 @@ func TestLookupVindex_Create(t *testing.T) {
 		Branch:        "my-branch",
 		Name:          "my-vindex",
 		TableKeyspace: "my-keyspace",
+		IgnoreNulls:   boolPtr(false),
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
@@ -84,6 +90,7 @@ func TestLookupVindex_Externalize(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["table_keyspace"], qt.Equals, "my-keyspace")
+		c.Assert(body["delete"], qt.Equals, false)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -101,6 +108,7 @@ func TestLookupVindex_Externalize(t *testing.T) {
 		Branch:        "my-branch",
 		Name:          "my-vindex",
 		TableKeyspace: "my-keyspace",
+		Delete:        boolPtr(false),
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)

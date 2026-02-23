@@ -34,10 +34,10 @@ type LookupVindexCreateRequest struct {
 	Cells                        []string `json:"cells,omitempty"`
 	TabletTypes                  []string `json:"tablet_types,omitempty"`
 	TabletTypesInPreferenceOrder *bool    `json:"tablet_types_in_preference_order,omitempty"`
-	IgnoreNulls                  bool     `json:"ignore_nulls,omitempty"`
+	IgnoreNulls                  *bool    `json:"ignore_nulls,omitempty"`
 	TableOwnerColumns            []string `json:"table_owner_columns,omitempty"`
 	TableVindexType              string   `json:"table_vindex_type,omitempty"`
-	ContinueAfterCopyWithOwner  *bool    `json:"continue_after_copy_with_owner,omitempty"`
+	ContinueAfterCopyWithOwner   *bool    `json:"continue_after_copy_with_owner,omitempty"`
 }
 
 type LookupVindexShowRequest struct {
@@ -55,7 +55,7 @@ type LookupVindexExternalizeRequest struct {
 	Name          string `json:"-"`
 	TableKeyspace string `json:"table_keyspace"`
 	Keyspace      string `json:"keyspace,omitempty"`
-	Delete        bool   `json:"delete,omitempty"`
+	Delete        *bool  `json:"delete,omitempty"`
 }
 
 type LookupVindexInternalizeRequest struct {

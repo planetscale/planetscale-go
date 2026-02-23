@@ -31,10 +31,10 @@ type MoveTablesCreateRequest struct {
 	TargetKeyspace               string   `json:"target_keyspace"`
 	SourceKeyspace               string   `json:"source_keyspace"`
 	Tables                       []string `json:"tables,omitempty"`
-	AllTables                    bool     `json:"all_tables,omitempty"`
+	AllTables                    *bool    `json:"all_tables,omitempty"`
 	AutoStart                    *bool    `json:"auto_start,omitempty"`
-	StopAfterCopy                bool     `json:"stop_after_copy,omitempty"`
-	DeferSecondaryKeys           *bool    `json:"defer_secondary_keys"`
+	StopAfterCopy                *bool    `json:"stop_after_copy,omitempty"`
+	DeferSecondaryKeys           *bool    `json:"defer_secondary_keys,omitempty"`
 	OnDDL                        string   `json:"on_ddl,omitempty"`
 	ShardedAutoIncrementHandling string   `json:"sharded_auto_increment_handling,omitempty"`
 	SourceTimeZone               string   `json:"source_time_zone,omitempty"`
@@ -66,8 +66,8 @@ type MoveTablesSwitchTrafficRequest struct {
 	Workflow                  string   `json:"-"`
 	TargetKeyspace            string   `json:"target_keyspace"`
 	TabletTypes               []string `json:"tablet_types,omitempty"`
-	DryRun                    bool     `json:"dry_run,omitempty"`
-	InitializeTargetSequences bool     `json:"initialize_target_sequences,omitempty"`
+	DryRun                    *bool    `json:"dry_run,omitempty"`
+	InitializeTargetSequences *bool    `json:"initialize_target_sequences,omitempty"`
 }
 
 // MoveTablesReverseTrafficRequest is a request for reversing traffic for a MoveTables workflow.
@@ -77,7 +77,7 @@ type MoveTablesReverseTrafficRequest struct {
 	Branch         string `json:"-"`
 	Workflow       string `json:"-"`
 	TargetKeyspace string `json:"target_keyspace"`
-	DryRun         bool   `json:"dry_run,omitempty"`
+	DryRun         *bool  `json:"dry_run,omitempty"`
 }
 
 // MoveTablesCancelRequest is a request for canceling a MoveTables workflow.
@@ -87,8 +87,8 @@ type MoveTablesCancelRequest struct {
 	Branch           string `json:"-"`
 	Workflow         string `json:"-"`
 	TargetKeyspace   string `json:"target_keyspace"`
-	KeepData         bool   `json:"keep_data,omitempty"`
-	KeepRoutingRules bool   `json:"keep_routing_rules,omitempty"`
+	KeepData         *bool  `json:"keep_data,omitempty"`
+	KeepRoutingRules *bool  `json:"keep_routing_rules,omitempty"`
 }
 
 // MoveTablesCompleteRequest is a request for completing a MoveTables workflow.
@@ -98,9 +98,9 @@ type MoveTablesCompleteRequest struct {
 	Branch           string `json:"-"`
 	Workflow         string `json:"-"`
 	TargetKeyspace   string `json:"target_keyspace"`
-	KeepData         bool   `json:"keep_data,omitempty"`
-	KeepRoutingRules bool   `json:"keep_routing_rules,omitempty"`
-	DryRun           bool   `json:"dry_run,omitempty"`
+	KeepData         *bool  `json:"keep_data,omitempty"`
+	KeepRoutingRules *bool  `json:"keep_routing_rules,omitempty"`
+	DryRun           *bool  `json:"dry_run,omitempty"`
 }
 
 type moveTablesService struct {

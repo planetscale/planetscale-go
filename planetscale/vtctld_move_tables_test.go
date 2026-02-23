@@ -21,6 +21,17 @@ func TestMoveTables_Create(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["workflow"], qt.Equals, "my-workflow")
+		c.Assert(body["target_keyspace"], qt.Equals, "target")
+		c.Assert(body["source_keyspace"], qt.Equals, "source")
+
+		_, hasAllTables := body["all_tables"]
+		_, hasAutoStart := body["auto_start"]
+		_, hasStopAfterCopy := body["stop_after_copy"]
+		_, hasDeferSecondaryKeys := body["defer_secondary_keys"]
+		c.Assert(hasAllTables, qt.IsFalse)
+		c.Assert(hasAutoStart, qt.IsFalse)
+		c.Assert(hasStopAfterCopy, qt.IsFalse)
+		c.Assert(hasDeferSecondaryKeys, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
@@ -39,6 +50,58 @@ func TestMoveTables_Create(t *testing.T) {
 		Workflow:       "my-workflow",
 		TargetKeyspace: "target",
 		SourceKeyspace: "source",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
+}
+
+func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		allTables, hasAllTables := body["all_tables"]
+		autoStart, hasAutoStart := body["auto_start"]
+		stopAfterCopy, hasStopAfterCopy := body["stop_after_copy"]
+		deferSecondaryKeys, hasDeferSecondaryKeys := body["defer_secondary_keys"]
+		c.Assert(hasAllTables, qt.IsTrue)
+		c.Assert(hasAutoStart, qt.IsTrue)
+		c.Assert(hasStopAfterCopy, qt.IsTrue)
+		c.Assert(hasDeferSecondaryKeys, qt.IsTrue)
+		c.Assert(allTables, qt.Equals, false)
+		c.Assert(autoStart, qt.Equals, false)
+		c.Assert(stopAfterCopy, qt.Equals, false)
+		c.Assert(deferSecondaryKeys, qt.Equals, false)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	falseValue := false
+	ctx := context.Background()
+	data, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+		Organization:       "my-org",
+		Database:           "my-db",
+		Branch:             "my-branch",
+		Workflow:           "my-workflow",
+		TargetKeyspace:     "target",
+		SourceKeyspace:     "source",
+		Tables:             []string{"sales"},
+		AllTables:          &falseValue,
+		AutoStart:          &falseValue,
+		StopAfterCopy:      &falseValue,
+		DeferSecondaryKeys: &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
@@ -114,6 +177,11 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["target_keyspace"], qt.Equals, "target")
 
+		_, hasDryRun := body["dry_run"]
+		_, hasInitializeTargetSequences := body["initialize_target_sequences"]
+		c.Assert(hasDryRun, qt.IsFalse)
+		c.Assert(hasInitializeTargetSequences, qt.IsFalse)
+
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
 		c.Assert(err, qt.IsNil)
@@ -135,6 +203,48 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
 }
 
+func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows/my-workflow/switch-traffic")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		dryRun, hasDryRun := body["dry_run"]
+		initializeTargetSequences, hasInitializeTargetSequences := body["initialize_target_sequences"]
+		c.Assert(hasDryRun, qt.IsTrue)
+		c.Assert(hasInitializeTargetSequences, qt.IsTrue)
+		c.Assert(dryRun, qt.Equals, false)
+		c.Assert(initializeTargetSequences, qt.Equals, false)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	falseValue := false
+	ctx := context.Background()
+	data, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
+		Organization:              "my-org",
+		Database:                  "my-db",
+		Branch:                    "my-branch",
+		Workflow:                  "my-workflow",
+		TargetKeyspace:            "target",
+		DryRun:                    &falseValue,
+		InitializeTargetSequences: &falseValue,
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+}
+
 func TestMoveTables_ReverseTraffic(t *testing.T) {
 	c := qt.New(t)
 
@@ -146,6 +256,9 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["target_keyspace"], qt.Equals, "target")
+
+		_, hasDryRun := body["dry_run"]
+		c.Assert(hasDryRun, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -168,6 +281,44 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
 }
 
+func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows/my-workflow/reverse-traffic")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		dryRun, hasDryRun := body["dry_run"]
+		c.Assert(hasDryRun, qt.IsTrue)
+		c.Assert(dryRun, qt.Equals, false)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	falseValue := false
+	ctx := context.Background()
+	data, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
+		Organization:   "my-org",
+		Database:       "my-db",
+		Branch:         "my-branch",
+		Workflow:       "my-workflow",
+		TargetKeyspace: "target",
+		DryRun:         &falseValue,
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+}
+
 func TestMoveTables_Cancel(t *testing.T) {
 	c := qt.New(t)
 
@@ -179,6 +330,11 @@ func TestMoveTables_Cancel(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["target_keyspace"], qt.Equals, "target")
+
+		_, hasKeepData := body["keep_data"]
+		_, hasKeepRoutingRules := body["keep_routing_rules"]
+		c.Assert(hasKeepData, qt.IsFalse)
+		c.Assert(hasKeepRoutingRules, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -201,6 +357,48 @@ func TestMoveTables_Cancel(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
 }
 
+func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows/my-workflow/cancel")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		keepData, hasKeepData := body["keep_data"]
+		keepRoutingRules, hasKeepRoutingRules := body["keep_routing_rules"]
+		c.Assert(hasKeepData, qt.IsTrue)
+		c.Assert(hasKeepRoutingRules, qt.IsTrue)
+		c.Assert(keepData, qt.Equals, false)
+		c.Assert(keepRoutingRules, qt.Equals, false)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	falseValue := false
+	ctx := context.Background()
+	data, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
+		Organization:     "my-org",
+		Database:         "my-db",
+		Branch:           "my-branch",
+		Workflow:         "my-workflow",
+		TargetKeyspace:   "target",
+		KeepData:         &falseValue,
+		KeepRoutingRules: &falseValue,
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+}
+
 func TestMoveTables_Complete(t *testing.T) {
 	c := qt.New(t)
 
@@ -212,6 +410,13 @@ func TestMoveTables_Complete(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body["target_keyspace"], qt.Equals, "target")
+
+		_, hasKeepData := body["keep_data"]
+		_, hasKeepRoutingRules := body["keep_routing_rules"]
+		_, hasDryRun := body["dry_run"]
+		c.Assert(hasKeepData, qt.IsFalse)
+		c.Assert(hasKeepRoutingRules, qt.IsFalse)
+		c.Assert(hasDryRun, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -229,6 +434,52 @@ func TestMoveTables_Complete(t *testing.T) {
 		Branch:         "my-branch",
 		Workflow:       "my-workflow",
 		TargetKeyspace: "target",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+}
+
+func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows/my-workflow/complete")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		keepData, hasKeepData := body["keep_data"]
+		keepRoutingRules, hasKeepRoutingRules := body["keep_routing_rules"]
+		dryRun, hasDryRun := body["dry_run"]
+		c.Assert(hasKeepData, qt.IsTrue)
+		c.Assert(hasKeepRoutingRules, qt.IsTrue)
+		c.Assert(hasDryRun, qt.IsTrue)
+		c.Assert(keepData, qt.Equals, false)
+		c.Assert(keepRoutingRules, qt.Equals, false)
+		c.Assert(dryRun, qt.Equals, false)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	falseValue := false
+	ctx := context.Background()
+	data, err := client.MoveTables.Complete(ctx, &MoveTablesCompleteRequest{
+		Organization:     "my-org",
+		Database:         "my-db",
+		Branch:           "my-branch",
+		Workflow:         "my-workflow",
+		TargetKeyspace:   "target",
+		KeepData:         &falseValue,
+		KeepRoutingRules: &falseValue,
+		DryRun:           &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)

@@ -35,11 +35,11 @@ type VDiffCreateRequest struct {
 	Tables                      []string `json:"tables,omitempty"`
 	TabletTypes                 []string `json:"tablet_types,omitempty"`
 	TabletSelectionPreference   string   `json:"tablet_selection_preference,omitempty"`
-	FilteredReplicationWaitTime int      `json:"filtered_replication_wait_time,omitempty"`
-	MaxReportSampleRows         int      `json:"max_report_sample_rows,omitempty"`
-	MaxExtraRowsToCompare       int      `json:"max_extra_rows_to_compare,omitempty"`
-	RowDiffColumnTruncateAt     int      `json:"row_diff_column_truncate_at,omitempty"`
-	Limit                       int      `json:"limit,omitempty"`
+	FilteredReplicationWaitTime *int     `json:"filtered_replication_wait_time,omitempty"`
+	MaxReportSampleRows         *int     `json:"max_report_sample_rows,omitempty"`
+	MaxExtraRowsToCompare       *int     `json:"max_extra_rows_to_compare,omitempty"`
+	RowDiffColumnTruncateAt     *int     `json:"row_diff_column_truncate_at,omitempty"`
+	Limit                       *int     `json:"limit,omitempty"`
 }
 
 type VDiffShowRequest struct {

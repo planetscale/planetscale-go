@@ -63,6 +63,7 @@ type Client struct {
 	Keyspaces        KeyspacesService
 	Workflows        WorkflowsService
 	Webhooks         WebhooksService
+	LookupVindex     LookupVindexService
 	MoveTables       MoveTablesService
 }
 
@@ -292,6 +293,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Webhooks = &webhooksService{client: c}
+	c.LookupVindex = &lookupVindexService{client: c}
 	c.MoveTables = &moveTablesService{client: c}
 
 	return c, nil

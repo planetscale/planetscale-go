@@ -38,6 +38,10 @@ type MoveTablesCreateRequest struct {
 	OnDDL                        string   `json:"on_ddl,omitempty"`
 	ShardedAutoIncrementHandling string   `json:"sharded_auto_increment_handling,omitempty"`
 	SourceTimeZone               string   `json:"source_time_zone,omitempty"`
+	Cells                        []string `json:"cells,omitempty"`
+	TabletTypes                  []string `json:"tablet_types,omitempty"`
+	ExcludeTables                []string `json:"exclude_tables,omitempty"`
+	AtomicCopy                   *bool    `json:"atomic_copy,omitempty"`
 }
 
 // MoveTablesShowRequest is a request for showing a MoveTables workflow.

@@ -61,8 +61,9 @@ type Client struct {
 	DeployRequests   DeployRequestsService
 	ServiceTokens    ServiceTokenService
 	Keyspaces        KeyspacesService
-	Workflows        WorkflowsService
 	Webhooks         WebhooksService
+	Materialize      MaterializeService
+	Workflows        WorkflowsService
 	Vtctld           VtctldService
 	VDiff            VDiffService
 	LookupVindex     LookupVindexService
@@ -295,6 +296,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Webhooks = &webhooksService{client: c}
+	c.Materialize = &materializeService{client: c}
 	c.Vtctld = &vtctldService{client: c}
 	c.VDiff = &vdiffService{client: c}
 	c.LookupVindex = &lookupVindexService{client: c}

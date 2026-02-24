@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -94,6 +95,72 @@ func TestVtctld_ListKeyspaces(t *testing.T) {
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+}
+
+func TestVtctld_StartWorkflow(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/workflows/my-workflow/start")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["keyspace"], qt.Equals, "my-keyspace")
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"summary":"started"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.StartWorkflow(ctx, &VtctldStartWorkflowRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Workflow:     "my-workflow",
+		Keyspace:     "my-keyspace",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"summary":"started"}`)
+}
+
+func TestVtctld_StopWorkflow(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/workflows/my-workflow/stop")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["keyspace"], qt.Equals, "my-keyspace")
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"summary":"stopped"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.StopWorkflow(ctx, &VtctldStopWorkflowRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Workflow:     "my-workflow",
+		Keyspace:     "my-keyspace",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"summary":"stopped"}`)
 }
 
 func TestVtctld_ListKeyspaces_NoNameFilter(t *testing.T) {

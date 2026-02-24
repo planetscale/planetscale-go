@@ -204,8 +204,10 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 
 		_, hasDryRun := body["dry_run"]
 		_, hasInitializeTargetSequences := body["initialize_target_sequences"]
+		_, hasMaxReplicationLagAllowed := body["max_replication_lag_allowed"]
 		c.Assert(hasDryRun, qt.IsFalse)
 		c.Assert(hasInitializeTargetSequences, qt.IsFalse)
+		c.Assert(hasMaxReplicationLagAllowed, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -241,10 +243,13 @@ func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
 
 		dryRun, hasDryRun := body["dry_run"]
 		initializeTargetSequences, hasInitializeTargetSequences := body["initialize_target_sequences"]
+		maxReplicationLagAllowed, hasMaxReplicationLagAllowed := body["max_replication_lag_allowed"]
 		c.Assert(hasDryRun, qt.IsTrue)
 		c.Assert(hasInitializeTargetSequences, qt.IsTrue)
+		c.Assert(hasMaxReplicationLagAllowed, qt.IsTrue)
 		c.Assert(dryRun, qt.Equals, false)
 		c.Assert(initializeTargetSequences, qt.Equals, false)
+		c.Assert(maxReplicationLagAllowed, qt.Equals, float64(30))
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -257,12 +262,14 @@ func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
+	maxLag := int64(30)
 	data, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
 		Organization:              "my-org",
 		Database:                  "my-db",
 		Branch:                    "my-branch",
 		Workflow:                  "my-workflow",
 		TargetKeyspace:            "target",
+		MaxReplicationLagAllowed:  &maxLag,
 		DryRun:                    &falseValue,
 		InitializeTargetSequences: &falseValue,
 	})
@@ -283,7 +290,11 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 		c.Assert(body["target_keyspace"], qt.Equals, "target")
 
 		_, hasDryRun := body["dry_run"]
+		_, hasTabletTypes := body["tablet_types"]
+		_, hasMaxReplicationLagAllowed := body["max_replication_lag_allowed"]
 		c.Assert(hasDryRun, qt.IsFalse)
+		c.Assert(hasTabletTypes, qt.IsFalse)
+		c.Assert(hasMaxReplicationLagAllowed, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
@@ -321,6 +332,13 @@ func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
 		c.Assert(hasDryRun, qt.IsTrue)
 		c.Assert(dryRun, qt.Equals, false)
 
+		tabletTypes, hasTabletTypes := body["tablet_types"]
+		maxReplicationLagAllowed, hasMaxReplicationLagAllowed := body["max_replication_lag_allowed"]
+		c.Assert(hasTabletTypes, qt.IsTrue)
+		c.Assert(hasMaxReplicationLagAllowed, qt.IsTrue)
+		c.Assert(tabletTypes, qt.DeepEquals, []interface{}{"REPLICA", "RDONLY"})
+		c.Assert(maxReplicationLagAllowed, qt.Equals, float64(60))
+
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
 		c.Assert(err, qt.IsNil)
@@ -332,13 +350,16 @@ func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
+	maxLag := int64(60)
 	data, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
-		Organization:   "my-org",
-		Database:       "my-db",
-		Branch:         "my-branch",
-		Workflow:       "my-workflow",
-		TargetKeyspace: "target",
-		DryRun:         &falseValue,
+		Organization:             "my-org",
+		Database:                 "my-db",
+		Branch:                   "my-branch",
+		Workflow:                 "my-workflow",
+		TargetKeyspace:           "target",
+		TabletTypes:              []string{"REPLICA", "RDONLY"},
+		MaxReplicationLagAllowed: &maxLag,
+		DryRun:                   &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)

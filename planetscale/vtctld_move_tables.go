@@ -70,18 +70,21 @@ type MoveTablesSwitchTrafficRequest struct {
 	Workflow                  string   `json:"-"`
 	TargetKeyspace            string   `json:"target_keyspace"`
 	TabletTypes               []string `json:"tablet_types,omitempty"`
+	MaxReplicationLagAllowed  *int64   `json:"max_replication_lag_allowed,omitempty"`
 	DryRun                    *bool    `json:"dry_run,omitempty"`
 	InitializeTargetSequences *bool    `json:"initialize_target_sequences,omitempty"`
 }
 
 // MoveTablesReverseTrafficRequest is a request for reversing traffic for a MoveTables workflow.
 type MoveTablesReverseTrafficRequest struct {
-	Organization   string `json:"-"`
-	Database       string `json:"-"`
-	Branch         string `json:"-"`
-	Workflow       string `json:"-"`
-	TargetKeyspace string `json:"target_keyspace"`
-	DryRun         *bool  `json:"dry_run,omitempty"`
+	Organization             string   `json:"-"`
+	Database                 string   `json:"-"`
+	Branch                   string   `json:"-"`
+	Workflow                 string   `json:"-"`
+	TargetKeyspace           string   `json:"target_keyspace"`
+	TabletTypes              []string `json:"tablet_types,omitempty"`
+	MaxReplicationLagAllowed *int64   `json:"max_replication_lag_allowed,omitempty"`
+	DryRun                   *bool    `json:"dry_run,omitempty"`
 }
 
 // MoveTablesCancelRequest is a request for canceling a MoveTables workflow.

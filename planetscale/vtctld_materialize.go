@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 )
 
 // MaterializeService is an interface for interacting with the Materialize endpoints of the
@@ -32,10 +33,10 @@ type MaterializeCreateRequest struct {
 	Cells                        []string        `json:"cells,omitempty"`
 	ReferenceTables              []string        `json:"reference_tables,omitempty"`
 	TabletTypes                  []string        `json:"tablet_types,omitempty"`
-	StopAfterCopy                bool            `json:"stop_after_copy,omitempty"`
+	StopAfterCopy                *bool           `json:"stop_after_copy,omitempty"`
 	TabletTypesInPreferenceOrder *bool           `json:"tablet_types_in_preference_order,omitempty"`
 	DeferSecondaryKeys           *bool           `json:"defer_secondary_keys,omitempty"`
-	AtomicCopy                   bool            `json:"atomic_copy,omitempty"`
+	AtomicCopy                   *bool           `json:"atomic_copy,omitempty"`
 	OnDDL                        string          `json:"on_ddl,omitempty"`
 	SourceTimeZone               string          `json:"source_time_zone,omitempty"`
 }
@@ -47,7 +48,7 @@ type MaterializeShowRequest struct {
 	Branch         string `json:"-"`
 	Workflow       string `json:"-"`
 	TargetKeyspace string `json:"-"`
-	IncludeLogs    bool   `json:"-"`
+	IncludeLogs    *bool  `json:"-"`
 }
 
 // MaterializeStartRequest is a request for starting a Materialize workflow.
@@ -75,8 +76,8 @@ type MaterializeCancelRequest struct {
 	Branch           string `json:"-"`
 	Workflow         string `json:"-"`
 	TargetKeyspace   string `json:"target_keyspace"`
-	KeepData         bool   `json:"keep_data,omitempty"`
-	KeepRoutingRules bool   `json:"keep_routing_rules,omitempty"`
+	KeepData         *bool  `json:"keep_data,omitempty"`
+	KeepRoutingRules *bool  `json:"keep_routing_rules,omitempty"`
 }
 
 type materializeService struct {
@@ -110,8 +111,8 @@ func (s *materializeService) Show(ctx context.Context, req *MaterializeShowReque
 	p := materializeWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow)
 	v := url.Values{}
 	v.Set("target_keyspace", req.TargetKeyspace)
-	if req.IncludeLogs {
-		v.Set("include_logs", "true")
+	if req.IncludeLogs != nil {
+		v.Set("include_logs", strconv.FormatBool(*req.IncludeLogs))
 	}
 	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
 	if err != nil {

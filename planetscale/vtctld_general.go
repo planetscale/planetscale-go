@@ -14,6 +14,8 @@ import (
 type VtctldService interface {
 	ListWorkflows(context.Context, *VtctldListWorkflowsRequest) (json.RawMessage, error)
 	ListKeyspaces(context.Context, *VtctldListKeyspacesRequest) (json.RawMessage, error)
+	StartWorkflow(context.Context, *VtctldStartWorkflowRequest) (json.RawMessage, error)
+	StopWorkflow(context.Context, *VtctldStopWorkflowRequest) (json.RawMessage, error)
 }
 
 type VtctldListWorkflowsRequest struct {
@@ -29,6 +31,24 @@ type VtctldListKeyspacesRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	Name         string `json:"-"`
+}
+
+// VtctldStartWorkflowRequest is a request for starting a workflow.
+type VtctldStartWorkflowRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Workflow     string `json:"-"`
+	Keyspace     string `json:"keyspace"`
+}
+
+// VtctldStopWorkflowRequest is a request for stopping a workflow.
+type VtctldStopWorkflowRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	Workflow     string `json:"-"`
+	Keyspace     string `json:"keyspace"`
 }
 
 type vtctldService struct {
@@ -70,6 +90,36 @@ func (s *vtctldService) ListKeyspaces(ctx context.Context, req *VtctldListKeyspa
 		v.Set("name", req.Name)
 	}
 	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func vtctldWorkflowAPIPath(org, db, branch, workflow string) string {
+	return path.Join(vtctldWorkflowsAPIPath(org, db, branch), workflow)
+}
+
+func (s *vtctldService) StartWorkflow(ctx context.Context, req *VtctldStartWorkflowRequest) (json.RawMessage, error) {
+	p := path.Join(vtctldWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "start")
+	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func (s *vtctldService) StopWorkflow(ctx context.Context, req *VtctldStopWorkflowRequest) (json.RawMessage, error) {
+	p := path.Join(vtctldWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "stop")
+	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

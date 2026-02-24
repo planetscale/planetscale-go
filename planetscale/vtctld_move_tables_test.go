@@ -28,10 +28,18 @@ func TestMoveTables_Create(t *testing.T) {
 		_, hasAutoStart := body["auto_start"]
 		_, hasStopAfterCopy := body["stop_after_copy"]
 		_, hasDeferSecondaryKeys := body["defer_secondary_keys"]
+		_, hasAtomicCopy := body["atomic_copy"]
+		_, hasCells := body["cells"]
+		_, hasTabletTypes := body["tablet_types"]
+		_, hasExcludeTables := body["exclude_tables"]
 		c.Assert(hasAllTables, qt.IsFalse)
 		c.Assert(hasAutoStart, qt.IsFalse)
 		c.Assert(hasStopAfterCopy, qt.IsFalse)
 		c.Assert(hasDeferSecondaryKeys, qt.IsFalse)
+		c.Assert(hasAtomicCopy, qt.IsFalse)
+		c.Assert(hasCells, qt.IsFalse)
+		c.Assert(hasTabletTypes, qt.IsFalse)
+		c.Assert(hasExcludeTables, qt.IsFalse)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
@@ -70,14 +78,27 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		autoStart, hasAutoStart := body["auto_start"]
 		stopAfterCopy, hasStopAfterCopy := body["stop_after_copy"]
 		deferSecondaryKeys, hasDeferSecondaryKeys := body["defer_secondary_keys"]
+		atomicCopy, hasAtomicCopy := body["atomic_copy"]
 		c.Assert(hasAllTables, qt.IsTrue)
 		c.Assert(hasAutoStart, qt.IsTrue)
 		c.Assert(hasStopAfterCopy, qt.IsTrue)
 		c.Assert(hasDeferSecondaryKeys, qt.IsTrue)
+		c.Assert(hasAtomicCopy, qt.IsTrue)
 		c.Assert(allTables, qt.Equals, false)
 		c.Assert(autoStart, qt.Equals, false)
 		c.Assert(stopAfterCopy, qt.Equals, false)
 		c.Assert(deferSecondaryKeys, qt.Equals, false)
+		c.Assert(atomicCopy, qt.Equals, false)
+
+		cells, hasCells := body["cells"]
+		excludeTables, hasExcludeTables := body["exclude_tables"]
+		tabletTypes, hasTabletTypes := body["tablet_types"]
+		c.Assert(hasCells, qt.IsTrue)
+		c.Assert(hasExcludeTables, qt.IsTrue)
+		c.Assert(hasTabletTypes, qt.IsTrue)
+		c.Assert(cells, qt.DeepEquals, []interface{}{"cell1", "cell2"})
+		c.Assert(excludeTables, qt.DeepEquals, []interface{}{"internal_logs"})
+		c.Assert(tabletTypes, qt.DeepEquals, []interface{}{"REPLICA", "RDONLY"})
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
@@ -102,6 +123,10 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		AutoStart:          &falseValue,
 		StopAfterCopy:      &falseValue,
 		DeferSecondaryKeys: &falseValue,
+		AtomicCopy:         &falseValue,
+		Cells:              []string{"cell1", "cell2"},
+		ExcludeTables:      []string{"internal_logs"},
+		TabletTypes:        []string{"REPLICA", "RDONLY"},
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)

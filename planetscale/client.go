@@ -48,27 +48,27 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
-	AuditLogs        AuditLogsService
-	Backups          BackupsService
-	Databases        DatabasesService
-	DatabaseBranches DatabaseBranchesService
-	DataImports      DataImportsService
-	Organizations    OrganizationsService
-	Passwords        PasswordsService
-	PostgresBranches PostgresBranchesService
-	PostgresRoles    PostgresRolesService
-	Regions          RegionsService
-	DeployRequests   DeployRequestsService
-	ServiceTokens    ServiceTokenService
-	Keyspaces        KeyspacesService
-	Webhooks             WebhooksService
-	Materialize          MaterializeService
-	Workflows            WorkflowsService
-	Vtctld               VtctldService
-	VDiff                VDiffService
-	LookupVindex         LookupVindexService
-	MoveTables           MoveTablesService
+	AuditLogs            AuditLogsService
+	Backups              BackupsService
 	BranchInfrastructure BranchInfrastructureService
+	DatabaseBranches     DatabaseBranchesService
+	Databases            DatabasesService
+	DataImports          DataImportsService
+	DeployRequests       DeployRequestsService
+	Keyspaces            KeyspacesService
+	LookupVindex         LookupVindexService
+	Materialize          MaterializeService
+	MoveTables           MoveTablesService
+	Organizations        OrganizationsService
+	Passwords            PasswordsService
+	PostgresBranches     PostgresBranchesService
+	PostgresRoles        PostgresRolesService
+	Regions              RegionsService
+	ServiceTokens        ServiceTokenService
+	VDiff                VDiffService
+	Vtctld               VtctldService
+	Webhooks             WebhooksService
+	Workflows            WorkflowsService
 }
 
 // ListOptions are options for listing responses.
@@ -284,25 +284,25 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 
 	c.AuditLogs = &auditlogsService{client: c}
 	c.Backups = &backupsService{client: c}
-	c.Databases = &databasesService{client: c}
+	c.BranchInfrastructure = &branchInfrastructureService{client: c}
 	c.DatabaseBranches = &databaseBranchesService{client: c}
+	c.Databases = &databasesService{client: c}
 	c.DataImports = &dataImportsService{client: c}
+	c.DeployRequests = &deployRequestsService{client: c}
+	c.Keyspaces = &keyspacesService{client: c}
+	c.LookupVindex = &lookupVindexService{client: c}
+	c.Materialize = &materializeService{client: c}
+	c.MoveTables = &moveTablesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
-	c.Regions = &regionsService{client: c}
-	c.DeployRequests = &deployRequestsService{client: c}
-	c.ServiceTokens = &serviceTokenService{client: c}
-	c.Keyspaces = &keyspacesService{client: c}
-	c.Workflows = &workflowsService{client: c}
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
-	c.Webhooks = &webhooksService{client: c}
-	c.Materialize = &materializeService{client: c}
-	c.Vtctld = &vtctldService{client: c}
+	c.Regions = &regionsService{client: c}
+	c.ServiceTokens = &serviceTokenService{client: c}
 	c.VDiff = &vdiffService{client: c}
-	c.LookupVindex = &lookupVindexService{client: c}
-	c.MoveTables = &moveTablesService{client: c}
-	c.BranchInfrastructure = &branchInfrastructureService{client: c}
+	c.Vtctld = &vtctldService{client: c}
+	c.Webhooks = &webhooksService{client: c}
+	c.Workflows = &workflowsService{client: c}
 
 	return c, nil
 }

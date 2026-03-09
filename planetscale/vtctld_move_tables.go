@@ -15,10 +15,10 @@ type MoveTablesService interface {
 	Create(context.Context, *MoveTablesCreateRequest) (json.RawMessage, error)
 	Show(context.Context, *MoveTablesShowRequest) (json.RawMessage, error)
 	Status(context.Context, *MoveTablesStatusRequest) (json.RawMessage, error)
-	SwitchTraffic(context.Context, *MoveTablesSwitchTrafficRequest) (json.RawMessage, error)
-	ReverseTraffic(context.Context, *MoveTablesReverseTrafficRequest) (json.RawMessage, error)
+	SwitchTraffic(context.Context, *MoveTablesSwitchTrafficRequest) (*VtctldOperationReference, error)
+	ReverseTraffic(context.Context, *MoveTablesReverseTrafficRequest) (*VtctldOperationReference, error)
 	Cancel(context.Context, *MoveTablesCancelRequest) (json.RawMessage, error)
-	Complete(context.Context, *MoveTablesCompleteRequest) (json.RawMessage, error)
+	Complete(context.Context, *MoveTablesCompleteRequest) (*VtctldOperationReference, error)
 }
 
 // MoveTablesCreateRequest is a request for creating a MoveTables workflow.
@@ -107,6 +107,7 @@ type MoveTablesCompleteRequest struct {
 	TargetKeyspace   string `json:"target_keyspace"`
 	KeepData         *bool  `json:"keep_data,omitempty"`
 	KeepRoutingRules *bool  `json:"keep_routing_rules,omitempty"`
+	RenameTables     *bool  `json:"rename_tables,omitempty"`
 	DryRun           *bool  `json:"dry_run,omitempty"`
 }
 
@@ -167,30 +168,14 @@ func (s *moveTablesService) Status(ctx context.Context, req *MoveTablesStatusReq
 	return resp.Data, nil
 }
 
-func (s *moveTablesService) SwitchTraffic(ctx context.Context, req *MoveTablesSwitchTrafficRequest) (json.RawMessage, error) {
+func (s *moveTablesService) SwitchTraffic(ctx context.Context, req *MoveTablesSwitchTrafficRequest) (*VtctldOperationReference, error) {
 	p := path.Join(moveTablesWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "switch-traffic")
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
-func (s *moveTablesService) ReverseTraffic(ctx context.Context, req *MoveTablesReverseTrafficRequest) (json.RawMessage, error) {
+func (s *moveTablesService) ReverseTraffic(ctx context.Context, req *MoveTablesReverseTrafficRequest) (*VtctldOperationReference, error) {
 	p := path.Join(moveTablesWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "reverse-traffic")
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
 func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelRequest) (json.RawMessage, error) {
@@ -206,15 +191,21 @@ func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelReq
 	return resp.Data, nil
 }
 
-func (s *moveTablesService) Complete(ctx context.Context, req *MoveTablesCompleteRequest) (json.RawMessage, error) {
+func (s *moveTablesService) Complete(ctx context.Context, req *MoveTablesCompleteRequest) (*VtctldOperationReference, error) {
 	p := path.Join(moveTablesWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "complete")
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
+	return s.enqueueOperation(ctx, p, req)
+}
+
+func (s *moveTablesService) enqueueOperation(ctx context.Context, p string, payload interface{}) (*VtctldOperationReference, error) {
+	httpReq, err := s.client.newRequest(http.MethodPost, p, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
-	resp := &vtctldDataResponse{}
+
+	resp := &VtctldOperationReference{}
 	if err := s.client.do(ctx, httpReq, resp); err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+
+	return resp, nil
 }

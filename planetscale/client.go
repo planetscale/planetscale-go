@@ -376,7 +376,7 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 			errCode = ErrNotFound
 		case "unauthorized":
 			errCode = ErrPermission
-		case "invalid_params":
+		case "bad_request", "invalid_params":
 			errCode = ErrInvalid
 		case "unprocessable":
 			errCode = ErrRetry

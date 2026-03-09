@@ -209,8 +209,8 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 		c.Assert(hasInitializeTargetSequences, qt.IsFalse)
 		c.Assert(hasMaxReplicationLagAllowed, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"switch-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -219,7 +219,7 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
+	ref, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -227,7 +227,7 @@ func TestMoveTables_SwitchTraffic(t *testing.T) {
 		TargetKeyspace: "target",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "switch-op"})
 }
 
 func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
@@ -251,8 +251,8 @@ func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
 		c.Assert(initializeTargetSequences, qt.Equals, false)
 		c.Assert(maxReplicationLagAllowed, qt.Equals, float64(30))
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"switch-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -263,7 +263,7 @@ func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
 	falseValue := false
 	ctx := context.Background()
 	maxLag := int64(30)
-	data, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
+	ref, err := client.MoveTables.SwitchTraffic(ctx, &MoveTablesSwitchTrafficRequest{
 		Organization:              "my-org",
 		Database:                  "my-db",
 		Branch:                    "my-branch",
@@ -274,7 +274,7 @@ func TestMoveTables_SwitchTrafficWithExplicitFalseValues(t *testing.T) {
 		InitializeTargetSequences: &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "switch-op"})
 }
 
 func TestMoveTables_ReverseTraffic(t *testing.T) {
@@ -296,8 +296,8 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 		c.Assert(hasTabletTypes, qt.IsFalse)
 		c.Assert(hasMaxReplicationLagAllowed, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"reverse-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -306,7 +306,7 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
+	ref, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -314,7 +314,7 @@ func TestMoveTables_ReverseTraffic(t *testing.T) {
 		TargetKeyspace: "target",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "reverse-op"})
 }
 
 func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
@@ -339,8 +339,8 @@ func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
 		c.Assert(tabletTypes, qt.DeepEquals, []interface{}{"REPLICA", "RDONLY"})
 		c.Assert(maxReplicationLagAllowed, qt.Equals, float64(60))
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"reverse-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -351,7 +351,7 @@ func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
 	falseValue := false
 	ctx := context.Background()
 	maxLag := int64(60)
-	data, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
+	ref, err := client.MoveTables.ReverseTraffic(ctx, &MoveTablesReverseTrafficRequest{
 		Organization:             "my-org",
 		Database:                 "my-db",
 		Branch:                   "my-branch",
@@ -362,7 +362,7 @@ func TestMoveTables_ReverseTrafficWithExplicitFalseValues(t *testing.T) {
 		DryRun:                   &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "reverse-op"})
 }
 
 func TestMoveTables_Cancel(t *testing.T) {
@@ -459,13 +459,15 @@ func TestMoveTables_Complete(t *testing.T) {
 
 		_, hasKeepData := body["keep_data"]
 		_, hasKeepRoutingRules := body["keep_routing_rules"]
+		_, hasRenameTables := body["rename_tables"]
 		_, hasDryRun := body["dry_run"]
 		c.Assert(hasKeepData, qt.IsFalse)
 		c.Assert(hasKeepRoutingRules, qt.IsFalse)
+		c.Assert(hasRenameTables, qt.IsFalse)
 		c.Assert(hasDryRun, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"complete-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -474,7 +476,7 @@ func TestMoveTables_Complete(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.Complete(ctx, &MoveTablesCompleteRequest{
+	ref, err := client.MoveTables.Complete(ctx, &MoveTablesCompleteRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -482,7 +484,7 @@ func TestMoveTables_Complete(t *testing.T) {
 		TargetKeyspace: "target",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "complete-op"})
 }
 
 func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
@@ -498,16 +500,19 @@ func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
 
 		keepData, hasKeepData := body["keep_data"]
 		keepRoutingRules, hasKeepRoutingRules := body["keep_routing_rules"]
+		renameTables, hasRenameTables := body["rename_tables"]
 		dryRun, hasDryRun := body["dry_run"]
 		c.Assert(hasKeepData, qt.IsTrue)
 		c.Assert(hasKeepRoutingRules, qt.IsTrue)
+		c.Assert(hasRenameTables, qt.IsTrue)
 		c.Assert(hasDryRun, qt.IsTrue)
 		c.Assert(keepData, qt.Equals, false)
 		c.Assert(keepRoutingRules, qt.Equals, false)
+		c.Assert(renameTables, qt.Equals, false)
 		c.Assert(dryRun, qt.Equals, false)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"complete-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -517,7 +522,7 @@ func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
-	data, err := client.MoveTables.Complete(ctx, &MoveTablesCompleteRequest{
+	ref, err := client.MoveTables.Complete(ctx, &MoveTablesCompleteRequest{
 		Organization:     "my-org",
 		Database:         "my-db",
 		Branch:           "my-branch",
@@ -525,8 +530,9 @@ func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
 		TargetKeyspace:   "target",
 		KeepData:         &falseValue,
 		KeepRoutingRules: &falseValue,
+		RenameTables:     &falseValue,
 		DryRun:           &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "complete-op"})
 }

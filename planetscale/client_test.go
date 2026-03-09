@@ -56,6 +56,19 @@ func TestDo(t *testing.T) {
 			},
 		},
 		{
+			desc:       "maps bad_request errors to invalid",
+			statusCode: http.StatusBadRequest,
+			method:     http.MethodPost,
+			response: `{
+				"code": "bad_request",
+				"message": "Bad Request"
+			}`,
+			expectedError: &Error{
+				msg:  "Bad Request",
+				Code: ErrInvalid,
+			},
+		},
+		{
 			desc:       "returns ErrorResponse for 5xx errors",
 			statusCode: http.StatusInternalServerError,
 			method:     http.MethodGet,

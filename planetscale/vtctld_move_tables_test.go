@@ -459,9 +459,11 @@ func TestMoveTables_Complete(t *testing.T) {
 
 		_, hasKeepData := body["keep_data"]
 		_, hasKeepRoutingRules := body["keep_routing_rules"]
+		_, hasRenameTables := body["rename_tables"]
 		_, hasDryRun := body["dry_run"]
 		c.Assert(hasKeepData, qt.IsFalse)
 		c.Assert(hasKeepRoutingRules, qt.IsFalse)
+		c.Assert(hasRenameTables, qt.IsFalse)
 		c.Assert(hasDryRun, qt.IsFalse)
 
 		w.WriteHeader(200)
@@ -498,12 +500,15 @@ func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
 
 		keepData, hasKeepData := body["keep_data"]
 		keepRoutingRules, hasKeepRoutingRules := body["keep_routing_rules"]
+		renameTables, hasRenameTables := body["rename_tables"]
 		dryRun, hasDryRun := body["dry_run"]
 		c.Assert(hasKeepData, qt.IsTrue)
 		c.Assert(hasKeepRoutingRules, qt.IsTrue)
+		c.Assert(hasRenameTables, qt.IsTrue)
 		c.Assert(hasDryRun, qt.IsTrue)
 		c.Assert(keepData, qt.Equals, false)
 		c.Assert(keepRoutingRules, qt.Equals, false)
+		c.Assert(renameTables, qt.Equals, false)
 		c.Assert(dryRun, qt.Equals, false)
 
 		w.WriteHeader(200)
@@ -525,6 +530,7 @@ func TestMoveTables_CompleteWithExplicitFalseValues(t *testing.T) {
 		TargetKeyspace:   "target",
 		KeepData:         &falseValue,
 		KeepRoutingRules: &falseValue,
+		RenameTables:     &falseValue,
 		DryRun:           &falseValue,
 	})
 	c.Assert(err, qt.IsNil)

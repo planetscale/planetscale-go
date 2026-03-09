@@ -107,6 +107,7 @@ type MoveTablesCompleteRequest struct {
 	TargetKeyspace   string `json:"target_keyspace"`
 	KeepData         *bool  `json:"keep_data,omitempty"`
 	KeepRoutingRules *bool  `json:"keep_routing_rules,omitempty"`
+	RenameTables     *bool  `json:"rename_tables,omitempty"`
 	DryRun           *bool  `json:"dry_run,omitempty"`
 }
 

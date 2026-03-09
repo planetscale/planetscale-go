@@ -16,6 +16,7 @@ type VtctldService interface {
 	ListKeyspaces(context.Context, *VtctldListKeyspacesRequest) (json.RawMessage, error)
 	StartWorkflow(context.Context, *VtctldStartWorkflowRequest) (json.RawMessage, error)
 	StopWorkflow(context.Context, *VtctldStopWorkflowRequest) (json.RawMessage, error)
+	GetOperation(context.Context, *GetVtctldOperationRequest) (*VtctldOperation, error)
 }
 
 type VtctldListWorkflowsRequest struct {

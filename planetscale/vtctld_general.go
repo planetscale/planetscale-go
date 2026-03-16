@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 )
 
 // VtctldService is an interface for interacting with the general vtctld endpoints of the
@@ -25,6 +26,7 @@ type VtctldListWorkflowsRequest struct {
 	Branch       string `json:"-"`
 	Keyspace     string `json:"-"`
 	Workflow     string `json:"-"`
+	IncludeLogs  *bool  `json:"-"`
 }
 
 type VtctldListKeyspacesRequest struct {
@@ -72,6 +74,9 @@ func (s *vtctldService) ListWorkflows(ctx context.Context, req *VtctldListWorkfl
 	v.Set("keyspace", req.Keyspace)
 	if req.Workflow != "" {
 		v.Set("workflow", req.Workflow)
+	}
+	if req.IncludeLogs != nil {
+		v.Set("include_logs", strconv.FormatBool(*req.IncludeLogs))
 	}
 	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
 	if err != nil {

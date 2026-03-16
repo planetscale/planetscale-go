@@ -69,6 +69,57 @@ func TestVtctld_ListWorkflows_NoWorkflowFilter(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
 }
 
+func TestVtctld_ListWorkflows_IncludeLogs(t *testing.T) {
+	tests := []struct {
+		name               string
+		includeLogs        *bool
+		expectIncludeParam bool
+		expectedInclude    string
+	}{
+		{name: "include_logs false", includeLogs: boolPtr(false), expectIncludeParam: true, expectedInclude: "false"},
+		{name: "include_logs omitted", includeLogs: nil, expectIncludeParam: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := qt.New(t)
+
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				c.Assert(r.Method, qt.Equals, http.MethodGet)
+				c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/workflows")
+				c.Assert(r.URL.Query().Get("keyspace"), qt.Equals, "my-keyspace")
+
+				_, hasIncludeLogs := r.URL.Query()["include_logs"]
+				if tt.expectIncludeParam {
+					c.Assert(hasIncludeLogs, qt.IsTrue)
+					c.Assert(r.URL.Query().Get("include_logs"), qt.Equals, tt.expectedInclude)
+				} else {
+					c.Assert(hasIncludeLogs, qt.IsFalse)
+				}
+
+				w.WriteHeader(200)
+				_, err := w.Write([]byte(`{"data":{"result":"ok"}}`))
+				c.Assert(err, qt.IsNil)
+			}))
+			defer ts.Close()
+
+			client, err := NewClient(WithBaseURL(ts.URL))
+			c.Assert(err, qt.IsNil)
+
+			ctx := context.Background()
+			data, err := client.Vtctld.ListWorkflows(ctx, &VtctldListWorkflowsRequest{
+				Organization: "my-org",
+				Database:     "my-db",
+				Branch:       "my-branch",
+				Keyspace:     "my-keyspace",
+				IncludeLogs:  tt.includeLogs,
+			})
+			c.Assert(err, qt.IsNil)
+			c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+		})
+	}
+}
+
 func TestVtctld_ListKeyspaces(t *testing.T) {
 	c := qt.New(t)
 

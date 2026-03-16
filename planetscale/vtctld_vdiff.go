@@ -13,6 +13,7 @@ import (
 // PlanetScale API.
 type VDiffService interface {
 	Create(context.Context, *VDiffCreateRequest) (json.RawMessage, error)
+	List(context.Context, *VDiffListRequest) (json.RawMessage, error)
 	Show(context.Context, *VDiffShowRequest) (json.RawMessage, error)
 	Stop(context.Context, *VDiffStopRequest) (json.RawMessage, error)
 	Resume(context.Context, *VDiffResumeRequest) (json.RawMessage, error)
@@ -40,6 +41,14 @@ type VDiffCreateRequest struct {
 	MaxExtraRowsToCompare       *int     `json:"max_extra_rows_to_compare,omitempty"`
 	RowDiffColumnTruncateAt     *int     `json:"row_diff_column_truncate_at,omitempty"`
 	Limit                       *int     `json:"limit,omitempty"`
+}
+
+type VDiffListRequest struct {
+	Organization   string `json:"-"`
+	Database       string `json:"-"`
+	Branch         string `json:"-"`
+	Workflow       string `json:"-"`
+	TargetKeyspace string `json:"-"`
 }
 
 type VDiffShowRequest struct {
@@ -97,6 +106,21 @@ func vdiffVDiffAPIPath(org, db, branch, workflow, uuid string) string {
 func (s *vdiffService) Create(ctx context.Context, req *VDiffCreateRequest) (json.RawMessage, error) {
 	p := vdiffVDiffsAPIPath(req.Organization, req.Database, req.Branch, req.Workflow)
 	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func (s *vdiffService) List(ctx context.Context, req *VDiffListRequest) (json.RawMessage, error) {
+	p := vdiffVDiffsAPIPath(req.Organization, req.Database, req.Branch, req.Workflow)
+	v := url.Values{}
+	v.Set("target_keyspace", req.TargetKeyspace)
+	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

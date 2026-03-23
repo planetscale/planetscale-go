@@ -46,7 +46,7 @@ func TestTrafficRules_Create(t *testing.T) {
 		Branch:       testBranch,
 		BudgetID:     "qok87ki4xlau",
 		Kind:         "match",
-		Tags: []TrafficRuleTag{
+		Tags: &[]TrafficRuleTag{
 			{Key: "query", Value: "a_query", Source: "sql"},
 		},
 	})

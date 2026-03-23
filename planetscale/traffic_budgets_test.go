@@ -101,8 +101,8 @@ func TestTrafficBudgets_List(t *testing.T) {
 		Type:     "TrafficBudget",
 		Name:     "my-budget",
 		Mode:     "warn",
-		Capacity: 0,
-		Rate:     1,
+		Capacity: new(0),
+		Rate:     new(1),
 		Actor:    actor,
 		Rules: []TrafficRule{
 			{
@@ -121,17 +121,15 @@ func TestTrafficBudgets_List(t *testing.T) {
 		UpdatedAt: time.Date(2026, time.March, 20, 15, 21, 36, 68000000, time.UTC),
 	}
 
-	burst := 100
-	concurrency := 100
 	want1 := &TrafficBudget{
 		ID:          "0h41b131ivqd",
 		Type:        "TrafficBudget",
 		Name:        "IP Range",
 		Mode:        "warn",
-		Capacity:    200,
-		Rate:        50,
-		Burst:       &burst,
-		Concurrency: &concurrency,
+		Capacity:    new(200),
+		Rate:        new(50),
+		Burst:       new(100),
+		Concurrency: new(100),
 		Actor:       actor,
 		Rules: []TrafficRule{
 			{
@@ -214,8 +212,8 @@ func TestTrafficBudgets_Get(t *testing.T) {
 		Type:     "TrafficBudget",
 		Name:     "my-budget",
 		Mode:     "warn",
-		Capacity: 0,
-		Rate:     1,
+		Capacity: new(0),
+		Rate:     new(1),
 		Actor:    actor,
 		Rules: []TrafficRule{
 			{
@@ -291,14 +289,14 @@ func TestTrafficBudgets_Create(t *testing.T) {
 		Branch:       testBranch,
 		Name:         "query",
 		Mode:         "warn",
-		Capacity:     200,
-		Rate:         50,
-		Burst:        100,
-		Concurrency:  100,
-		Rules: []CreateTrafficBudgetRuleRequest{
+		Capacity:     new(200),
+		Rate:         new(50),
+		Burst:        new(100),
+		Concurrency:  new(100),
+		Rules: &[]CreateTrafficBudgetRuleRequest{
 			{
 				Kind: "match",
-				Tags: []TrafficRuleTag{
+				Tags: &[]TrafficRuleTag{
 					{Key: "remote_address", Value: "192.168.1.1", Source: "system"},
 					{Key: "query", Value: "a_query", Source: "sql"},
 				},
@@ -307,18 +305,16 @@ func TestTrafficBudgets_Create(t *testing.T) {
 	})
 
 	actor := Actor{ID: "v1bxjxtt9c13", Type: "User", Name: "Alice"}
-	burst := 100
-	concurrency := 100
 
 	want := &TrafficBudget{
 		ID:          "3ohd8d28icus",
 		Type:        "TrafficBudget",
 		Name:        "query",
 		Mode:        "warn",
-		Capacity:    200,
-		Rate:        50,
-		Burst:       &burst,
-		Concurrency: &concurrency,
+		Capacity:    new(200),
+		Rate:        new(50),
+		Burst:       new(100),
+		Concurrency: new(100),
 		Actor:       actor,
 		Rules: []TrafficRule{
 			{
@@ -393,17 +389,15 @@ func TestTrafficBudgets_Update(t *testing.T) {
 		Concurrency:  &concurrency,
 	})
 
-	wantBurst := 200
-	wantConcurrency := 50
 	want := &TrafficBudget{
 		ID:          "qok87ki4xlau",
 		Type:        "TrafficBudget",
 		Name:        "my-budget updated",
 		Mode:        "enforce",
-		Capacity:    500,
-		Rate:        100,
-		Burst:       &wantBurst,
-		Concurrency: &wantConcurrency,
+		Capacity:    new(500),
+		Rate:        new(100),
+		Burst:       new(200),
+		Concurrency: new(50),
 		Actor:       Actor{ID: "v1bxjxtt9c13", Type: "User", Name: "Alice"},
 		Rules:       []TrafficRule{},
 		CreatedAt:   time.Date(2026, time.March, 20, 15, 18, 8, 540000000, time.UTC),

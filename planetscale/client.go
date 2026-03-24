@@ -65,6 +65,8 @@ type Client struct {
 	PostgresRoles        PostgresRolesService
 	Regions              RegionsService
 	ServiceTokens        ServiceTokenService
+	TrafficBudgets       TrafficBudgetsService
+	TrafficRules         TrafficRulesService
 	VDiff                VDiffService
 	Vtctld               VtctldService
 	Webhooks             WebhooksService
@@ -299,6 +301,8 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Regions = &regionsService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}
+	c.TrafficBudgets = &trafficBudgetsService{client: c}
+	c.TrafficRules = &trafficRulesService{client: c}
 	c.VDiff = &vdiffService{client: c}
 	c.Vtctld = &vtctldService{client: c}
 	c.Webhooks = &webhooksService{client: c}

@@ -66,9 +66,10 @@ type GetDatabaseBranchRequest struct {
 // DeleteDatabaseRequest encapsulates the request for deleting a database branch
 // from a database.
 type DeleteDatabaseBranchRequest struct {
-	Organization string
-	Database     string
-	Branch       string
+	Organization      string
+	Database          string
+	Branch            string
+	DeleteDescendants bool
 }
 
 // DiffBranchRequest encapsulates a request for getting the diff for a branch.
@@ -334,7 +335,15 @@ func (d *databaseBranchesService) List(ctx context.Context, listReq *ListDatabas
 // Delete deletes a database branch from an organization's database.
 func (d *databaseBranchesService) Delete(ctx context.Context, deleteReq *DeleteDatabaseBranchRequest) error {
 	path := path.Join(databaseBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
-	req, err := d.client.newRequest(http.MethodDelete, path, nil)
+
+	var opts []RequestOption
+	if deleteReq.DeleteDescendants {
+		v := url.Values{}
+		v.Set("delete_descendants", "true")
+		opts = append(opts, WithQueryParams(v))
+	}
+
+	req, err := d.client.newRequest(http.MethodDelete, path, nil, opts...)
 	if err != nil {
 		return fmt.Errorf("error creating request for delete branch: %w", err)
 	}

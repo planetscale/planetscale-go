@@ -189,6 +189,55 @@ func TestPostgresBranches_Get(t *testing.T) {
 	c.Assert(branch, qt.DeepEquals, want)
 }
 
+func TestPostgresBranches_Delete(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch")
+		c.Assert(r.URL.Query().Get("delete_descendants"), qt.Equals, "")
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.PostgresBranches.Delete(ctx, &DeletePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
+func TestPostgresBranches_DeleteWithDescendants(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch")
+		c.Assert(r.URL.Query().Get("delete_descendants"), qt.Equals, "true")
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.PostgresBranches.Delete(ctx, &DeletePostgresBranchRequest{
+		Organization:      "my-org",
+		Database:          "postgres-test-db",
+		Branch:            testPostgresBranch,
+		DeleteDescendants: true,
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
 func TestPostgresBranches_Schema(t *testing.T) {
 	c := qt.New(t)
 

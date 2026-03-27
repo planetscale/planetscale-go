@@ -60,9 +60,10 @@ type GetPostgresBranchRequest struct {
 
 // DeletePostgresBranchRequest encapsulates the request to delete a Postgres branch.
 type DeletePostgresBranchRequest struct {
-	Organization string
-	Database     string
-	Branch       string
+	Organization      string
+	Database          string
+	Branch            string
+	DeleteDescendants bool
 }
 
 // PostgresBranchSchemaRequest encapsulates the request to get the schema of a Postgres branch.
@@ -166,7 +167,15 @@ func (p *postgresBranchesService) Get(ctx context.Context, getReq *GetPostgresBr
 // Delete deletes a Postgres branch from the specified organization and database.
 func (p *postgresBranchesService) Delete(ctx context.Context, deleteReq *DeletePostgresBranchRequest) error {
 	path := path.Join(postgresBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
-	req, err := p.client.newRequest(http.MethodDelete, path, nil)
+
+	var opts []RequestOption
+	if deleteReq.DeleteDescendants {
+		v := url.Values{}
+		v.Set("delete_descendants", "true")
+		opts = append(opts, WithQueryParams(v))
+	}
+
+	req, err := p.client.newRequest(http.MethodDelete, path, nil, opts...)
 	if err != nil {
 		return fmt.Errorf("error creating http request: %w", err)
 	}

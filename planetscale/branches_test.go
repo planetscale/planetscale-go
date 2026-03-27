@@ -509,6 +509,55 @@ func TestDatabaseBranches_LintSchema(t *testing.T) {
 	c.Assert(lintErr, qt.DeepEquals, want)
 }
 
+func TestDatabaseBranches_Delete(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/planetscale-go-test-db/branches/planetscale-go-test-db-branch")
+		c.Assert(r.URL.Query().Get("delete_descendants"), qt.Equals, "")
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.DatabaseBranches.Delete(ctx, &DeleteDatabaseBranchRequest{
+		Organization: "my-org",
+		Database:     "planetscale-go-test-db",
+		Branch:       testBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
+func TestDatabaseBranches_DeleteWithDescendants(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/planetscale-go-test-db/branches/planetscale-go-test-db-branch")
+		c.Assert(r.URL.Query().Get("delete_descendants"), qt.Equals, "true")
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	err = client.DatabaseBranches.Delete(ctx, &DeleteDatabaseBranchRequest{
+		Organization:      "my-org",
+		Database:          "planetscale-go-test-db",
+		Branch:            testBranch,
+		DeleteDescendants: true,
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
 func TestDatabaseBranches_ListClusterSKUs(t *testing.T) {
 	c := qt.New(t)
 

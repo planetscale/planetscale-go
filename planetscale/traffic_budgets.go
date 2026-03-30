@@ -43,18 +43,23 @@ type TrafficRule struct {
 
 // TrafficBudget represents a traffic budget on a branch.
 type TrafficBudget struct {
-	ID          string        `json:"id"`
-	Type        string        `json:"type"`
-	Name        string        `json:"name"`
-	Mode        string        `json:"mode"`
-	Capacity    *int          `json:"capacity"`
-	Rate        *int          `json:"rate"`
-	Burst       *int          `json:"burst"`
-	Concurrency *int          `json:"concurrency"`
-	Rules       []TrafficRule `json:"rules"`
-	Actor       Actor         `json:"actor"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
+	ID   string `json:"id"`
+	Type string `json:"type"`
+
+	Name string `json:"name"`
+	Mode string `json:"mode"`
+
+	Capacity         *int `json:"capacity"`
+	Rate             *int `json:"rate"`
+	Burst            *int `json:"burst"`
+	Concurrency      *int `json:"concurrency"`
+	WarningThreshold *int `json:"warning_threshold"`
+
+	Rules []TrafficRule `json:"rules"`
+
+	Actor     Actor     `json:"actor"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type trafficBudgetsResponse struct {
@@ -86,31 +91,39 @@ type CreateTrafficBudgetRuleRequest struct {
 
 // CreateTrafficBudgetRequest is the request for creating a traffic budget.
 type CreateTrafficBudgetRequest struct {
-	Organization string                            `json:"-"`
-	Database     string                            `json:"-"`
-	Branch       string                            `json:"-"`
-	Name         string                            `json:"name"`
-	Mode         string                            `json:"mode"`
-	Capacity     *int                              `json:"capacity,omitempty"`
-	Rate         *int                              `json:"rate,omitempty"`
-	Burst        *int                              `json:"burst,omitempty"`
-	Concurrency  *int                              `json:"concurrency,omitempty"`
-	Rules        *[]CreateTrafficBudgetRuleRequest `json:"rules,omitempty"`
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+
+	Name string `json:"name"`
+	Mode string `json:"mode"`
+
+	Capacity         *int `json:"capacity,omitempty"`
+	Rate             *int `json:"rate,omitempty"`
+	Burst            *int `json:"burst,omitempty"`
+	Concurrency      *int `json:"concurrency,omitempty"`
+	WarningThreshold *int `json:"warning_threshold,omitempty"`
+
+	Rules *[]CreateTrafficBudgetRuleRequest `json:"rules,omitempty"`
 }
 
 // UpdateTrafficBudgetRequest is the request for updating a traffic budget.
 type UpdateTrafficBudgetRequest struct {
-	Organization string                            `json:"-"`
-	Database     string                            `json:"-"`
-	Branch       string                            `json:"-"`
-	BudgetID     string                            `json:"-"`
-	Name         *string                           `json:"name,omitempty"`
-	Mode         *string                           `json:"mode,omitempty"`
-	Capacity     *int                              `json:"capacity,omitempty"`
-	Rate         *int                              `json:"rate,omitempty"`
-	Burst        *int                              `json:"burst,omitempty"`
-	Concurrency  *int                              `json:"concurrency,omitempty"`
-	Rules        *[]CreateTrafficBudgetRuleRequest `json:"rules,omitempty"`
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+	BudgetID     string `json:"-"`
+
+	Name *string `json:"name,omitempty"`
+	Mode *string `json:"mode,omitempty"`
+
+	Capacity         *int `json:"capacity,omitempty"`
+	Rate             *int `json:"rate,omitempty"`
+	Burst            *int `json:"burst,omitempty"`
+	Concurrency      *int `json:"concurrency,omitempty"`
+	WarningThreshold *int `json:"warning_threshold,omitempty"`
+
+	Rules *[]CreateTrafficBudgetRuleRequest `json:"rules,omitempty"`
 }
 
 // DeleteTrafficBudgetRequest is the request for deleting a traffic budget.

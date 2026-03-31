@@ -61,6 +61,7 @@ type Client struct {
 	MoveTables           MoveTablesService
 	Organizations        OrganizationsService
 	Passwords            PasswordsService
+	PlannedReparentShard PlannedReparentShardService
 	PostgresBranches     PostgresBranchesService
 	PostgresRoles        PostgresRolesService
 	Regions              RegionsService
@@ -297,6 +298,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.MoveTables = &moveTablesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
+	c.PlannedReparentShard = &plannedReparentShardService{client: c}
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Regions = &regionsService{client: c}

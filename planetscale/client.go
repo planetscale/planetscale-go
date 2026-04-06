@@ -72,6 +72,7 @@ type Client struct {
 	Vtctld               VtctldService
 	Webhooks             WebhooksService
 	Workflows            WorkflowsService
+	Logs                 LogsService
 }
 
 // ListOptions are options for listing responses.
@@ -309,6 +310,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.Vtctld = &vtctldService{client: c}
 	c.Webhooks = &webhooksService{client: c}
 	c.Workflows = &workflowsService{client: c}
+	c.Logs = &logsService{client: c}
 
 	return c, nil
 }

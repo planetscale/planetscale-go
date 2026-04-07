@@ -205,6 +205,61 @@ func TestDatabases_CreateWithReplicasZero(t *testing.T) {
 	c.Assert(db, qt.DeepEquals, want)
 }
 
+func TestDatabases_CreateWithStorage(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		storage, ok := body["storage"].(map[string]any)
+		c.Assert(ok, qt.IsTrue, qt.Commentf("storage field should be a nested object"))
+		c.Assert(storage["minimum_storage_bytes"], qt.Equals, float64(10737418240))
+		c.Assert(storage["maximum_storage_bytes"], qt.Equals, float64(107374182400))
+
+		out := `{"id":"planetscale-go-test-db","type":"database","name":"planetscale-go-test-db","notes":"","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": { "slug": "us-west", "display_name": "US West" },"state":"ready","kind":"postgresql"}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	minStorage := int64(10737418240)
+	maxStorage := int64(107374182400)
+
+	db, err := client.Databases.Create(ctx, &CreateDatabaseRequest{
+		Organization: testOrg,
+		Region:       "us-west",
+		Name:         testDatabase,
+		Kind:         DatabaseEnginePostgres,
+		Storage: &StorageConfig{
+			MinimumStorageBytes: &minStorage,
+			MaximumStorageBytes: &maxStorage,
+		},
+	})
+
+	want := &Database{
+		Name:  testDatabase,
+		State: DatabaseReady,
+		Kind:  DatabaseEnginePostgres,
+		Region: Region{
+			Slug: "us-west",
+			Name: "US West",
+		},
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(db, qt.DeepEquals, want)
+}
+
 func TestDatabases_Get(t *testing.T) {
 	c := qt.New(t)
 

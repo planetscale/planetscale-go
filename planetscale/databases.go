@@ -15,6 +15,12 @@ const (
 	DatabaseEnginePostgres DatabaseEngine = "postgresql"
 )
 
+// StorageConfig represents storage size configuration for a database or branch.
+type StorageConfig struct {
+	MinimumStorageBytes *int64 `json:"minimum_storage_bytes,omitempty"`
+	MaximumStorageBytes *int64 `json:"maximum_storage_bytes,omitempty"`
+}
+
 // CreateDatabaseRequest encapsulates the request for creating a new database.
 type CreateDatabaseRequest struct {
 	Organization string
@@ -25,6 +31,7 @@ type CreateDatabaseRequest struct {
 	Kind         DatabaseEngine `json:"kind,omitempty"`
 	Replicas     *int           `json:"replicas,omitempty"`
 	MajorVersion string         `json:"major_version,omitempty"`
+	Storage      *StorageConfig `json:"storage,omitempty"`
 }
 
 // DatabaseRequest encapsulates the request for getting a single database.

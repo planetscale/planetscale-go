@@ -42,7 +42,8 @@ type CreatePostgresBranchRequest struct {
 	ParentBranch string `json:"parent_branch"`
 	BackupID     string `json:"backup_id,omitempty"`
 	ClusterName  string `json:"cluster_name,omitempty"`
-	MajorVersion string `json:"major_version,omitempty"`
+	MajorVersion string         `json:"major_version,omitempty"`
+	Storage      *StorageConfig `json:"storage,omitempty"`
 }
 
 // ListPostgresBranchesRequest encapsulates the request to list Postgres branches for a database.

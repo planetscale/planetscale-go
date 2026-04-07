@@ -2,6 +2,7 @@ package planetscale
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -323,4 +324,59 @@ func TestPostgresBranches_ListClusterSKUs(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(skus, qt.DeepEquals, want)
+}
+
+func TestPostgresBranches_CreateWithStorage(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		storage, ok := body["storage"].(map[string]any)
+		c.Assert(ok, qt.IsTrue, qt.Commentf("storage field should be a nested object"))
+		c.Assert(storage["minimum_storage_bytes"], qt.Equals, float64(10737418240))
+		c.Assert(storage["maximum_storage_bytes"], qt.Equals, float64(107374182400))
+
+		out := `{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": {"slug": "us-west", "display_name": "US West"}}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	minStorage := int64(10737418240)
+	maxStorage := int64(107374182400)
+
+	branch, err := client.PostgresBranches.Create(ctx, &CreatePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Region:       "us-west",
+		Name:         testPostgresBranch,
+		ParentBranch: "main",
+		Storage: &StorageConfig{
+			MinimumStorageBytes: &minStorage,
+			MaximumStorageBytes: &maxStorage,
+		},
+	})
+
+	want := &PostgresBranch{
+		ID:   "postgres-test-branch",
+		Name: testPostgresBranch,
+		Region: Region{
+			Slug: "us-west",
+			Name: "US West",
+		},
+		CreatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		UpdatedAt: time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+	}
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(branch, qt.DeepEquals, want)
 }

@@ -12,7 +12,7 @@ import (
 // MoveTablesService is an interface for interacting with the MoveTables endpoints of the
 // PlanetScale API.
 type MoveTablesService interface {
-	Create(context.Context, *MoveTablesCreateRequest) (json.RawMessage, error)
+	Create(context.Context, *MoveTablesCreateRequest) (*VtctldOperationReference, error)
 	Show(context.Context, *MoveTablesShowRequest) (json.RawMessage, error)
 	Status(context.Context, *MoveTablesStatusRequest) (json.RawMessage, error)
 	SwitchTraffic(context.Context, *MoveTablesSwitchTrafficRequest) (*VtctldOperationReference, error)
@@ -125,17 +125,9 @@ func moveTablesWorkflowAPIPath(org, db, branch, workflow string) string {
 	return path.Join(moveTablesWorkflowsAPIPath(org, db, branch), workflow)
 }
 
-func (s *moveTablesService) Create(ctx context.Context, req *MoveTablesCreateRequest) (json.RawMessage, error) {
+func (s *moveTablesService) Create(ctx context.Context, req *MoveTablesCreateRequest) (*VtctldOperationReference, error) {
 	p := moveTablesWorkflowsAPIPath(req.Organization, req.Database, req.Branch)
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
 func (s *moveTablesService) Show(ctx context.Context, req *MoveTablesShowRequest) (json.RawMessage, error) {

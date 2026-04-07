@@ -41,8 +41,8 @@ func TestMoveTables_Create(t *testing.T) {
 		c.Assert(hasTabletTypes, qt.IsFalse)
 		c.Assert(hasExcludeTables, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -51,7 +51,7 @@ func TestMoveTables_Create(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -60,7 +60,7 @@ func TestMoveTables_Create(t *testing.T) {
 		SourceKeyspace: "source",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
 }
 
 func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
@@ -100,8 +100,8 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		c.Assert(excludeTables, qt.DeepEquals, []interface{}{"internal_logs"})
 		c.Assert(tabletTypes, qt.DeepEquals, []interface{}{"REPLICA", "RDONLY"})
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -111,7 +111,7 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
-	data, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
 		Organization:       "my-org",
 		Database:           "my-db",
 		Branch:             "my-branch",
@@ -129,7 +129,7 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		TabletTypes:        []string{"REPLICA", "RDONLY"},
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
 }
 
 func TestMoveTables_Show(t *testing.T) {

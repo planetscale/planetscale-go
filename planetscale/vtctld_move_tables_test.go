@@ -32,6 +32,7 @@ func TestMoveTables_Create(t *testing.T) {
 		_, hasCells := body["cells"]
 		_, hasTabletTypes := body["tablet_types"]
 		_, hasExcludeTables := body["exclude_tables"]
+		_, hasTenantID := body["tenant_id"]
 		c.Assert(hasAllTables, qt.IsFalse)
 		c.Assert(hasAutoStart, qt.IsFalse)
 		c.Assert(hasStopAfterCopy, qt.IsFalse)
@@ -40,6 +41,7 @@ func TestMoveTables_Create(t *testing.T) {
 		c.Assert(hasCells, qt.IsFalse)
 		c.Assert(hasTabletTypes, qt.IsFalse)
 		c.Assert(hasExcludeTables, qt.IsFalse)
+		c.Assert(hasTenantID, qt.IsFalse)
 
 		w.WriteHeader(http.StatusAccepted)
 		_, err = w.Write([]byte(`{"id":"create-op"}`))
@@ -58,6 +60,41 @@ func TestMoveTables_Create(t *testing.T) {
 		Workflow:       "my-workflow",
 		TargetKeyspace: "target",
 		SourceKeyspace: "source",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
+}
+
+func TestMoveTables_CreateWithTenantID(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["tenant_id"], qt.Equals, "tenant-123")
+
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+		Organization:   "my-org",
+		Database:       "my-db",
+		Branch:         "my-branch",
+		Workflow:       "my-workflow",
+		TargetKeyspace: "target",
+		SourceKeyspace: "source",
+		TenantID:       "tenant-123",
 	})
 	c.Assert(err, qt.IsNil)
 	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})

@@ -65,7 +65,7 @@ func TestIntegration_Databases_List(t *testing.T) {
 		fmt.Printf("Notes: %q\n", db.Notes)
 	}
 
-	err = client.Databases.Delete(ctx, &DeleteDatabaseRequest{
+	_, err = client.Databases.Delete(ctx, &DeleteDatabaseRequest{
 		Organization: org,
 		Database:     dbName,
 	})
@@ -105,8 +105,8 @@ func TestIntegration_AuditLogs_List(t *testing.T) {
 		t.Fatalf("get audit logs failed: %s", err)
 	}
 
-	for _, l := range auditLogs {
+	for _, l := range auditLogs.Data {
 		fmt.Printf("l. = %+v\n", l.AuditAction)
 	}
-	fmt.Printf("len(auditLogs) = %+v\n", len(auditLogs))
+	fmt.Printf("len(auditLogs) = %+v\n", len(auditLogs.Data))
 }

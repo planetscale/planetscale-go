@@ -71,7 +71,7 @@ type schemaRecommendationService struct {
 	client *Client
 }
 
-func (s schemaRecommendationService) List(ctx context.Context, request *ListSchemaRecommendationsRequest, opts ...ListOption) ([]*SchemaRecommendation, error) {
+func (s *schemaRecommendationService) List(ctx context.Context, request *ListSchemaRecommendationsRequest, opts ...ListOption) ([]*SchemaRecommendation, error) {
 	listOpts := defaultListOptions(opts...)
 
 	req, err := s.client.newRequest(http.MethodGet, schemaRecommendationsAPIPath(request.Organization, request.Database), nil, WithQueryParams(*listOpts.URLValues))
@@ -87,7 +87,7 @@ func (s schemaRecommendationService) List(ctx context.Context, request *ListSche
 	return resp.SchemaRecommendations, nil
 }
 
-func (s schemaRecommendationService) Get(ctx context.Context, request *GetSchemaRecommendationRequest) (*SchemaRecommendation, error) {
+func (s *schemaRecommendationService) Get(ctx context.Context, request *GetSchemaRecommendationRequest) (*SchemaRecommendation, error) {
 	req, err := s.client.newRequest(http.MethodGet, schemaRecommendationAPIPath(request.Organization, request.Database, request.ID), nil)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (s schemaRecommendationService) Get(ctx context.Context, request *GetSchema
 	return schemaRecommendation, nil
 }
 
-func (s schemaRecommendationService) Dismiss(ctx context.Context, request *DismissSchemaRecommendationRequest) (*SchemaRecommendation, error) {
+func (s *schemaRecommendationService) Dismiss(ctx context.Context, request *DismissSchemaRecommendationRequest) (*SchemaRecommendation, error) {
 	req, err := s.client.newRequest(http.MethodPost, dismissSchemaRecommendationAPIPath(request.Organization, request.Database, request.ID), nil)
 	if err != nil {
 		return nil, err

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	qt "github.com/frankban/quicktest"
 )
@@ -35,8 +36,8 @@ func TestSchemaRecommendations_List(t *testing.T) {
 				"recommendation_type": "index",
 				"created_at": "2021-01-14T10:19:23.000Z",
 				"updated_at": "2021-01-14T10:19:23.000Z",
-				"applied_at": "",
-				"dismissed_at": "",
+				"applied_at": null,
+				"dismissed_at": null,
 				"closed_by_deploy_request": {
 					"id": "",
 					"branch_id": "",
@@ -65,9 +66,9 @@ func TestSchemaRecommendations_List(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(len(recommendations), qt.Equals, 1)
-	c.Assert(recommendations[0].Id, qt.Equals, "recommendation-123")
+	c.Assert(recommendations[0].ID, qt.Equals, "recommendation-123")
 	c.Assert(recommendations[0].Title, qt.Equals, "Add index on users.email")
-	c.Assert(recommendations[0].TableName, qt.Equals, "users")
+	c.Assert(recommendations[0].Table, qt.Equals, "users")
 	c.Assert(recommendations[0].Keyspace, qt.Equals, "main")
 	c.Assert(recommendations[0].State, qt.Equals, "open")
 	c.Assert(recommendations[0].RecommendationType, qt.Equals, "index")
@@ -128,19 +129,7 @@ func TestSchemaRecommendations_Get(t *testing.T) {
 			"state": "open",
 			"recommendation_type": "index",
 			"created_at": "2021-01-14T10:19:23.000Z",
-			"updated_at": "2021-01-14T10:19:23.000Z",
-			"applied_at": "",
-			"dismissed_at": "",
-			"closed_by_deploy_request": {
-				"id": "",
-				"branch_id": "",
-				"number": 0
-			},
-			"dismissed_by": {
-				"id": "",
-				"display_name": "",
-				"avatar_url": ""
-			}
+			"updated_at": "2021-01-14T10:19:23.000Z"
 		}`
 		_, err := w.Write([]byte(out))
 		c.Assert(err, qt.IsNil)
@@ -158,9 +147,9 @@ func TestSchemaRecommendations_Get(t *testing.T) {
 	})
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(recommendation.Id, qt.Equals, "recommendation-123")
+	c.Assert(recommendation.ID, qt.Equals, "recommendation-123")
 	c.Assert(recommendation.Title, qt.Equals, "Add index on users.email")
-	c.Assert(recommendation.DdlStatement, qt.Equals, "ALTER TABLE users ADD INDEX idx_email (email)")
+	c.Assert(recommendation.DDLStatement, qt.Equals, "ALTER TABLE users ADD INDEX idx_email (email)")
 	c.Assert(recommendation.State, qt.Equals, "open")
 }
 
@@ -184,13 +173,8 @@ func TestSchemaRecommendations_Dismiss(t *testing.T) {
 			"recommendation_type": "index",
 			"created_at": "2021-01-14T10:19:23.000Z",
 			"updated_at": "2021-01-15T10:19:23.000Z",
-			"applied_at": "",
+			"applied_at": null,
 			"dismissed_at": "2021-01-15T10:19:23.000Z",
-			"closed_by_deploy_request": {
-				"id": "",
-				"branch_id": "",
-				"number": 0
-			},
 			"dismissed_by": {
 				"id": "user-123",
 				"display_name": "Test User",
@@ -213,9 +197,10 @@ func TestSchemaRecommendations_Dismiss(t *testing.T) {
 	})
 
 	c.Assert(err, qt.IsNil)
-	c.Assert(recommendation.Id, qt.Equals, "recommendation-123")
+	c.Assert(recommendation.ID, qt.Equals, "recommendation-123")
 	c.Assert(recommendation.State, qt.Equals, "dismissed")
-	c.Assert(recommendation.DismissedAt, qt.Equals, "2021-01-15T10:19:23.000Z")
-	c.Assert(recommendation.DismissedBy.Id, qt.Equals, "user-123")
-	c.Assert(recommendation.DismissedBy.DisplayName, qt.Equals, "Test User")
+	c.Assert(recommendation.DismissedAt, qt.IsNotNil)
+	c.Assert(recommendation.DismissedAt.Format(time.RFC3339Nano), qt.Equals, "2021-01-15T10:19:23Z")
+	c.Assert(recommendation.DismissedBy.ID, qt.Equals, "user-123")
+	c.Assert(recommendation.DismissedBy.Name, qt.Equals, "Test User")
 }

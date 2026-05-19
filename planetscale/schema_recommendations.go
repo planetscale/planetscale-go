@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"path"
+	"time"
 )
 
 var _ SchemaRecommendationService = &schemaRecommendationService{}
@@ -22,29 +23,27 @@ type schemaRecommendationsResponse struct {
 
 // SchemaRecommendation represents a PlanetScale schema recommendation.
 type SchemaRecommendation struct {
-	Id                    string `json:"id"`
-	HtmlUrl               string `json:"html_url"`
-	Title                 string `json:"title"`
-	TableName             string `json:"table_name"`
-	Keyspace              string `json:"keyspace"`
-	DdlStatement          string `json:"ddl_statement"`
-	Number                int    `json:"number"`
-	State                 string `json:"state"`
-	RecommendationType    string `json:"recommendation_type"`
-	CreatedAt             string `json:"created_at"`
-	UpdatedAt             string `json:"updated_at"`
-	AppliedAt             string `json:"applied_at"`
-	DismissedAt           string `json:"dismissed_at"`
-	ClosedByDeployRequest struct {
-		Id       string `json:"id"`
-		BranchId string `json:"branch_id"`
-		Number   int    `json:"number"`
-	} `json:"closed_by_deploy_request"`
-	DismissedBy struct {
-		Id          string `json:"id"`
-		DisplayName string `json:"display_name"`
-		AvatarUrl   string `json:"avatar_url"`
-	} `json:"dismissed_by"`
+	ID                    string                `json:"id"`
+	HtmlURL               string                `json:"html_url"`
+	Title                 string                `json:"title"`
+	Table                 string                `json:"table_name"`
+	Keyspace              string                `json:"keyspace"`
+	DDLStatement          string                `json:"ddl_statement"`
+	Number                int                   `json:"number"`
+	State                 string                `json:"state"`
+	RecommendationType    string                `json:"recommendation_type"`
+	CreatedAt             time.Time             `json:"created_at"`
+	UpdatedAt             time.Time             `json:"updated_at"`
+	AppliedAt             *time.Time            `json:"applied_at"`
+	DismissedAt           *time.Time            `json:"dismissed_at"`
+	ClosedByDeployRequest *CloseByDeployRequest `json:"closed_by_deploy_request"`
+	DismissedBy           *Actor                `json:"dismissed_by"`
+}
+
+type CloseByDeployRequest struct {
+	ID       string `json:"id"`
+	BranchId string `json:"branch_id"`
+	Number   int    `json:"number"`
 }
 
 // ListSchemaRecommendationsRequest is the request for listing schema recommendations.

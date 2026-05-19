@@ -26,7 +26,7 @@ type SchemaRecommendation struct {
 	ID                    string                 `json:"id"`
 	HtmlURL               string                 `json:"html_url"`
 	Title                 string                 `json:"title"`
-	Table                 string                  d`json:"table_name"`
+	Table                 string                 `json:"table_name"`
 	Keyspace              string                 `json:"keyspace"`
 	DDLStatement          string                 `json:"ddl_statement"`
 	Number                int                    `json:"number"`

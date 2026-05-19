@@ -52,7 +52,7 @@ type ListSchemaRecommendationsRequest struct {
 	Database     string `json:"-"`
 }
 
-// GetchemaRecommendationRequest is the request for getting a schema recommendation.
+// GetSchemaRecommendationRequest is the request for getting a schema recommendation.
 type GetSchemaRecommendationRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`

@@ -45,8 +45,7 @@ func TestSchemaRecommendations_List(t *testing.T) {
 				},
 				"dismissed_by": {
 					"id": "",
-					"display_name": "",
-					"avatar_url": ""
+					"display_name": ""
 				}
 			}]
 		}`
@@ -177,8 +176,7 @@ func TestSchemaRecommendations_Dismiss(t *testing.T) {
 			"dismissed_at": "2021-01-15T10:19:23.000Z",
 			"dismissed_by": {
 				"id": "user-123",
-				"display_name": "Test User",
-				"avatar_url": "https://example.com/avatar.png"
+				"display_name": "Test User"
 			}
 		}`
 		_, err := w.Write([]byte(out))

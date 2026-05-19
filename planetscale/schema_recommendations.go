@@ -42,7 +42,7 @@ type SchemaRecommendation struct {
 
 type CloseByDeployRequest struct {
 	ID       string `json:"id"`
-	BranchId string `json:"branch_id"`
+	BranchID string `json:"branch_id"`
 	Number   int    `json:"number"`
 }
 

@@ -17,7 +17,7 @@ type MoveTablesService interface {
 	Status(context.Context, *MoveTablesStatusRequest) (json.RawMessage, error)
 	SwitchTraffic(context.Context, *MoveTablesSwitchTrafficRequest) (*VtctldOperationReference, error)
 	ReverseTraffic(context.Context, *MoveTablesReverseTrafficRequest) (*VtctldOperationReference, error)
-	Cancel(context.Context, *MoveTablesCancelRequest) (json.RawMessage, error)
+	Cancel(context.Context, *MoveTablesCancelRequest) (*VtctldOperationReference, error)
 	Complete(context.Context, *MoveTablesCompleteRequest) (*VtctldOperationReference, error)
 }
 
@@ -171,17 +171,9 @@ func (s *moveTablesService) ReverseTraffic(ctx context.Context, req *MoveTablesR
 	return s.enqueueOperation(ctx, p, req)
 }
 
-func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelRequest) (json.RawMessage, error) {
+func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelRequest) (*VtctldOperationReference, error) {
 	p := path.Join(moveTablesWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "cancel")
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
 func (s *moveTablesService) Complete(ctx context.Context, req *MoveTablesCompleteRequest) (*VtctldOperationReference, error) {

@@ -419,8 +419,8 @@ func TestMoveTables_Cancel(t *testing.T) {
 		c.Assert(hasKeepData, qt.IsFalse)
 		c.Assert(hasKeepRoutingRules, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(202)
+		_, err = w.Write([]byte(`{"id":"cancel-op-123"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -429,7 +429,7 @@ func TestMoveTables_Cancel(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
+	op, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -437,7 +437,7 @@ func TestMoveTables_Cancel(t *testing.T) {
 		TargetKeyspace: "target",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(op.ID, qt.Equals, "cancel-op-123")
 }
 
 func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
@@ -458,8 +458,8 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 		c.Assert(keepData, qt.Equals, false)
 		c.Assert(keepRoutingRules, qt.Equals, false)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(202)
+		_, err = w.Write([]byte(`{"id":"cancel-op-456"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -469,7 +469,7 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
-	data, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
+	op, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
 		Organization:     "my-org",
 		Database:         "my-db",
 		Branch:           "my-branch",
@@ -479,7 +479,7 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 		KeepRoutingRules: &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(op.ID, qt.Equals, "cancel-op-456")
 }
 
 func TestMoveTables_Complete(t *testing.T) {

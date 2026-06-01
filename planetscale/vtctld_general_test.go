@@ -240,3 +240,194 @@ func TestVtctld_ListKeyspaces_NoNameFilter(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
 }
+
+func float64Ptr(v float64) *float64 {
+	return &v
+}
+
+func TestVtctld_GetThrottlerStatus(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/throttler/status")
+		c.Assert(r.URL.Query().Get("tablet_alias"), qt.Equals, "zone1-0000000100")
+
+		w.WriteHeader(200)
+		_, err := w.Write([]byte(`{"data":{"keyspace":"commerce","enabled":true}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.GetThrottlerStatus(ctx, &VtctldGetThrottlerStatusRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		TabletAlias:  "zone1-0000000100",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"keyspace":"commerce","enabled":true}`)
+}
+
+func TestVtctld_CheckThrottler(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/throttler/check")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["tablet_alias"], qt.Equals, "zone1-0000000100")
+		c.Assert(body["app_name"], qt.Equals, "online-ddl")
+		c.Assert(body["scope"], qt.Equals, "self")
+		c.Assert(body["skip_request_heartbeats"], qt.Equals, true)
+		c.Assert(body["ok_if_not_exists"], qt.Equals, true)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"response_code":"THROTTLER_RESPONSE_CODE_OK"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.CheckThrottler(ctx, &VtctldCheckThrottlerRequest{
+		Organization:          "my-org",
+		Database:              "my-db",
+		Branch:                "my-branch",
+		TabletAlias:           "zone1-0000000100",
+		AppName:               "online-ddl",
+		Scope:                 "self",
+		SkipRequestHeartbeats: boolPtr(true),
+		OkIfNotExists:         boolPtr(true),
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"response_code":"THROTTLER_RESPONSE_CODE_OK"}`)
+}
+
+func TestVtctld_CheckThrottler_MinimalBody(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["tablet_alias"], qt.Equals, "zone1-0000000100")
+
+		// Optional fields are omitted entirely when unset.
+		_, hasAppName := body["app_name"]
+		c.Assert(hasAppName, qt.IsFalse)
+		_, hasSkip := body["skip_request_heartbeats"]
+		c.Assert(hasSkip, qt.IsFalse)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{"response_code":"THROTTLER_RESPONSE_CODE_OK"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	_, err = client.Vtctld.CheckThrottler(ctx, &VtctldCheckThrottlerRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		TabletAlias:  "zone1-0000000100",
+	})
+	c.Assert(err, qt.IsNil)
+}
+
+func TestVtctld_UpdateThrottlerConfig(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPut)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/throttler/config")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["keyspace"], qt.Equals, "commerce")
+		c.Assert(body["enabled"], qt.Equals, true)
+		c.Assert(body["threshold"], qt.Equals, float64(2.5))
+
+		apps, ok := body["apps"].([]interface{})
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(len(apps), qt.Equals, 1)
+		app := apps[0].(map[string]interface{})
+		c.Assert(app["name"], qt.Equals, "online-ddl")
+		c.Assert(app["ratio"], qt.Equals, float64(0.5))
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	_, err = client.Vtctld.UpdateThrottlerConfig(ctx, &VtctldUpdateThrottlerConfigRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Keyspace:     "commerce",
+		Enabled:      true,
+		Threshold:    float64Ptr(2.5),
+		Apps: []VtctldThrottledAppConfig{
+			{Name: "online-ddl", Ratio: float64Ptr(0.5)},
+		},
+	})
+	c.Assert(err, qt.IsNil)
+}
+
+func TestVtctld_UpdateThrottlerConfig_DisableSendsEnabledFalse(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		// enabled is a plain bool, so it is always present in the body, even
+		// when false. The server has no tri-state, so this must be explicit.
+		_, hasEnabled := body["enabled"]
+		c.Assert(hasEnabled, qt.IsTrue)
+		c.Assert(body["enabled"], qt.Equals, false)
+
+		// Optional threshold/apps are omitted when unset.
+		_, hasThreshold := body["threshold"]
+		c.Assert(hasThreshold, qt.IsFalse)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	_, err = client.Vtctld.UpdateThrottlerConfig(ctx, &VtctldUpdateThrottlerConfigRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Keyspace:     "commerce",
+		Enabled:      false,
+	})
+	c.Assert(err, qt.IsNil)
+}

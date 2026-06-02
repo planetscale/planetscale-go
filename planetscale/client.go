@@ -62,9 +62,9 @@ type Client struct {
 	Organizations         OrganizationsService
 	Passwords             PasswordsService
 	PlannedReparentShard  PlannedReparentShardService
-	Processlist           ProcesslistService
 	PostgresBranches      PostgresBranchesService
 	PostgresRoles         PostgresRolesService
+	Processlist           ProcesslistService
 	Regions               RegionsService
 	SchemaRecommendations SchemaRecommendationService
 	ServiceTokens         ServiceTokenService

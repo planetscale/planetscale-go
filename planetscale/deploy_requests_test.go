@@ -3,9 +3,11 @@ package planetscale
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -138,6 +140,63 @@ func TestDeployRequests_InstantDeploy(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(dr, qt.DeepEquals, want)
+}
+
+func TestDeployRequests_DeployWithStrategy(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var request struct {
+			InstantDDL bool   `json:"instant_ddl"`
+			Strategy   string `json:"strategy"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&request)
+		c.Assert(err, qt.IsNil)
+		c.Assert(request.Strategy, qt.Equals, "parallel")
+		w.WriteHeader(200)
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "queued" }, "number": 1337}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	_, err = client.DeployRequests.Deploy(ctx, &PerformDeployRequest{
+		Organization: "test-organization",
+		Database:     "test-database",
+		Number:       1337,
+		Strategy:     "parallel",
+	})
+	c.Assert(err, qt.IsNil)
+}
+
+func TestDeployRequests_DeployOmitsEmptyStrategy(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(strings.Contains(string(raw), "strategy"), qt.IsFalse)
+		w.WriteHeader(200)
+		out := `{"id": "test-deploy-request-id", "branch": "development", "into_branch": "some-branch", "notes": "", "created_at": "2021-01-14T10:19:23.000Z", "updated_at": "2021-01-14T10:19:23.000Z", "closed_at": "2021-01-14T10:19:23.000Z", "deployment": { "state": "queued" }, "number": 1337}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	_, err = client.DeployRequests.Deploy(ctx, &PerformDeployRequest{
+		Organization: "test-organization",
+		Database:     "test-database",
+		Number:       1337,
+	})
+	c.Assert(err, qt.IsNil)
 }
 
 func TestDeployRequests_CancelDeploy(t *testing.T) {

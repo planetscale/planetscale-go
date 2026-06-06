@@ -176,6 +176,49 @@ func TestVtctld_GetShard(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"tablet_controls":[{"tablet_type":"TABLET_TYPE_RDONLY","cells":["zone1"],"denied_tables":["t"]}]}`)
 }
 
+func TestVtctld_SetShardTabletControl(t *testing.T) {
+	c := qt.New(t)
+
+	remove := true
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPut)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/shard/tablet-control")
+
+		var body VtctldSetShardTabletControlRequest
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body.Keyspace, qt.Equals, "commerce")
+		c.Assert(body.Shard, qt.Equals, "-")
+		c.Assert(body.TabletType, qt.Equals, "rdonly")
+		c.Assert(body.DeniedTables, qt.DeepEquals, []string{"customers"})
+		c.Assert(body.Remove, qt.Not(qt.IsNil))
+		c.Assert(*body.Remove, qt.Equals, true)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte(`{"data":{}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.SetShardTabletControl(ctx, &VtctldSetShardTabletControlRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Keyspace:     "commerce",
+		Shard:        "-",
+		TabletType:   "rdonly",
+		DeniedTables: []string{"customers"},
+		Remove:       &remove,
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{}`)
+}
+
 func TestVtctld_ListKeyspaces(t *testing.T) {
 	c := qt.New(t)
 

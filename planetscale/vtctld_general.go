@@ -15,6 +15,7 @@ import (
 type VtctldService interface {
 	ListWorkflows(context.Context, *VtctldListWorkflowsRequest) (json.RawMessage, error)
 	ListKeyspaces(context.Context, *VtctldListKeyspacesRequest) (json.RawMessage, error)
+	GetRoutingRules(context.Context, *VtctldGetRoutingRulesRequest) (json.RawMessage, error)
 	ListTablets(context.Context, *ListBranchTabletsRequest) ([]*TabletGroup, error)
 	StartWorkflow(context.Context, *VtctldStartWorkflowRequest) (json.RawMessage, error)
 	StopWorkflow(context.Context, *VtctldStopWorkflowRequest) (json.RawMessage, error)
@@ -38,6 +39,14 @@ type VtctldListKeyspacesRequest struct {
 	Database     string `json:"-"`
 	Branch       string `json:"-"`
 	Name         string `json:"-"`
+}
+
+// VtctldGetRoutingRulesRequest is a request for reading live routing rules
+// from the cluster via vtctld.
+type VtctldGetRoutingRulesRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
 }
 
 // VtctldStartWorkflowRequest is a request for starting a workflow.
@@ -138,6 +147,10 @@ func vtctldKeyspacesAPIPath(org, db, branch string) string {
 	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "keyspaces")
 }
 
+func vtctldRoutingRulesAPIPath(org, db, branch string) string {
+	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "routing-rules")
+}
+
 func (s *vtctldService) ListWorkflows(ctx context.Context, req *VtctldListWorkflowsRequest) (json.RawMessage, error) {
 	p := vtctldWorkflowsAPIPath(req.Organization, req.Database, req.Branch)
 	v := url.Values{}
@@ -166,6 +179,19 @@ func (s *vtctldService) ListKeyspaces(ctx context.Context, req *VtctldListKeyspa
 		v.Set("name", req.Name)
 	}
 	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func (s *vtctldService) GetRoutingRules(ctx context.Context, req *VtctldGetRoutingRulesRequest) (json.RawMessage, error) {
+	p := vtctldRoutingRulesAPIPath(req.Organization, req.Database, req.Branch)
+	httpReq, err := s.client.newRequest(http.MethodGet, p, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

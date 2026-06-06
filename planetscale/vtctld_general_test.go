@@ -128,7 +128,7 @@ func TestVtctld_GetRoutingRules(t *testing.T) {
 		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/routing-rules")
 
 		w.WriteHeader(200)
-		_, err := w.Write([]byte(`{"data":{"rules":{"rules":[]}}}`))
+		_, err := w.Write([]byte(`{"data":{"rules":[]}}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -143,7 +143,7 @@ func TestVtctld_GetRoutingRules(t *testing.T) {
 		Branch:       "my-branch",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"rules":{"rules":[]}}`)
+	c.Assert(string(data), qt.Equals, `{"rules":[]}`)
 }
 
 func TestVtctld_ListKeyspaces(t *testing.T) {

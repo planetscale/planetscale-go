@@ -18,6 +18,7 @@ type VtctldService interface {
 	GetRoutingRules(context.Context, *VtctldGetRoutingRulesRequest) (json.RawMessage, error)
 	GetShard(context.Context, *VtctldGetShardRequest) (json.RawMessage, error)
 	SetShardTabletControl(context.Context, *VtctldSetShardTabletControlRequest) (json.RawMessage, error)
+	RefreshStateByShard(context.Context, *VtctldRefreshStateByShardRequest) (json.RawMessage, error)
 	ListTablets(context.Context, *ListBranchTabletsRequest) ([]*TabletGroup, error)
 	StartWorkflow(context.Context, *VtctldStartWorkflowRequest) (json.RawMessage, error)
 	StopWorkflow(context.Context, *VtctldStopWorkflowRequest) (json.RawMessage, error)
@@ -75,6 +76,18 @@ type VtctldSetShardTabletControlRequest struct {
 	DeniedTables        []string `json:"denied_tables,omitempty"`
 	Remove              *bool    `json:"remove,omitempty"`
 	DisableQueryService *bool    `json:"disable_query_service,omitempty"`
+}
+
+// VtctldRefreshStateByShardRequest reloads tablet records for all tablets in
+// a shard via vtctld.
+type VtctldRefreshStateByShardRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+
+	Keyspace string   `json:"keyspace"`
+	Shard    string   `json:"shard"`
+	Cells    []string `json:"cells,omitempty"`
 }
 
 // VtctldStartWorkflowRequest is a request for starting a workflow.
@@ -185,6 +198,10 @@ func vtctldShardAPIPath(org, db, branch string) string {
 
 func vtctldShardTabletControlAPIPath(org, db, branch string) string {
 	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "shard", "tablet-control")
+}
+
+func vtctldShardRefreshStateAPIPath(org, db, branch string) string {
+	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "shard", "refresh-state")
 }
 
 func (s *vtctldService) ListWorkflows(ctx context.Context, req *VtctldListWorkflowsRequest) (json.RawMessage, error) {
@@ -308,6 +325,20 @@ func (s *vtctldService) GetThrottlerStatus(ctx context.Context, req *VtctldGetTh
 func (s *vtctldService) SetShardTabletControl(ctx context.Context, req *VtctldSetShardTabletControlRequest) (json.RawMessage, error) {
 	p := vtctldShardTabletControlAPIPath(req.Organization, req.Database, req.Branch)
 	httpReq, err := s.client.newRequest(http.MethodPut, p, req)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+// RefreshStateByShard reloads tablet records for all tablets in a shard via vtctld.
+func (s *vtctldService) RefreshStateByShard(ctx context.Context, req *VtctldRefreshStateByShardRequest) (json.RawMessage, error) {
+	p := vtctldShardRefreshStateAPIPath(req.Organization, req.Database, req.Branch)
+	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

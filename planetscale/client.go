@@ -48,30 +48,32 @@ type Client struct {
 	// base URL for the API
 	baseURL *url.URL
 
-	AuditLogs            AuditLogsService
-	Backups              BackupsService
-	BranchInfrastructure BranchInfrastructureService
-	DatabaseBranches     DatabaseBranchesService
-	Databases            DatabasesService
-	DataImports          DataImportsService
-	DeployRequests       DeployRequestsService
-	Keyspaces            KeyspacesService
-	LookupVindex         LookupVindexService
-	Materialize          MaterializeService
-	MoveTables           MoveTablesService
-	Organizations        OrganizationsService
-	Passwords            PasswordsService
-	PlannedReparentShard PlannedReparentShardService
-	PostgresBranches     PostgresBranchesService
-	PostgresRoles        PostgresRolesService
-	Regions              RegionsService
-	ServiceTokens        ServiceTokenService
-	TrafficBudgets       TrafficBudgetsService
-	TrafficRules         TrafficRulesService
-	VDiff                VDiffService
-	Vtctld               VtctldService
-	Webhooks             WebhooksService
-	Workflows            WorkflowsService
+	AuditLogs             AuditLogsService
+	Backups               BackupsService
+	BranchInfrastructure  BranchInfrastructureService
+	DatabaseBranches      DatabaseBranchesService
+	Databases             DatabasesService
+	DataImports           DataImportsService
+	DeployRequests        DeployRequestsService
+	Keyspaces             KeyspacesService
+	LookupVindex          LookupVindexService
+	Materialize           MaterializeService
+	MoveTables            MoveTablesService
+	Organizations         OrganizationsService
+	Passwords             PasswordsService
+	PlannedReparentShard  PlannedReparentShardService
+	PostgresBranches      PostgresBranchesService
+	PostgresRoles         PostgresRolesService
+	Processlist           ProcesslistService
+	Regions               RegionsService
+	SchemaRecommendations SchemaRecommendationService
+	ServiceTokens         ServiceTokenService
+	TrafficBudgets        TrafficBudgetsService
+	TrafficRules          TrafficRulesService
+	VDiff                 VDiffService
+	Vtctld                VtctldService
+	Webhooks              WebhooksService
+	Workflows             WorkflowsService
 }
 
 // ListOptions are options for listing responses.
@@ -299,9 +301,11 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
 	c.PlannedReparentShard = &plannedReparentShardService{client: c}
+	c.Processlist = &processlistService{client: c}
 	c.PostgresBranches = &postgresBranchesService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.Regions = &regionsService{client: c}
+	c.SchemaRecommendations = &schemaRecommendationService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}
 	c.TrafficBudgets = &trafficBudgetsService{client: c}
 	c.TrafficRules = &trafficRulesService{client: c}

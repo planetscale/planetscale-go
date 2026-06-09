@@ -32,6 +32,7 @@ func TestMoveTables_Create(t *testing.T) {
 		_, hasCells := body["cells"]
 		_, hasTabletTypes := body["tablet_types"]
 		_, hasExcludeTables := body["exclude_tables"]
+		_, hasTenantID := body["tenant_id"]
 		c.Assert(hasAllTables, qt.IsFalse)
 		c.Assert(hasAutoStart, qt.IsFalse)
 		c.Assert(hasStopAfterCopy, qt.IsFalse)
@@ -40,9 +41,10 @@ func TestMoveTables_Create(t *testing.T) {
 		c.Assert(hasCells, qt.IsFalse)
 		c.Assert(hasTabletTypes, qt.IsFalse)
 		c.Assert(hasExcludeTables, qt.IsFalse)
+		c.Assert(hasTenantID, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -51,7 +53,7 @@ func TestMoveTables_Create(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -60,7 +62,42 @@ func TestMoveTables_Create(t *testing.T) {
 		SourceKeyspace: "source",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
+}
+
+func TestMoveTables_CreateWithTenantID(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/move-tables/workflows")
+
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["tenant_id"], qt.Equals, "tenant-123")
+
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+		Organization:   "my-org",
+		Database:       "my-db",
+		Branch:         "my-branch",
+		Workflow:       "my-workflow",
+		TargetKeyspace: "target",
+		SourceKeyspace: "source",
+		TenantID:       "tenant-123",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
 }
 
 func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
@@ -100,8 +137,8 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		c.Assert(excludeTables, qt.DeepEquals, []interface{}{"internal_logs"})
 		c.Assert(tabletTypes, qt.DeepEquals, []interface{}{"REPLICA", "RDONLY"})
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"summary":"created"}}`))
+		w.WriteHeader(http.StatusAccepted)
+		_, err = w.Write([]byte(`{"id":"create-op"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -111,7 +148,7 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
-	data, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
+	ref, err := client.MoveTables.Create(ctx, &MoveTablesCreateRequest{
 		Organization:       "my-org",
 		Database:           "my-db",
 		Branch:             "my-branch",
@@ -129,7 +166,7 @@ func TestMoveTables_CreateWithExplicitFalseValues(t *testing.T) {
 		TabletTypes:        []string{"REPLICA", "RDONLY"},
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"summary":"created"}`)
+	c.Assert(ref, qt.DeepEquals, &VtctldOperationReference{ID: "create-op"})
 }
 
 func TestMoveTables_Show(t *testing.T) {
@@ -382,8 +419,8 @@ func TestMoveTables_Cancel(t *testing.T) {
 		c.Assert(hasKeepData, qt.IsFalse)
 		c.Assert(hasKeepRoutingRules, qt.IsFalse)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(202)
+		_, err = w.Write([]byte(`{"id":"cancel-op-123"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -392,7 +429,7 @@ func TestMoveTables_Cancel(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	ctx := context.Background()
-	data, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
+	op, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
 		Organization:   "my-org",
 		Database:       "my-db",
 		Branch:         "my-branch",
@@ -400,7 +437,7 @@ func TestMoveTables_Cancel(t *testing.T) {
 		TargetKeyspace: "target",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(op.ID, qt.Equals, "cancel-op-123")
 }
 
 func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
@@ -421,8 +458,8 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 		c.Assert(keepData, qt.Equals, false)
 		c.Assert(keepRoutingRules, qt.Equals, false)
 
-		w.WriteHeader(200)
-		_, err = w.Write([]byte(`{"data":{"result":"ok"}}`))
+		w.WriteHeader(202)
+		_, err = w.Write([]byte(`{"id":"cancel-op-456"}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -432,7 +469,7 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 
 	falseValue := false
 	ctx := context.Background()
-	data, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
+	op, err := client.MoveTables.Cancel(ctx, &MoveTablesCancelRequest{
 		Organization:     "my-org",
 		Database:         "my-db",
 		Branch:           "my-branch",
@@ -442,7 +479,7 @@ func TestMoveTables_CancelWithExplicitFalseValues(t *testing.T) {
 		KeepRoutingRules: &falseValue,
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"result":"ok"}`)
+	c.Assert(op.ID, qt.Equals, "cancel-op-456")
 }
 
 func TestMoveTables_Complete(t *testing.T) {

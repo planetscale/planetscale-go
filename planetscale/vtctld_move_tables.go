@@ -12,12 +12,12 @@ import (
 // MoveTablesService is an interface for interacting with the MoveTables endpoints of the
 // PlanetScale API.
 type MoveTablesService interface {
-	Create(context.Context, *MoveTablesCreateRequest) (json.RawMessage, error)
+	Create(context.Context, *MoveTablesCreateRequest) (*VtctldOperationReference, error)
 	Show(context.Context, *MoveTablesShowRequest) (json.RawMessage, error)
 	Status(context.Context, *MoveTablesStatusRequest) (json.RawMessage, error)
 	SwitchTraffic(context.Context, *MoveTablesSwitchTrafficRequest) (*VtctldOperationReference, error)
 	ReverseTraffic(context.Context, *MoveTablesReverseTrafficRequest) (*VtctldOperationReference, error)
-	Cancel(context.Context, *MoveTablesCancelRequest) (json.RawMessage, error)
+	Cancel(context.Context, *MoveTablesCancelRequest) (*VtctldOperationReference, error)
 	Complete(context.Context, *MoveTablesCompleteRequest) (*VtctldOperationReference, error)
 }
 
@@ -38,6 +38,7 @@ type MoveTablesCreateRequest struct {
 	OnDDL                        string   `json:"on_ddl,omitempty"`
 	ShardedAutoIncrementHandling string   `json:"sharded_auto_increment_handling,omitempty"`
 	SourceTimeZone               string   `json:"source_time_zone,omitempty"`
+	TenantID                     string   `json:"tenant_id,omitempty"`
 	Cells                        []string `json:"cells,omitempty"`
 	TabletTypes                  []string `json:"tablet_types,omitempty"`
 	ExcludeTables                []string `json:"exclude_tables,omitempty"`
@@ -125,17 +126,9 @@ func moveTablesWorkflowAPIPath(org, db, branch, workflow string) string {
 	return path.Join(moveTablesWorkflowsAPIPath(org, db, branch), workflow)
 }
 
-func (s *moveTablesService) Create(ctx context.Context, req *MoveTablesCreateRequest) (json.RawMessage, error) {
+func (s *moveTablesService) Create(ctx context.Context, req *MoveTablesCreateRequest) (*VtctldOperationReference, error) {
 	p := moveTablesWorkflowsAPIPath(req.Organization, req.Database, req.Branch)
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
 func (s *moveTablesService) Show(ctx context.Context, req *MoveTablesShowRequest) (json.RawMessage, error) {
@@ -178,17 +171,9 @@ func (s *moveTablesService) ReverseTraffic(ctx context.Context, req *MoveTablesR
 	return s.enqueueOperation(ctx, p, req)
 }
 
-func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelRequest) (json.RawMessage, error) {
+func (s *moveTablesService) Cancel(ctx context.Context, req *MoveTablesCancelRequest) (*VtctldOperationReference, error) {
 	p := path.Join(moveTablesWorkflowAPIPath(req.Organization, req.Database, req.Branch, req.Workflow), "cancel")
-	httpReq, err := s.client.newRequest(http.MethodPost, p, req)
-	if err != nil {
-		return nil, fmt.Errorf("error creating http request: %w", err)
-	}
-	resp := &vtctldDataResponse{}
-	if err := s.client.do(ctx, httpReq, resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
+	return s.enqueueOperation(ctx, p, req)
 }
 
 func (s *moveTablesService) Complete(ctx context.Context, req *MoveTablesCompleteRequest) (*VtctldOperationReference, error) {

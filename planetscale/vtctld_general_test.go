@@ -120,6 +120,32 @@ func TestVtctld_ListWorkflows_IncludeLogs(t *testing.T) {
 	}
 }
 
+func TestVtctld_GetRoutingRules(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/routing-rules")
+
+		w.WriteHeader(200)
+		_, err := w.Write([]byte(`{"data":{"rules":[]}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.GetRoutingRules(ctx, &VtctldGetRoutingRulesRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"rules":[]}`)
+}
+
 func TestVtctld_ListKeyspaces(t *testing.T) {
 	c := qt.New(t)
 

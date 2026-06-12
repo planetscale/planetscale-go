@@ -146,6 +146,36 @@ func TestVtctld_GetRoutingRules(t *testing.T) {
 	c.Assert(string(data), qt.Equals, `{"rules":[]}`)
 }
 
+func TestVtctld_GetShard(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/my-db/branches/my-branch/vtctld/shard")
+		c.Assert(r.URL.Query().Get("keyspace"), qt.Equals, "commerce")
+		c.Assert(r.URL.Query().Get("shard"), qt.Equals, "-")
+
+		w.WriteHeader(200)
+		_, err := w.Write([]byte(`{"data":{"keyspace":"commerce","name":"-"}}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	data, err := client.Vtctld.GetShard(ctx, &VtctldGetShardRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+		Keyspace:     "commerce",
+		Shard:        "-",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(string(data), qt.Equals, `{"keyspace":"commerce","name":"-"}`)
+}
+
 func TestVtctld_ListKeyspaces(t *testing.T) {
 	c := qt.New(t)
 

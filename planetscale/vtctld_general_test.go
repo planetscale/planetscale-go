@@ -156,7 +156,7 @@ func TestVtctld_GetShard(t *testing.T) {
 		c.Assert(r.URL.Query().Get("shard"), qt.Equals, "-")
 
 		w.WriteHeader(200)
-		_, err := w.Write([]byte(`{"data":{"keyspace":"commerce","name":"-"}}`))
+		_, err := w.Write([]byte(`{"data":{"tablet_controls":[{"tablet_type":"TABLET_TYPE_RDONLY","cells":["zone1"],"denied_tables":["t"]}]}}`))
 		c.Assert(err, qt.IsNil)
 	}))
 	defer ts.Close()
@@ -173,7 +173,7 @@ func TestVtctld_GetShard(t *testing.T) {
 		Shard:        "-",
 	})
 	c.Assert(err, qt.IsNil)
-	c.Assert(string(data), qt.Equals, `{"keyspace":"commerce","name":"-"}`)
+	c.Assert(string(data), qt.Equals, `{"tablet_controls":[{"tablet_type":"TABLET_TYPE_RDONLY","cells":["zone1"],"denied_tables":["t"]}]}`)
 }
 
 func TestVtctld_ListKeyspaces(t *testing.T) {

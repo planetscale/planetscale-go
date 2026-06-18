@@ -17,6 +17,7 @@ type VtctldService interface {
 	ListKeyspaces(context.Context, *VtctldListKeyspacesRequest) (json.RawMessage, error)
 	GetRoutingRules(context.Context, *VtctldGetRoutingRulesRequest) (json.RawMessage, error)
 	GetShard(context.Context, *VtctldGetShardRequest) (json.RawMessage, error)
+	SetShardTabletControl(context.Context, *VtctldSetShardTabletControlRequest) (json.RawMessage, error)
 	ListTablets(context.Context, *ListBranchTabletsRequest) ([]*TabletGroup, error)
 	StartWorkflow(context.Context, *VtctldStartWorkflowRequest) (json.RawMessage, error)
 	StopWorkflow(context.Context, *VtctldStopWorkflowRequest) (json.RawMessage, error)
@@ -58,6 +59,22 @@ type VtctldGetShardRequest struct {
 	Branch       string `json:"-"`
 	Keyspace     string `json:"-"`
 	Shard        string `json:"-"`
+}
+
+// VtctldSetShardTabletControlRequest is a request for updating shard tablet
+// controls via vtctld.
+type VtctldSetShardTabletControlRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+
+	Keyspace            string   `json:"keyspace"`
+	Shard               string   `json:"shard"`
+	TabletType          string   `json:"tablet_type"`
+	Cells               []string `json:"cells,omitempty"`
+	DeniedTables        []string `json:"denied_tables,omitempty"`
+	Remove              *bool    `json:"remove,omitempty"`
+	DisableQueryService *bool    `json:"disable_query_service,omitempty"`
 }
 
 // VtctldStartWorkflowRequest is a request for starting a workflow.
@@ -164,6 +181,10 @@ func vtctldRoutingRulesAPIPath(org, db, branch string) string {
 
 func vtctldShardAPIPath(org, db, branch string) string {
 	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "shard")
+}
+
+func vtctldShardTabletControlAPIPath(org, db, branch string) string {
+	return path.Join(databaseBranchAPIPath(org, db, branch), "vtctld", "shard", "tablet-control")
 }
 
 func (s *vtctldService) ListWorkflows(ctx context.Context, req *VtctldListWorkflowsRequest) (json.RawMessage, error) {
@@ -273,6 +294,20 @@ func (s *vtctldService) GetThrottlerStatus(ctx context.Context, req *VtctldGetTh
 	v := url.Values{}
 	v.Set("tablet_alias", req.TabletAlias)
 	httpReq, err := s.client.newRequest(http.MethodGet, p, nil, WithQueryParams(v))
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+	resp := &vtctldDataResponse{}
+	if err := s.client.do(ctx, httpReq, resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+// SetShardTabletControl updates tablet controls on a shard via vtctld.
+func (s *vtctldService) SetShardTabletControl(ctx context.Context, req *VtctldSetShardTabletControlRequest) (json.RawMessage, error) {
+	p := vtctldShardTabletControlAPIPath(req.Organization, req.Database, req.Branch)
+	httpReq, err := s.client.newRequest(http.MethodPut, p, req)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

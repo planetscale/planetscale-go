@@ -262,6 +262,13 @@ func (p *postgresBranchesService) Resize(ctx context.Context, resizeReq *ResizeP
 		return nil, err
 	}
 
+	// A 204 No Content response (requested configuration already matches the
+	// current one) leaves the body, and therefore the ID, empty. Surface that
+	// as a nil change request so callers can detect the no-op.
+	if change.ID == "" {
+		return nil, nil
+	}
+
 	return change, nil
 }
 

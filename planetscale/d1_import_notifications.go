@@ -3,7 +3,6 @@ package planetscale
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"path"
 )
@@ -71,20 +70,5 @@ func (s *d1ImportNotificationsService) Create(ctx context.Context, req *CreateD1
 		return err
 	}
 
-	httpReq = httpReq.WithContext(ctx)
-	res, err := s.client.client.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode >= 400 {
-		out, readErr := io.ReadAll(res.Body)
-		if readErr != nil {
-			return readErr
-		}
-		return fmt.Errorf("create d1 import notification: status %d: %s", res.StatusCode, string(out))
-	}
-
-	return nil
+	return s.client.do(ctx, httpReq, nil)
 }

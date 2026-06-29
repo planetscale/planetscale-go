@@ -69,3 +69,29 @@ func TestD1ImportNotifications_CreateOmitsEmptyBranchName(t *testing.T) {
 	})
 	c.Assert(err, qt.IsNil)
 }
+
+func TestD1ImportNotifications_CreateError(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, err := w.Write([]byte(`{"code":"not_found","message":"Not Found"}`))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	err = client.D1ImportNotifications.Create(context.Background(), &CreateD1ImportNotificationRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		MigrationID:  "abc123",
+		Event:        "start",
+	})
+
+	wantError := &Error{
+		msg:  "Not Found",
+		Code: ErrNotFound,
+	}
+	c.Assert(err.Error(), qt.Equals, wantError.Error())
+}

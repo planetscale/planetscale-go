@@ -21,7 +21,7 @@ func TestD1ImportNotifications_Create(t *testing.T) {
 		err := json.NewDecoder(r.Body).Decode(&body)
 		c.Assert(err, qt.IsNil)
 		c.Assert(body.MigrationID, qt.Equals, "abc123")
-		c.Assert(body.Event, qt.Equals, "start")
+		c.Assert(body.Event, qt.Equals, "imported")
 		c.Assert(body.BranchName, qt.Equals, "main")
 		c.Assert(body.Method, qt.Equals, "pgloader")
 		c.Assert(body.ExportBytes, qt.Equals, int64(1024))
@@ -38,10 +38,41 @@ func TestD1ImportNotifications_Create(t *testing.T) {
 		Database:     "my-db",
 		BranchName:   "main",
 		MigrationID:  "abc123",
-		Event:        "start",
+		Event:        "imported",
 		Method:       "pgloader",
 		ExportBytes:  1024,
 		TableCount:   3,
+	})
+	c.Assert(err, qt.IsNil)
+}
+
+func TestD1ImportNotifications_CreateProgressWithStageAndMessage(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body createD1ImportNotificationRequest
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body.Event, qt.Equals, "progress")
+		c.Assert(body.Method, qt.Equals, "pgloader")
+		c.Assert(body.Stage, qt.Equals, "sqlite_staging")
+		c.Assert(body.Message, qt.Equals, "Staging SQLite database from export...")
+		c.Assert(body.Error, qt.Equals, "")
+
+		w.WriteHeader(http.StatusAccepted)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	err = client.D1ImportNotifications.Create(context.Background(), &CreateD1ImportNotificationRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		MigrationID:  "abc123",
+		Event:        "progress",
+		Method:       "pgloader",
+		Stage:        "sqlite_staging",
+		Message:      "Staging SQLite database from export...",
 	})
 	c.Assert(err, qt.IsNil)
 }
@@ -86,7 +117,7 @@ func TestD1ImportNotifications_CreateError(t *testing.T) {
 		Organization: "my-org",
 		Database:     "my-db",
 		MigrationID:  "abc123",
-		Event:        "start",
+		Event:        "imported",
 	})
 
 	wantError := &Error{

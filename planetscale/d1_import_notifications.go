@@ -23,6 +23,9 @@ type CreateD1ImportNotificationRequest struct {
 	Matched      *bool
 	DurationMs   int64
 	Error        string
+	ErrorCode    string
+	Stage        string
+	Message      string
 }
 
 type createD1ImportNotificationRequest struct {
@@ -35,6 +38,9 @@ type createD1ImportNotificationRequest struct {
 	Matched     *bool  `json:"matched,omitempty"`
 	DurationMs  int64  `json:"duration_ms,omitempty"`
 	Error       string `json:"error,omitempty"`
+	ErrorCode   string `json:"error_code,omitempty"`
+	Stage       string `json:"stage,omitempty"`
+	Message     string `json:"message,omitempty"`
 }
 
 type d1ImportNotificationsService struct {
@@ -62,6 +68,9 @@ func (s *d1ImportNotificationsService) Create(ctx context.Context, req *CreateD1
 		Matched:     req.Matched,
 		DurationMs:  req.DurationMs,
 		Error:       req.Error,
+		ErrorCode:   req.ErrorCode,
+		Stage:       req.Stage,
+		Message:     req.Message,
 	}
 
 	p := path.Join("internal/organizations", req.Organization, "databases", req.Database, "d1-import-notifications")

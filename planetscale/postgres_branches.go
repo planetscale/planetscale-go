@@ -67,6 +67,40 @@ type DeletePostgresBranchRequest struct {
 	DeleteDescendants bool
 }
 
+// ResizePostgresBranchRequest encapsulates the request to resize a Postgres
+// branch's cluster (and optionally change its replica count).
+type ResizePostgresBranchRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Branch       string `json:"-"`
+
+	// ClusterSize is the fully-qualified cluster size SKU name to resize to,
+	// e.g. "PS_10_GCP_X86". Use the values returned by ListClusterSKUs.
+	ClusterSize string `json:"cluster_size,omitempty"`
+	// Replicas is the desired number of replicas. Nil leaves it unchanged.
+	Replicas *int `json:"replicas,omitempty"`
+}
+
+// PostgresBranchClusterResizeRequest represents an asynchronous Postgres branch
+// cluster change (resize) request.
+type PostgresBranchClusterResizeRequest struct {
+	ID    string `json:"id"`
+	State string `json:"state"`
+
+	ClusterName        string `json:"cluster_name"`
+	ClusterDisplayName string `json:"cluster_display_name"`
+	Replicas           int    `json:"replicas"`
+
+	PreviousClusterName        string `json:"previous_cluster_name"`
+	PreviousClusterDisplayName string `json:"previous_cluster_display_name"`
+	PreviousReplicas           int    `json:"previous_replicas"`
+
+	StartedAt   *time.Time `json:"started_at"`
+	CompletedAt *time.Time `json:"completed_at"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
 // PostgresBranchSchemaRequest encapsulates the request to get the schema of a Postgres branch.
 type PostgresBranchSchemaRequest struct {
 	Organization string
@@ -94,6 +128,7 @@ type PostgresBranchesService interface {
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
+	Resize(context.Context, *ResizePostgresBranchRequest) (*PostgresBranchClusterResizeRequest, error)
 }
 
 type postgresBranchesService struct {
@@ -208,6 +243,33 @@ func (p *postgresBranchesService) ListClusterSKUs(ctx context.Context, listReq *
 	}
 
 	return clusterSKUs, nil
+}
+
+// Resize starts an asynchronous resize of a Postgres branch's cluster (and
+// optionally changes its replica count). It returns the resulting change
+// request, whose State can be polled via the branch changes API. A nil change
+// request is returned when the requested configuration matches the current one
+// (the API responds 204 No Content).
+func (p *postgresBranchesService) Resize(ctx context.Context, resizeReq *ResizePostgresBranchRequest) (*PostgresBranchClusterResizeRequest, error) {
+	path := path.Join(postgresBranchAPIPath(resizeReq.Organization, resizeReq.Database, resizeReq.Branch), "changes")
+	req, err := p.client.newRequest(http.MethodPatch, path, resizeReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	change := &PostgresBranchClusterResizeRequest{}
+	if err := p.client.do(ctx, req, change); err != nil {
+		return nil, err
+	}
+
+	// A 204 No Content response (requested configuration already matches the
+	// current one) leaves the body, and therefore the ID, empty. Surface that
+	// as a nil change request so callers can detect the no-op.
+	if change.ID == "" {
+		return nil, nil
+	}
+
+	return change, nil
 }
 
 // Schema returns the schema for the specified Postgres branch.

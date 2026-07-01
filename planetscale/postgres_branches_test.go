@@ -326,6 +326,72 @@ func TestPostgresBranches_ListClusterSKUs(t *testing.T) {
 	c.Assert(skus, qt.DeepEquals, want)
 }
 
+func TestPostgresBranches_Resize(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes")
+
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["cluster_size"], qt.Equals, "PS_10_GCP_X86")
+		// Replicas is unset, so it must be omitted from the request body.
+		_, hasReplicas := body["replicas"]
+		c.Assert(hasReplicas, qt.IsFalse)
+
+		w.WriteHeader(200)
+		out := `{"id":"resize-1","state":"queued","cluster_name":"PS_10_GCP_X86","cluster_display_name":"PS-10","replicas":0,"previous_cluster_name":"PS_5_GCP_X86","previous_cluster_display_name":"PS-5","previous_replicas":0,"created_at":"2026-06-24T10:19:23.000Z","updated_at":"2026-06-24T10:19:23.000Z"}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	change, err := client.PostgresBranches.Resize(ctx, &ResizePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		ClusterSize:  "PS_10_GCP_X86",
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(change.ID, qt.Equals, "resize-1")
+	c.Assert(change.State, qt.Equals, "queued")
+	c.Assert(change.ClusterName, qt.Equals, "PS_10_GCP_X86")
+	c.Assert(change.PreviousClusterName, qt.Equals, "PS_5_GCP_X86")
+}
+
+func TestPostgresBranches_ResizeNoOp(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes")
+		// The requested configuration already matches: 204 No Content.
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+
+	change, err := client.PostgresBranches.Resize(ctx, &ResizePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		ClusterSize:  "PS_5_GCP_X86",
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(change, qt.IsNil)
+}
+
 func TestPostgresBranches_CreateWithStorage(t *testing.T) {
 	c := qt.New(t)
 

@@ -10,14 +10,15 @@ import (
 
 // PostgresRole represents a PostgreSQL role in PlanetScale.
 type PostgresRole struct {
-	ID            string    `json:"id"`
-	Name          string    `json:"name"`
-	AccessHostURL string    `json:"access_host_url"`
-	DatabaseName  string    `json:"database_name"`
-	Password      string    `json:"password"`
-	Actor         Actor     `json:"actor"`
-	Username      string    `json:"username"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID              string    `json:"id"`
+	Name            string    `json:"name"`
+	AccessHostURL   string    `json:"access_host_url"`
+	DatabaseName    string    `json:"database_name"`
+	Password        string    `json:"password"`
+	Actor           Actor     `json:"actor"`
+	Username        string    `json:"username"`
+	WithReplication bool      `json:"with_replication"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type postgresRolesResponse struct {
@@ -41,12 +42,13 @@ type GetPostgresRoleRequest struct {
 
 // CreatePostgresRoleRequest encapsulates the request for creating role credentials for a database branch.
 type CreatePostgresRoleRequest struct {
-	Organization   string   `json:"-"`
-	Database       string   `json:"-"`
-	Branch         string   `json:"-"`
-	Name           string   `json:"name"`
-	TTL            int      `json:"ttl,omitempty"`
-	InheritedRoles []string `json:"inherited_roles,omitempty"`
+	Organization    string   `json:"-"`
+	Database        string   `json:"-"`
+	Branch          string   `json:"-"`
+	Name            string   `json:"name"`
+	TTL             int      `json:"ttl,omitempty"`
+	InheritedRoles  []string `json:"inherited_roles,omitempty"`
+	WithReplication bool     `json:"with_replication,omitempty"`
 }
 
 // UpdatePostgresRoleRequest encapsulates the request for updating a role name for a database branch.

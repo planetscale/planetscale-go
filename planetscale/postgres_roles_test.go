@@ -218,6 +218,7 @@ func TestPostgresRoles_Get(t *testing.T) {
     "database_name": "test-db",
     "password": "secret-password",
     "username": "test-user",
+    "with_replication": true,
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testRoleID)
 		_, err := w.Write([]byte(out))
@@ -240,13 +241,14 @@ func TestPostgresRoles_Get(t *testing.T) {
 	})
 
 	want := &PostgresRole{
-		ID:            testRoleID,
-		Name:          "test-role",
-		AccessHostURL: "test.planetscale.com",
-		DatabaseName:  "test-db",
-		Password:      "secret-password",
-		Username:      "test-user",
-		CreatedAt:     time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		ID:              testRoleID,
+		Name:            "test-role",
+		AccessHostURL:   "test.planetscale.com",
+		DatabaseName:    "test-db",
+		Password:        "secret-password",
+		Username:        "test-user",
+		WithReplication: true,
+		CreatedAt:       time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)
@@ -269,6 +271,7 @@ func TestPostgresRoles_Create(t *testing.T) {
 		c.Assert(reqBody.Name, qt.Equals, "new-role")
 		c.Assert(reqBody.TTL, qt.Equals, 3600)
 		c.Assert(reqBody.InheritedRoles, qt.DeepEquals, []string{"pg_read_all_data", "pg_write_all_data"})
+		c.Assert(reqBody.WithReplication, qt.Equals, true)
 
 		w.WriteHeader(200)
 		out := fmt.Sprintf(`{
@@ -278,6 +281,7 @@ func TestPostgresRoles_Create(t *testing.T) {
     "database_name": "test-db",
     "password": "generated-password",
     "username": "new-user",
+    "with_replication": true,
     "created_at": "2021-01-14T10:19:23.000Z"
 }`, testRoleID)
 		_, writeErr := w.Write([]byte(out))
@@ -293,22 +297,24 @@ func TestPostgresRoles_Create(t *testing.T) {
 	branch := "my-branch"
 
 	role, err := client.PostgresRoles.Create(ctx, &CreatePostgresRoleRequest{
-		Organization:   org,
-		Database:       db,
-		Branch:         branch,
-		Name:           "new-role",
-		TTL:            3600,
-		InheritedRoles: []string{"pg_read_all_data", "pg_write_all_data"},
+		Organization:    org,
+		Database:        db,
+		Branch:          branch,
+		Name:            "new-role",
+		TTL:             3600,
+		InheritedRoles:  []string{"pg_read_all_data", "pg_write_all_data"},
+		WithReplication: true,
 	})
 
 	want := &PostgresRole{
-		ID:            testRoleID,
-		Name:          "new-role",
-		AccessHostURL: "test.planetscale.com",
-		DatabaseName:  "test-db",
-		Password:      "generated-password",
-		Username:      "new-user",
-		CreatedAt:     time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
+		ID:              testRoleID,
+		Name:            "new-role",
+		AccessHostURL:   "test.planetscale.com",
+		DatabaseName:    "test-db",
+		Password:        "generated-password",
+		Username:        "new-user",
+		WithReplication: true,
+		CreatedAt:       time.Date(2021, time.January, 14, 10, 19, 23, 0, time.UTC),
 	}
 
 	c.Assert(err, qt.IsNil)

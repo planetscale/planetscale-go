@@ -35,13 +35,13 @@ type postgresBranchesResponse struct {
 
 // CreatePostgresBranchRequest encapsulates the request to create a Postgres branch.
 type CreatePostgresBranchRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Region       string `json:"region,omitempty"`
-	Name         string `json:"name"`
-	ParentBranch string `json:"parent_branch"`
-	BackupID     string `json:"backup_id,omitempty"`
-	ClusterName  string `json:"cluster_name,omitempty"`
+	Organization string         `json:"-"`
+	Database     string         `json:"-"`
+	Region       string         `json:"region,omitempty"`
+	Name         string         `json:"name"`
+	ParentBranch string         `json:"parent_branch"`
+	BackupID     string         `json:"backup_id,omitempty"`
+	ClusterName  string         `json:"cluster_name,omitempty"`
 	MajorVersion string         `json:"major_version,omitempty"`
 	Storage      *StorageConfig `json:"storage,omitempty"`
 }

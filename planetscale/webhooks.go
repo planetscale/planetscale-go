@@ -175,4 +175,3 @@ func webhookAPIPath(org, db, id string) string {
 func webhookTestAPIPath(org, db, id string) string {
 	return path.Join(webhookAPIPath(org, db, id), "test")
 }
-

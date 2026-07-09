@@ -12,8 +12,7 @@ Go package to access the PlanetScale API.
 > `github.com/planetscale/planetscale-go/planetscale` as before. However,
 > please do not open pull requests that change the client code here, since the
 > next sync would overwrite them. Code contributions belong in the
-> [cli repository](https://github.com/planetscale/cli). Bug reports and
-> feature requests are welcome as issues on either repo.
+> [cli repository](https://github.com/planetscale/cli).
 
 ## Install
 

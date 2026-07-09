@@ -37,6 +37,7 @@ type MoveTablesCreateRequest struct {
 	DeferSecondaryKeys           *bool    `json:"defer_secondary_keys,omitempty"`
 	OnDDL                        string   `json:"on_ddl,omitempty"`
 	ShardedAutoIncrementHandling string   `json:"sharded_auto_increment_handling,omitempty"`
+	GlobalKeyspace               string   `json:"global_keyspace,omitempty"`
 	SourceTimeZone               string   `json:"source_time_zone,omitempty"`
 	TenantID                     string   `json:"tenant_id,omitempty"`
 	Cells                        []string `json:"cells,omitempty"`

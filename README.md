@@ -2,6 +2,18 @@
 
 Go package to access the PlanetScale API.
 
+> [!NOTE]
+> This repository is a read-only mirror. The client is developed in the
+> [pscale CLI repository](https://github.com/planetscale/cli) at
+> `internal/planetscale/` and synced here automatically, so external users of
+> this module keep getting updates through the usual tagged releases.
+>
+> The module remains fully supported: keep importing
+> `github.com/planetscale/planetscale-go/planetscale` as before. However,
+> please do not open pull requests that change the client code here, since the
+> next sync would overwrite them. Code contributions belong in the
+> [cli repository](https://github.com/planetscale/cli).
+
 ## Install
 
 ```

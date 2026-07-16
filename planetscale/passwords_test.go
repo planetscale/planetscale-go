@@ -273,6 +273,28 @@ func TestPasswords_ListWithPagination(t *testing.T) {
 	c.Assert(passwords, qt.DeepEquals, want)
 }
 
+func TestPasswords_ListWithFilters(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("q"), qt.Equals, "production")
+		c.Assert(r.URL.Query().Get("status"), qt.Equals, "renewable")
+		_, err := w.Write([]byte(`{"data":[]}`))
+		c.Assert(err, qt.IsNil)
+	}))
+	defer ts.Close()
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	_, err = client.Passwords.List(context.Background(), &ListDatabaseBranchPasswordRequest{
+		Organization: "my-org",
+		Database:     "my-db",
+		Branch:       "my-branch",
+	}, WithSearch("production"), WithStatus("renewable"))
+	c.Assert(err, qt.IsNil)
+}
+
 func TestPasswords_Get(t *testing.T) {
 	c := qt.New(t)
 

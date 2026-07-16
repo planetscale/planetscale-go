@@ -176,6 +176,52 @@ func TestDo(t *testing.T) {
 	}
 }
 
+func TestHandleResponse_UsesStatusCodeForInvalidNotFoundBody(t *testing.T) {
+	tests := []struct {
+		desc string
+		body string
+	}{
+		{
+			desc: "empty object",
+			body: `{}`,
+		},
+		{
+			desc: "malformed json",
+			body: `not-json`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			c := qt.New(t)
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+				_, err := w.Write([]byte(tt.body))
+				c.Assert(err, qt.IsNil)
+			}))
+			t.Cleanup(ts.Close)
+
+			client, err := NewClient(WithBaseURL(ts.URL))
+			c.Assert(err, qt.IsNil)
+
+			req, err := client.newRequest(http.MethodGet, "/api-endpoint", nil)
+			c.Assert(err, qt.IsNil)
+
+			res, err := client.client.Do(req)
+			c.Assert(err, qt.IsNil)
+			defer res.Body.Close()
+
+			err = client.handleResponse(context.Background(), res, nil)
+			c.Assert(err, qt.Not(qt.IsNil))
+
+			perr, ok := err.(*Error)
+			c.Assert(ok, qt.IsTrue)
+			c.Assert(perr.Code, qt.Equals, ErrNotFound)
+			c.Assert(perr.Error(), qt.Equals, http.StatusText(http.StatusNotFound))
+		})
+	}
+}
+
 func Pointer[K any](val K) *K {
 	return &val
 }

@@ -67,8 +67,10 @@ type DeletePostgresBranchRequest struct {
 	DeleteDescendants bool
 }
 
-// ResizePostgresBranchRequest encapsulates the request to resize a Postgres
-// branch's cluster (and optionally change its replica count).
+// ResizePostgresBranchRequest encapsulates the request to change a Postgres
+// branch's cluster: its size, replica count, and/or configuration parameters.
+// All change kinds are upserted into a single asynchronous change request via
+// the branch changes API.
 type ResizePostgresBranchRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
@@ -79,6 +81,10 @@ type ResizePostgresBranchRequest struct {
 	ClusterSize string `json:"cluster_size,omitempty"`
 	// Replicas is the desired number of replicas. Nil leaves it unchanged.
 	Replicas *int `json:"replicas,omitempty"`
+	// Parameters holds configuration parameter values nested by namespace,
+	// e.g. {"pgconf": {"max_connections": "200"}}. Use the values returned by
+	// ListParameters. Nil leaves parameters unchanged.
+	Parameters map[string]map[string]string `json:"parameters,omitempty"`
 }
 
 // PostgresBranchClusterResizeRequest represents an asynchronous Postgres branch
@@ -95,10 +101,101 @@ type PostgresBranchClusterResizeRequest struct {
 	PreviousClusterDisplayName string `json:"previous_cluster_display_name"`
 	PreviousReplicas           int    `json:"previous_replicas"`
 
+	// Parameters and PreviousParameters are configuration parameter values
+	// nested by namespace. Values are left untyped since the API returns
+	// strings, numbers, and booleans depending on the parameter type.
+	Parameters         map[string]map[string]any `json:"parameters"`
+	PreviousParameters map[string]map[string]any `json:"previous_parameters"`
+
 	StartedAt   *time.Time `json:"started_at"`
 	CompletedAt *time.Time `json:"completed_at"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
+// Terminal states for a PostgresBranchClusterResizeRequest. Non-terminal
+// states are "queued", "pending", and "resizing".
+const (
+	PostgresBranchChangeStateCompleted = "completed"
+	PostgresBranchChangeStateCanceled  = "canceled"
+)
+
+// Finished reports whether the change request reached a terminal state.
+func (r *PostgresBranchClusterResizeRequest) Finished() bool {
+	return r.State == PostgresBranchChangeStateCompleted || r.State == PostgresBranchChangeStateCanceled
+}
+
+// ListPostgresBranchChangesRequest encapsulates the request to list change
+// requests for a Postgres branch.
+type ListPostgresBranchChangesRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
+
+// GetPostgresBranchChangeRequest encapsulates the request to get a single
+// change request for a Postgres branch.
+type GetPostgresBranchChangeRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+	ID           string
+}
+
+// CancelPostgresBranchChangesRequest encapsulates the request to cancel the
+// queued change requests for a Postgres branch.
+type CancelPostgresBranchChangesRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
+
+type postgresBranchChangesResponse struct {
+	Changes []*PostgresBranchClusterResizeRequest `json:"data"`
+}
+
+// ListPostgresParametersRequest encapsulates the request to list the
+// configuration parameters of a Postgres branch.
+type ListPostgresParametersRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+
+	// Extension filters parameters by whether they configure an extension.
+	// Nil returns both.
+	Extension *bool
+	// Internal filters parameters by whether they are internal (immutable).
+	// Nil returns both.
+	Internal *bool
+}
+
+// PostgresParameter represents a configuration parameter of a Postgres branch.
+type PostgresParameter struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	DisplayName   string `json:"display_name"`
+	Namespace     string `json:"namespace"`
+	Category      string `json:"category"`
+	Description   string `json:"description"`
+	Extension     bool   `json:"extension"`
+	Immutable     bool   `json:"immutable"`
+	ParameterType string `json:"parameter_type"`
+	DefaultValue  any    `json:"default_value"`
+	Value         any    `json:"value"`
+	Required      bool   `json:"required"`
+	Restart       bool   `json:"restart"`
+
+	// Min, Max, and Step are numbers for plain numeric parameters but strings
+	// for byte- and time-typed ones (e.g. "8kB", "10s").
+	Max     any      `json:"max,omitempty"`
+	Min     any      `json:"min,omitempty"`
+	Step    any      `json:"step,omitempty"`
+	Options []string `json:"options,omitempty"`
+	Units   []string `json:"units,omitempty"`
+	URL     string   `json:"url"`
+
+	CreatedAt *time.Time `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // PostgresBranchSchemaRequest encapsulates the request to get the schema of a Postgres branch.
@@ -129,6 +226,10 @@ type PostgresBranchesService interface {
 	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
 	Resize(context.Context, *ResizePostgresBranchRequest) (*PostgresBranchClusterResizeRequest, error)
+	ListChanges(context.Context, *ListPostgresBranchChangesRequest) ([]*PostgresBranchClusterResizeRequest, error)
+	GetChange(context.Context, *GetPostgresBranchChangeRequest) (*PostgresBranchClusterResizeRequest, error)
+	CancelChanges(context.Context, *CancelPostgresBranchChangesRequest) error
+	ListParameters(context.Context, *ListPostgresParametersRequest) ([]*PostgresParameter, error)
 }
 
 type postgresBranchesService struct {
@@ -270,6 +371,80 @@ func (p *postgresBranchesService) Resize(ctx context.Context, resizeReq *ResizeP
 	}
 
 	return change, nil
+}
+
+// ListChanges returns the change requests for the specified Postgres branch,
+// most recent first.
+func (p *postgresBranchesService) ListChanges(ctx context.Context, listReq *ListPostgresBranchChangesRequest) ([]*PostgresBranchClusterResizeRequest, error) {
+	path := path.Join(postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch), "changes")
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	changes := &postgresBranchChangesResponse{}
+	if err := p.client.do(ctx, req, changes); err != nil {
+		return nil, err
+	}
+
+	return changes.Changes, nil
+}
+
+// GetChange returns a single change request for the specified Postgres branch.
+func (p *postgresBranchesService) GetChange(ctx context.Context, getReq *GetPostgresBranchChangeRequest) (*PostgresBranchClusterResizeRequest, error) {
+	path := path.Join(postgresBranchAPIPath(getReq.Organization, getReq.Database, getReq.Branch), "changes", getReq.ID)
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	change := &PostgresBranchClusterResizeRequest{}
+	if err := p.client.do(ctx, req, change); err != nil {
+		return nil, err
+	}
+
+	return change, nil
+}
+
+// CancelChanges cancels the queued change requests for the specified Postgres
+// branch.
+func (p *postgresBranchesService) CancelChanges(ctx context.Context, cancelReq *CancelPostgresBranchChangesRequest) error {
+	path := path.Join(postgresBranchAPIPath(cancelReq.Organization, cancelReq.Database, cancelReq.Branch), "changes")
+	req, err := p.client.newRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		return fmt.Errorf("error creating http request: %w", err)
+	}
+
+	return p.client.do(ctx, req, nil)
+}
+
+// ListParameters returns the configuration parameters for the specified
+// Postgres branch. Pending values from a queued change request are reflected
+// in the returned parameters.
+func (p *postgresBranchesService) ListParameters(ctx context.Context, listReq *ListPostgresParametersRequest) ([]*PostgresParameter, error) {
+	path := path.Join(postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch), "parameters")
+
+	v := url.Values{}
+	if listReq.Extension != nil {
+		v.Set("extension", fmt.Sprintf("%t", *listReq.Extension))
+	}
+	if listReq.Internal != nil {
+		v.Set("internal", fmt.Sprintf("%t", *listReq.Internal))
+	}
+
+	req, err := p.client.newRequest(http.MethodGet, path, nil, WithQueryParams(v))
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	// Unlike most list endpoints, the parameters endpoint returns a bare
+	// JSON array rather than a {"data": [...]} envelope.
+	parameters := []*PostgresParameter{}
+	if err := p.client.do(ctx, req, &parameters); err != nil {
+		return nil, err
+	}
+
+	return parameters, nil
 }
 
 // Schema returns the schema for the specified Postgres branch.

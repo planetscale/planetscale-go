@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -388,7 +389,7 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 				}
 
 				return &Error{
-					msg:  "malformed error response body received",
+					msg:  fmt.Sprintf("received HTTP %d with a malformed error response body: %s", res.StatusCode, bodySnippet(out)),
 					Code: ErrResponseMalformed,
 					Meta: map[string]string{
 						"body":        string(out),
@@ -407,6 +408,13 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 		// they can debug the issue.
 		// TODO(fatih): fix the behavior on the API side
 		if *errorRes == (errorResponse{}) {
+			// Parameter validation failures (e.g. from the branch changes
+			// endpoint) use a nested errors shape instead of {code, message}:
+			// {"errors":[{"namespace":"pgconf","name":"max_connections","errors":["..."]}]}
+			if err := parameterErrorsToError(out); err != nil {
+				return err
+			}
+
 			if statusErrCode != "" {
 				return &Error{
 					msg:  http.StatusText(res.StatusCode),
@@ -418,8 +426,10 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 				}
 			}
 
+			// Show the actual response body: it is the only clue to what went
+			// wrong, and burying it in Meta hides it from the user.
 			return &Error{
-				msg:  "internal error, response body doesn't match error type signature",
+				msg:  fmt.Sprintf("received HTTP %d with an unrecognized error response: %s", res.StatusCode, bodySnippet(out)),
 				Code: ErrInternal,
 				Meta: map[string]string{
 					"body":        string(out),
@@ -542,6 +552,60 @@ type serviceTokenTransport struct {
 	rt        http.RoundTripper
 	token     string
 	tokenName string
+}
+
+// bodySnippet collapses an HTTP response body to a short single line so it
+// can be included in an error message without flooding the terminal.
+func bodySnippet(body []byte) string {
+	s := strings.Join(strings.Fields(string(body)), " ")
+	if s == "" {
+		return "(empty body)"
+	}
+	const max = 300
+	if len(s) > max {
+		s = s[:max] + "..."
+	}
+	return s
+}
+
+// parameterErrorsToError converts the parameter validation error shape
+// returned by the branch changes endpoint into an Error. It returns nil when
+// the body does not match that shape.
+func parameterErrorsToError(body []byte) error {
+	var res struct {
+		Errors []struct {
+			Namespace string   `json:"namespace"`
+			Name      string   `json:"name"`
+			Errors    []string `json:"errors"`
+		} `json:"errors"`
+	}
+	if err := json.Unmarshal(body, &res); err != nil || len(res.Errors) == 0 {
+		return nil
+	}
+
+	var msgs []string
+	for _, e := range res.Errors {
+		// Skip elements that don't match the parameter error shape rather
+		// than discarding messages already collected from valid ones.
+		if e.Name == "" || len(e.Errors) == 0 {
+			continue
+		}
+		key := e.Name
+		if e.Namespace != "" {
+			key = e.Namespace + "." + e.Name
+		}
+		for _, msg := range e.Errors {
+			msgs = append(msgs, key+": "+msg)
+		}
+	}
+	if len(msgs) == 0 {
+		return nil
+	}
+
+	return &Error{
+		msg:  strings.Join(msgs, "; "),
+		Code: ErrInvalid,
+	}
 }
 
 func errorCodeForHTTPStatus(statusCode int) ErrorCode {

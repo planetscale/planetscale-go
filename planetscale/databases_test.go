@@ -438,7 +438,8 @@ func TestDatabases_List_malformed_response(t *testing.T) {
 	})
 
 	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err, qt.ErrorMatches, `malformed error response body received`)
+	c.Assert(err.Error(), qt.Contains, "received HTTP 400 with a malformed error response body")
+	c.Assert(err.Error(), qt.Contains, "400 Bad Request")
 }
 
 func TestDatabases_Empty(t *testing.T) {

@@ -3,6 +3,7 @@ package planetscale
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -390,6 +391,225 @@ func TestPostgresBranches_ResizeNoOp(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(change, qt.IsNil)
+}
+
+func TestPostgresBranches_ResizeWithParameters(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes")
+
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+
+		// Cluster size is unset, so it must be omitted from the request body.
+		_, hasClusterSize := body["cluster_size"]
+		c.Assert(hasClusterSize, qt.IsFalse)
+
+		parameters, ok := body["parameters"].(map[string]any)
+		c.Assert(ok, qt.IsTrue, qt.Commentf("parameters should be a nested object"))
+		pgconf, ok := parameters["pgconf"].(map[string]any)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(pgconf["max_connections"], qt.Equals, "200")
+
+		w.WriteHeader(200)
+		out := `{"id":"change-1","state":"queued","parameters":{"pgconf":{"max_connections":"200"}},"previous_parameters":{"pgconf":{"max_connections":"100"}},"created_at":"2026-06-24T10:19:23.000Z","updated_at":"2026-06-24T10:19:23.000Z"}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	change, err := client.PostgresBranches.Resize(context.Background(), &ResizePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		Parameters: map[string]map[string]string{
+			"pgconf": {"max_connections": "200"},
+		},
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(change.ID, qt.Equals, "change-1")
+	c.Assert(change.Parameters, qt.DeepEquals, map[string]map[string]any{"pgconf": {"max_connections": "200"}})
+	c.Assert(change.PreviousParameters, qt.DeepEquals, map[string]map[string]any{"pgconf": {"max_connections": "100"}})
+}
+
+func TestPostgresBranches_ListChanges(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes")
+
+		w.WriteHeader(200)
+		out := `{"data":[{"id":"change-2","state":"queued","created_at":"2026-06-24T10:19:23.000Z","updated_at":"2026-06-24T10:19:23.000Z"},{"id":"change-1","state":"completed","created_at":"2026-06-23T10:19:23.000Z","updated_at":"2026-06-23T10:19:23.000Z"}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	changes, err := client.PostgresBranches.ListChanges(context.Background(), &ListPostgresBranchChangesRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(changes, qt.HasLen, 2)
+	c.Assert(changes[0].ID, qt.Equals, "change-2")
+	c.Assert(changes[0].Finished(), qt.IsFalse)
+	c.Assert(changes[1].ID, qt.Equals, "change-1")
+	c.Assert(changes[1].Finished(), qt.IsTrue)
+}
+
+func TestPostgresBranches_GetChange(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes/change-1")
+
+		w.WriteHeader(200)
+		out := `{"id":"change-1","state":"resizing","created_at":"2026-06-24T10:19:23.000Z","updated_at":"2026-06-24T10:19:23.000Z"}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	change, err := client.PostgresBranches.GetChange(context.Background(), &GetPostgresBranchChangeRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		ID:           "change-1",
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(change.ID, qt.Equals, "change-1")
+	c.Assert(change.State, qt.Equals, "resizing")
+	c.Assert(change.Finished(), qt.IsFalse)
+}
+
+func TestPostgresBranches_CancelChanges(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodDelete)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/changes")
+		w.WriteHeader(204)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	err = client.PostgresBranches.CancelChanges(context.Background(), &CancelPostgresBranchChangesRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+}
+
+func TestPostgresBranches_ListParameters(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodGet)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/my-org/databases/postgres-test-db/branches/postgres-test-branch/parameters")
+		c.Assert(r.URL.Query().Has("extension"), qt.IsFalse)
+		c.Assert(r.URL.Query().Has("internal"), qt.IsFalse)
+
+		w.WriteHeader(200)
+		// The parameters endpoint returns a bare array, not a {"data": [...]} envelope.
+		out := `[{"id":"param-1","name":"max_connections","display_name":"Max connections","namespace":"pgconf","parameter_type":"integer","default_value":"100","value":"200","restart":true,"immutable":false,"min":25,"max":5000}]`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	parameters, err := client.PostgresBranches.ListParameters(context.Background(), &ListPostgresParametersRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(parameters, qt.HasLen, 1)
+	c.Assert(parameters[0].Name, qt.Equals, "max_connections")
+	c.Assert(parameters[0].Namespace, qt.Equals, "pgconf")
+	c.Assert(parameters[0].Value, qt.Equals, "200")
+	c.Assert(parameters[0].Restart, qt.IsTrue)
+	c.Assert(parameters[0].Min, qt.Equals, float64(25))
+	c.Assert(parameters[0].Max, qt.Equals, float64(5000))
+}
+
+func TestPostgresBranches_ListParametersWithFilters(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.URL.Query().Get("extension"), qt.Equals, "false")
+		c.Assert(r.URL.Query().Get("internal"), qt.Equals, "true")
+
+		w.WriteHeader(200)
+		_, err := w.Write([]byte(`[]`))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	extension := false
+	internal := true
+	parameters, err := client.PostgresBranches.ListParameters(context.Background(), &ListPostgresParametersRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		Extension:    &extension,
+		Internal:     &internal,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(parameters, qt.HasLen, 0)
+}
+
+func TestPostgresBranches_ResizeParameterValidationError(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(422)
+		out := `{"errors":[{"namespace":"pgconf","name":"max_connections","errors":["Value must be less than or equal to 100"]}]}`
+		_, err := w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	_, err = client.PostgresBranches.Resize(context.Background(), &ResizePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Branch:       testPostgresBranch,
+		Parameters: map[string]map[string]string{
+			"pgconf": {"max_connections": "200"},
+		},
+	})
+
+	c.Assert(err, qt.IsNotNil)
+	c.Assert(err.Error(), qt.Contains, "pgconf.max_connections: Value must be less than or equal to 100")
+
+	var psErr *Error
+	c.Assert(errors.As(err, &psErr), qt.IsTrue)
+	c.Assert(psErr.Code, qt.Equals, ErrInvalid)
 }
 
 func TestPostgresBranches_CreateWithStorage(t *testing.T) {

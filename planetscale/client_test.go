@@ -74,7 +74,7 @@ func TestDo(t *testing.T) {
 			method:     http.MethodGet,
 			response:   `{}`,
 			expectedError: &Error{
-				msg:  "internal error, response body doesn't match error type signature",
+				msg:  "received HTTP 500 with an unrecognized error response: {}",
 				Code: ErrInternal,
 			},
 		},

@@ -2,6 +2,8 @@ package planetscale
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -220,6 +222,162 @@ func TestHandleResponse_UsesStatusCodeForInvalidNotFoundBody(t *testing.T) {
 			c.Assert(perr.Error(), qt.Equals, http.StatusText(http.StatusNotFound))
 		})
 	}
+}
+
+func TestSameHostCheckRedirect(t *testing.T) {
+	tests := []struct {
+		name                  string
+		apiHost               string
+		redirectURL           string
+		expectUseLastResponse bool
+	}{
+		{
+			name:                  "exact same host",
+			apiHost:               "api.example.com",
+			redirectURL:           "https://api.example.com/path",
+			expectUseLastResponse: false,
+		},
+		{
+			name:                  "same host different port still same hostname",
+			apiHost:               "api.example.com",
+			redirectURL:           "https://api.example.com:443/path",
+			expectUseLastResponse: false,
+		},
+		{
+			name:                  "case-insensitive hostname match",
+			apiHost:               "API.Example.Com",
+			redirectURL:           "https://api.example.com/path",
+			expectUseLastResponse: false,
+		},
+		{
+			name:                  "sibling subdomain is not same host",
+			apiHost:               "api.planetscale.com",
+			redirectURL:           "https://evil.planetscale.com/path",
+			expectUseLastResponse: true,
+		},
+		{
+			name:                  "different domain",
+			apiHost:               "api.example.com",
+			redirectURL:           "https://attacker.tld/path",
+			expectUseLastResponse: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := qt.New(t)
+			check := makeSameHostCheckRedirect(tt.apiHost)
+
+			req, err := http.NewRequest(http.MethodGet, tt.redirectURL, nil)
+			c.Assert(err, qt.IsNil)
+
+			err = check(req, []*http.Request{})
+			if tt.expectUseLastResponse {
+				c.Assert(err, qt.Equals, http.ErrUseLastResponse)
+			} else {
+				c.Assert(err, qt.IsNil)
+			}
+		})
+	}
+}
+
+func TestClient_DoesNotSendCredentialsOnCrossHostRedirect(t *testing.T) {
+	tests := []struct {
+		name   string
+		option ClientOption
+	}{
+		{
+			name:   "access token",
+			option: WithAccessToken("secret-access-token"),
+		},
+		{
+			name:   "service token",
+			option: WithServiceToken("tid", "secret-service-token"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := qt.New(t)
+
+			attackerHits := 0
+			attacker := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attackerHits++
+				c.Assert(r.Header.Get("Authorization"), qt.Equals, "")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{"ok":true}`))
+			}))
+			t.Cleanup(attacker.Close)
+
+			// httptest serves on 127.0.0.1; rewrite the Location host to
+			// localhost so Hostname() differs while still reaching this
+			// process (same port).
+			attackerPort := attacker.Listener.Addr().(*net.TCPAddr).Port
+			attackerURL := fmt.Sprintf("http://localhost:%d/harvest", attackerPort)
+
+			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				c.Assert(r.Header.Get("Authorization"), qt.Not(qt.Equals), "")
+				http.Redirect(w, r, attackerURL, http.StatusFound)
+			}))
+			t.Cleanup(api.Close)
+
+			client, err := NewClient(WithBaseURL(api.URL), tt.option)
+			c.Assert(err, qt.IsNil)
+
+			req, err := client.newRequest(http.MethodGet, "/v1/organizations", nil)
+			c.Assert(err, qt.IsNil)
+
+			// Cross-host redirect must stop before RoundTrip attaches auth to
+			// the attacker host. ErrUseLastResponse returns the 302 with no error.
+			res, err := client.client.Do(req)
+			c.Assert(err, qt.IsNil)
+			defer res.Body.Close()
+
+			c.Assert(res.StatusCode, qt.Equals, http.StatusFound)
+			c.Assert(attackerHits, qt.Equals, 0)
+		})
+	}
+}
+
+func TestClient_FollowsSameHostRedirectWithCredentials(t *testing.T) {
+	c := qt.New(t)
+
+	var paths []string
+	var auths []string
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	mux.HandleFunc("/v1/start", func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		auths = append(auths, r.Header.Get("Authorization"))
+		http.Redirect(w, r, server.URL+"/v1/final", http.StatusFound)
+	})
+	mux.HandleFunc("/v1/final", func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		auths = append(auths, r.Header.Get("Authorization"))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"name":"ok"}`))
+	})
+
+	client, err := NewClient(WithBaseURL(server.URL), WithServiceToken("tid", "secret"))
+	c.Assert(err, qt.IsNil)
+
+	var got map[string]string
+	err = client.do(context.Background(), mustNewRequest(t, client, http.MethodGet, "/v1/start"), &got)
+	c.Assert(err, qt.IsNil)
+	c.Assert(got["name"], qt.Equals, "ok")
+	c.Assert(paths, qt.DeepEquals, []string{"/v1/start", "/v1/final"})
+	c.Assert(auths, qt.DeepEquals, []string{"tid:secret", "tid:secret"})
+}
+
+func mustNewRequest(t *testing.T, client *Client, method, path string) *http.Request {
+	t.Helper()
+	req, err := client.newRequest(method, path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return req
 }
 
 func Pointer[K any](val K) *K {

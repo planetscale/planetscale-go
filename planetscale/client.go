@@ -310,6 +310,12 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		}
 	}
 
+	// Access and service tokens are attached by RoundTrippers on every hop.
+	// net/http only strips Authorization from Request.Header on cross-host
+	// redirects, so without this policy a 3xx Location to another host would
+	// re-send credentials. Match the exact-host guard used by pscale api.
+	c.client.CheckRedirect = makeSameHostCheckRedirect(c.baseURL.Hostname())
+
 	c.AuditLogs = &auditlogsService{client: c}
 	c.Backups = &backupsService{client: c}
 	c.BranchInfrastructure = &branchInfrastructureService{client: c}
@@ -620,6 +626,29 @@ func errorCodeForHTTPStatus(statusCode int) ErrorCode {
 func (t *serviceTokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Authorization", t.tokenName+":"+t.token)
 	return t.rt.RoundTrip(req)
+}
+
+// makeSameHostCheckRedirect refuses redirects whose hostname differs from the
+// configured API host. Returning http.ErrUseLastResponse stops the credential-
+// bearing client before RoundTrip can attach Authorization to the new host.
+// Sibling subdomains (evil.example.com vs api.example.com) are treated as
+// different hosts.
+func makeSameHostCheckRedirect(apiHost string) func(req *http.Request, via []*http.Request) error {
+	apiHost = strings.ToLower(apiHost)
+	return func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+
+		originalHost := apiHost
+		if originalHost == "" && len(via) > 0 {
+			originalHost = strings.ToLower(via[0].URL.Hostname())
+		}
+		if originalHost != strings.ToLower(req.URL.Hostname()) {
+			return http.ErrUseLastResponse
+		}
+		return nil
+	}
 }
 
 // Error represents common errors originating from the Client.

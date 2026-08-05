@@ -69,6 +69,7 @@ type Client struct {
 	Processlist           ProcesslistService
 	QueryInsights         QueryInsightsService
 	QueryPatterns         QueryPatternsService
+	ReadOnlyRegions       ReadOnlyRegionsService
 	Regions               RegionsService
 	SchemaRecommendations SchemaRecommendationService
 	ServiceTokens         ServiceTokenService
@@ -337,6 +338,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresRoles = &postgresRolesService{client: c}
 	c.QueryInsights = &queryInsightsService{client: c}
 	c.QueryPatterns = &queryPatternsService{client: c}
+	c.ReadOnlyRegions = &readOnlyRegionsService{client: c}
 	c.Regions = &regionsService{client: c}
 	c.SchemaRecommendations = &schemaRecommendationService{client: c}
 	c.ServiceTokens = &serviceTokenService{client: c}
@@ -462,8 +464,9 @@ func (c *Client) handleResponse(ctx context.Context, res *http.Response, v inter
 		}
 
 		return &Error{
-			msg:  errorRes.Message,
-			Code: errCode,
+			msg:     errorRes.Message,
+			Code:    errCode,
+			APICode: errorRes.Code,
 		}
 	}
 
@@ -660,6 +663,10 @@ type Error struct {
 
 	// Code specifies the error code. i.e; NotFound, RateLimited, etc...
 	Code ErrorCode
+
+	// APICode is the raw code from the API error JSON body (e.g.
+	// "schema_mutation_blocked"). Empty when the response had no code field.
+	APICode string
 
 	// Meta contains additional information depending on the error code. As an
 	// example, if the Code is "ErrResponseMalformed", the map will be: ["body"]

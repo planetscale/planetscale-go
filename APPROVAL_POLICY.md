@@ -9,11 +9,16 @@ mechanical syncs. The client in `planetscale/cli` (`internal/planetscale`) is
 the source of truth; this repository is a read-only mirror for external module
 users.
 
-Treat a PR as a CLI sync when any of the following match:
+Treat a PR as a CLI sync only when **all** of the following match:
 
-- Author is `planetscale-cli[bot]` / `app/planetscale-cli`
+- Author is `planetscale-cli[bot]` / `app/planetscale-cli` (required; do not
+  auto-approve based on branch or title alone)
 - Head branch matches `sync-cli-*`
 - Title matches `Sync API client from cli@*`
+
+Branch and title are supporting signals for the bot-authored syncs the
+workflow creates. A human (or other bot) PR that only matches branch or
+title must not enter this auto-approve path.
 
 For these PRs:
 

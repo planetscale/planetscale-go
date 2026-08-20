@@ -54,6 +54,7 @@ type Client struct {
 	BackupPolicies        BackupPoliciesService
 	Backups               BackupsService
 	BranchInfrastructure  BranchInfrastructureService
+	BranchMaintenance     BranchMaintenanceService
 	D1ImportNotifications D1ImportNotificationsService
 	DatabaseBranches      DatabaseBranchesService
 	Databases             DatabasesService
@@ -61,7 +62,9 @@ type Client struct {
 	DeployRequests        DeployRequestsService
 	Keyspaces             KeyspacesService
 	LookupVindex          LookupVindexService
+	MaintenanceSchedules  MaintenanceSchedulesService
 	Materialize           MaterializeService
+	Metrics               MetricsService
 	MoveTables            MoveTablesService
 	Organizations         OrganizationsService
 	Passwords             PasswordsService
@@ -70,6 +73,7 @@ type Client struct {
 	PostgresBouncers      PostgresBouncersService
 	PostgresCIDRs         PostgresCIDRsService
 	PostgresRoles         PostgresRolesService
+	PostgresSwitchovers   PostgresSwitchoversService
 	Processlist           ProcesslistService
 	QueryInsights         QueryInsightsService
 	QueryPatterns         QueryPatternsService
@@ -327,6 +331,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.BackupPolicies = &backupPoliciesService{client: c}
 	c.Backups = &backupsService{client: c}
 	c.BranchInfrastructure = &branchInfrastructureService{client: c}
+	c.BranchMaintenance = &branchMaintenanceService{client: c}
 	c.D1ImportNotifications = &d1ImportNotificationsService{client: c}
 	c.DatabaseBranches = &databaseBranchesService{client: c}
 	c.Databases = &databasesService{client: c}
@@ -334,7 +339,9 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.DeployRequests = &deployRequestsService{client: c}
 	c.Keyspaces = &keyspacesService{client: c}
 	c.LookupVindex = &lookupVindexService{client: c}
+	c.MaintenanceSchedules = &maintenanceSchedulesService{client: c}
 	c.Materialize = &materializeService{client: c}
+	c.Metrics = &metricsService{client: c}
 	c.MoveTables = &moveTablesService{client: c}
 	c.Organizations = &organizationsService{client: c}
 	c.Passwords = &passwordsService{client: c}
@@ -344,6 +351,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.PostgresBouncers = &postgresBouncersService{client: c}
 	c.PostgresCIDRs = &postgresCIDRsService{client: c}
 	c.PostgresRoles = &postgresRolesService{client: c}
+	c.PostgresSwitchovers = &postgresSwitchoversService{client: c}
 	c.QueryInsights = &queryInsightsService{client: c}
 	c.QueryPatterns = &queryPatternsService{client: c}
 	c.ReadOnlyRegions = &readOnlyRegionsService{client: c}

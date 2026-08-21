@@ -4,21 +4,25 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 )
 
 // PostgresRole represents a PostgreSQL role in PlanetScale.
 type PostgresRole struct {
-	ID              string    `json:"id"`
-	Name            string    `json:"name"`
-	AccessHostURL   string    `json:"access_host_url"`
-	DatabaseName    string    `json:"database_name"`
-	Password        string    `json:"password"`
-	Actor           Actor     `json:"actor"`
-	Username        string    `json:"username"`
-	WithReplication bool      `json:"with_replication"`
-	CreatedAt       time.Time `json:"created_at"`
+	ID              string     `json:"id"`
+	Name            string     `json:"name"`
+	AccessHostURL   string     `json:"access_host_url"`
+	DatabaseName    string     `json:"database_name"`
+	Password        string     `json:"password"`
+	Actor           Actor      `json:"actor"`
+	Username        string     `json:"username"`
+	WithReplication bool       `json:"with_replication"`
+	CreatedAt       time.Time  `json:"created_at"`
+	DisabledAt      *time.Time `json:"disabled_at"`
+	ExpiresAt       *time.Time `json:"expires_at"`
+	Expired         bool       `json:"expired"`
 }
 
 type postgresRolesResponse struct {
@@ -34,10 +38,13 @@ type ListPostgresRolesRequest struct {
 
 // GetPostgresRoleRequest encapsulates the request for getting a specific role for a given database branch.
 type GetPostgresRoleRequest struct {
-	Organization string `json:"-"`
-	Database     string `json:"-"`
-	Branch       string `json:"-"`
-	RoleId       string
+	Organization    string
+	Database        string
+	Branch          string
+	RoleId          string
+	Replica         bool
+	ReadOnlyReplica string
+	Bouncer         string
 }
 
 // CreatePostgresRoleRequest encapsulates the request for creating role credentials for a database branch.
@@ -84,6 +91,13 @@ type ResetDefaultRoleRequest struct {
 	Branch       string `json:"-"`
 }
 
+// GetDefaultPostgresRoleRequest encapsulates fetching the default postgres role.
+type GetDefaultPostgresRoleRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
+
 // ResetPostgresRolePasswordRequest encapsulates the request for resetting a role's password for a database branch.
 type ResetPostgresRolePasswordRequest struct {
 	Organization string `json:"-"`
@@ -110,6 +124,7 @@ type PostgresRolesService interface {
 	Renew(context.Context, *RenewPostgresRoleRequest) (*PostgresRole, error)
 	Delete(context.Context, *DeletePostgresRoleRequest) error
 	ResetDefaultRole(context.Context, *ResetDefaultRoleRequest) (*PostgresRole, error)
+	GetDefaultRole(context.Context, *GetDefaultPostgresRoleRequest) (*PostgresRole, error)
 	ResetPassword(context.Context, *ResetPostgresRolePasswordRequest) (*PostgresRole, error)
 	ReassignObjects(context.Context, *ReassignPostgresRoleObjectsRequest) error
 }
@@ -130,6 +145,22 @@ func NewPostgresRolesService(client *Client) *postgresRolesService {
 func (p *postgresRolesService) ResetDefaultRole(ctx context.Context, resetReq *ResetDefaultRoleRequest) (*PostgresRole, error) {
 	pathStr := path.Join(postgresBranchRolesAPIPath(resetReq.Organization, resetReq.Database, resetReq.Branch), "reset-default")
 	req, err := p.client.newRequest(http.MethodPost, pathStr, resetReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	role := &PostgresRole{}
+	if err := p.client.do(ctx, req, &role); err != nil {
+		return nil, err
+	}
+
+	return role, nil
+}
+
+// GetDefaultRole returns the default postgres role for a branch without rotating credentials.
+func (p *postgresRolesService) GetDefaultRole(ctx context.Context, getReq *GetDefaultPostgresRoleRequest) (*PostgresRole, error) {
+	pathStr := path.Join(postgresBranchRolesAPIPath(getReq.Organization, getReq.Database, getReq.Branch), "default")
+	req, err := p.client.newRequest(http.MethodGet, pathStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -170,7 +201,18 @@ func (p *postgresRolesService) List(ctx context.Context, listReq *ListPostgresRo
 // Get an existing role for a database branch.
 func (p *postgresRolesService) Get(ctx context.Context, getReq *GetPostgresRoleRequest) (*PostgresRole, error) {
 	pathStr := postgresBranchRoleAPIPath(getReq.Organization, getReq.Database, getReq.Branch, getReq.RoleId)
-	req, err := p.client.newRequest(http.MethodGet, pathStr, nil)
+	query := url.Values{}
+	if getReq.Replica {
+		query.Set("replica", "true")
+	}
+	if getReq.ReadOnlyReplica != "" {
+		query.Set("read_only_replica", getReq.ReadOnlyReplica)
+	}
+	if getReq.Bouncer != "" {
+		query.Set("bouncer", getReq.Bouncer)
+	}
+
+	req, err := p.client.newRequest(http.MethodGet, pathStr, nil, WithQueryParams(query))
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}

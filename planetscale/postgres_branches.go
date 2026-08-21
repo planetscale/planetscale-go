@@ -59,6 +59,16 @@ type GetPostgresBranchRequest struct {
 	Branch       string
 }
 
+// UpdatePostgresBranchRequest encapsulates the request for updating a Postgres
+// branch's settings.
+type UpdatePostgresBranchRequest struct {
+	Organization      string `json:"-"`
+	Database          string `json:"-"`
+	Branch            string `json:"-"`
+	NewName           string `json:"new_name,omitempty"`
+	DeletionProtected *bool  `json:"deletion_protected,omitempty"`
+}
+
 // DeletePostgresBranchRequest encapsulates the request to delete a Postgres branch.
 type DeletePostgresBranchRequest struct {
 	Organization      string
@@ -198,6 +208,28 @@ type PostgresParameter struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+// ListPostgresExtensionsRequest lists extensions available on a Postgres
+// branch's cluster image.
+type ListPostgresExtensionsRequest struct {
+	Organization string
+	Database     string
+	Branch       string
+}
+
+// PostgresExtension is an extension defined on the branch's cluster image.
+// This is the catalog of what the image can load, not CREATE EXTENSION state.
+type PostgresExtension struct {
+	Type              string               `json:"type"`
+	Name              string               `json:"name"`
+	Description       string               `json:"description"`
+	Internal          bool                 `json:"internal"`
+	Loader            string               `json:"loader"`
+	URL               string               `json:"url"`
+	Available         bool                 `json:"available"`
+	UnavailableReason string               `json:"unavailable_reason"`
+	Parameters        []*PostgresParameter `json:"parameters"`
+}
+
 // PostgresBranchSchemaRequest encapsulates the request to get the schema of a Postgres branch.
 type PostgresBranchSchemaRequest struct {
 	Organization string
@@ -222,6 +254,7 @@ type PostgresBranchesService interface {
 	Create(context.Context, *CreatePostgresBranchRequest) (*PostgresBranch, error)
 	List(context.Context, *ListPostgresBranchesRequest, ...ListOption) ([]*PostgresBranch, error)
 	Get(context.Context, *GetPostgresBranchRequest) (*PostgresBranch, error)
+	Update(context.Context, *UpdatePostgresBranchRequest) (*PostgresBranch, error)
 	Delete(context.Context, *DeletePostgresBranchRequest) error
 	Schema(context.Context, *PostgresBranchSchemaRequest) ([]*PostgresBranchSchema, error)
 	ListClusterSKUs(context.Context, *ListBranchClusterSKUsRequest, ...ListOption) ([]*ClusterSKU, error)
@@ -230,6 +263,7 @@ type PostgresBranchesService interface {
 	GetChange(context.Context, *GetPostgresBranchChangeRequest) (*PostgresBranchClusterResizeRequest, error)
 	CancelChanges(context.Context, *CancelPostgresBranchChangesRequest) error
 	ListParameters(context.Context, *ListPostgresParametersRequest) ([]*PostgresParameter, error)
+	ListExtensions(context.Context, *ListPostgresExtensionsRequest) ([]*PostgresExtension, error)
 }
 
 type postgresBranchesService struct {
@@ -302,6 +336,22 @@ func (p *postgresBranchesService) Get(ctx context.Context, getReq *GetPostgresBr
 }
 
 // Delete deletes a Postgres branch from the specified organization and database.
+// Update updates a Postgres branch's settings.
+func (p *postgresBranchesService) Update(ctx context.Context, updateReq *UpdatePostgresBranchRequest) (*PostgresBranch, error) {
+	path := postgresBranchAPIPath(updateReq.Organization, updateReq.Database, updateReq.Branch)
+	req, err := p.client.newRequest(http.MethodPatch, path, updateReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	b := &PostgresBranch{}
+	if err := p.client.do(ctx, req, b); err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
 func (p *postgresBranchesService) Delete(ctx context.Context, deleteReq *DeletePostgresBranchRequest) error {
 	path := path.Join(postgresBranchesAPIPath(deleteReq.Organization, deleteReq.Database), deleteReq.Branch)
 
@@ -445,6 +495,23 @@ func (p *postgresBranchesService) ListParameters(ctx context.Context, listReq *L
 	}
 
 	return parameters, nil
+}
+
+// ListExtensions returns extensions available on the Postgres branch's cluster
+// image. The API returns a bare JSON array.
+func (p *postgresBranchesService) ListExtensions(ctx context.Context, listReq *ListPostgresExtensionsRequest) ([]*PostgresExtension, error) {
+	path := path.Join(postgresBranchAPIPath(listReq.Organization, listReq.Database, listReq.Branch), "extensions")
+	req, err := p.client.newRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	extensions := []*PostgresExtension{}
+	if err := p.client.do(ctx, req, &extensions); err != nil {
+		return nil, err
+	}
+
+	return extensions, nil
 }
 
 // Schema returns the schema for the specified Postgres branch.

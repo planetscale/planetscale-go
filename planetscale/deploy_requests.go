@@ -20,6 +20,7 @@ var _ DeployRequestsService = (*deployRequestsService)(nil)
 type DeployRequestsService interface {
 	ApplyDeploy(context.Context, *ApplyDeployRequestRequest) (*DeployRequest, error)
 	AutoApplyDeploy(context.Context, *AutoApplyDeployRequestRequest) (*DeployRequest, error)
+	AutoDeleteBranch(context.Context, *AutoDeleteBranchRequest) (*DeployRequest, error)
 	CancelDeploy(context.Context, *CancelDeployRequestRequest) (*DeployRequest, error)
 	CloseDeploy(context.Context, *CloseDeployRequestRequest) (*DeployRequest, error)
 	Create(context.Context, *CreateDeployRequestRequest) (*DeployRequest, error)
@@ -38,6 +39,7 @@ type DeployRequestsService interface {
 	UpdateThrottler(context.Context, *UpdateDeployRequestThrottlerRequest) (*DeployRequestThrottler, error)
 	SkipRevertDeploy(context.Context, *SkipRevertDeployRequestRequest) (*DeployRequest, error)
 	RevertDeploy(context.Context, *RevertDeployRequestRequest) (*DeployRequest, error)
+	UnblockDeploy(context.Context, *UnblockDeployRequestRequest) (*DeployRequest, error)
 }
 
 // DeployRequestReview posts a review to a deploy request.
@@ -290,7 +292,22 @@ type ForceCutoverDeployRequestRequest struct {
 	Number       uint64 `json:"-"`
 }
 
+// UnblockDeployRequestRequest unblocks the deploy queue after a failed deploy
+// or revert (complete_error / complete_revert_error).
+type UnblockDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+}
+
 type AutoApplyDeployRequestRequest struct {
+	Organization string `json:"-"`
+	Database     string `json:"-"`
+	Number       uint64 `json:"-"`
+	Enable       bool   `json:"-"`
+}
+
+type AutoDeleteBranchRequest struct {
 	Organization string `json:"-"`
 	Database     string `json:"-"`
 	Number       uint64 `json:"-"`
@@ -490,6 +507,22 @@ func (d *deployRequestsService) ForceCutover(ctx context.Context, forceReq *Forc
 	return drr, nil
 }
 
+// UnblockDeploy marks a failed deploy or revert complete so the queue can proceed.
+func (d *deployRequestsService) UnblockDeploy(ctx context.Context, unblockReq *UnblockDeployRequestRequest) (*DeployRequest, error) {
+	path := deployRequestActionAPIPath(unblockReq.Organization, unblockReq.Database, unblockReq.Number, "complete-deploy")
+	req, err := d.client.newRequest(http.MethodPost, path, unblockReq)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	drr := &DeployRequest{}
+	if err := d.client.do(ctx, req, &drr); err != nil {
+		return nil, err
+	}
+
+	return drr, nil
+}
+
 func (d *deployRequestsService) AutoApplyDeploy(ctx context.Context, autoApplyReq *AutoApplyDeployRequestRequest) (*DeployRequest, error) {
 	reqBody := struct {
 		Enable bool `json:"enable"`
@@ -498,6 +531,27 @@ func (d *deployRequestsService) AutoApplyDeploy(ctx context.Context, autoApplyRe
 	}
 
 	path := deployRequestActionAPIPath(autoApplyReq.Organization, autoApplyReq.Database, autoApplyReq.Number, "auto-apply")
+	req, err := d.client.newRequest(http.MethodPut, path, reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("error creating http request: %w", err)
+	}
+
+	drr := &DeployRequest{}
+	if err := d.client.do(ctx, req, &drr); err != nil {
+		return nil, err
+	}
+
+	return drr, nil
+}
+
+func (d *deployRequestsService) AutoDeleteBranch(ctx context.Context, autoDeleteReq *AutoDeleteBranchRequest) (*DeployRequest, error) {
+	reqBody := struct {
+		Enable bool `json:"enable"`
+	}{
+		Enable: autoDeleteReq.Enable,
+	}
+
+	path := deployRequestActionAPIPath(autoDeleteReq.Organization, autoDeleteReq.Database, autoDeleteReq.Number, "auto-delete-branch")
 	req, err := d.client.newRequest(http.MethodPut, path, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)

@@ -18,6 +18,11 @@ func TestPostgresBranches_Create(t *testing.T) {
 	c := qt.New(t)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		c.Assert(json.NewDecoder(r.Body).Decode(&body), qt.IsNil)
+		_, hasReplicas := body["replicas"]
+		c.Assert(hasReplicas, qt.IsFalse)
+
 		w.WriteHeader(200)
 		out := `{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": {"slug": "us-west", "display_name": "US West"}}`
 		_, err := w.Write([]byte(out))
@@ -52,6 +57,36 @@ func TestPostgresBranches_Create(t *testing.T) {
 
 	c.Assert(err, qt.IsNil)
 	c.Assert(branch, qt.DeepEquals, want)
+}
+
+func TestCreatePostgresBranchRequestSerializesExplicitZeroReplicas(t *testing.T) {
+	c := qt.New(t)
+	replicas := 0
+
+	body, err := json.Marshal(&CreatePostgresBranchRequest{
+		Name:     testPostgresBranch,
+		Replicas: &replicas,
+	})
+	c.Assert(err, qt.IsNil)
+
+	var decoded map[string]any
+	c.Assert(json.Unmarshal(body, &decoded), qt.IsNil)
+	c.Assert(decoded["replicas"], qt.Equals, float64(0))
+}
+
+func TestCreatePostgresBranchRequestSerializesNonzeroReplicas(t *testing.T) {
+	c := qt.New(t)
+	replicas := 3
+
+	body, err := json.Marshal(&CreatePostgresBranchRequest{
+		Name:     testPostgresBranch,
+		Replicas: &replicas,
+	})
+	c.Assert(err, qt.IsNil)
+
+	var decoded map[string]any
+	c.Assert(json.Unmarshal(body, &decoded), qt.IsNil)
+	c.Assert(decoded["replicas"], qt.Equals, float64(3))
 }
 
 func TestPostgresBranches_List(t *testing.T) {
@@ -639,6 +674,72 @@ func TestPostgresBranches_ResizeParameterValidationError(t *testing.T) {
 	var psErr *Error
 	c.Assert(errors.As(err, &psErr), qt.IsTrue)
 	c.Assert(psErr.Code, qt.Equals, ErrInvalid)
+}
+
+func TestPostgresBranches_CreateWithNekiRestoreSizes(t *testing.T) {
+	c := qt.New(t)
+
+	replicas := 2
+	zeroReplicas := 0
+	replicasPerCell := 1
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+
+		var body map[string]any
+		err := json.NewDecoder(r.Body).Decode(&body)
+		c.Assert(err, qt.IsNil)
+		c.Assert(body["backup_id"], qt.Equals, "bak_123")
+		c.Assert(body["cluster_name"], qt.Equals, nil)
+
+		profiles, ok := body["configuration_profile_sizes"].([]any)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(profiles, qt.HasLen, 2)
+		c.Assert(profiles[0], qt.DeepEquals, map[string]any{
+			"name":         "default",
+			"cluster_size": "PS_40",
+			"replicas":     float64(2),
+		})
+		c.Assert(profiles[1], qt.DeepEquals, map[string]any{
+			"name":     "analytics",
+			"replicas": float64(0),
+		})
+
+		routers, ok := body["router_sizes"].([]any)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(routers, qt.HasLen, 1)
+		c.Assert(routers[0], qt.DeepEquals, map[string]any{
+			"name":              "default",
+			"router_size":       "NKR_20",
+			"replicas_per_cell": float64(1),
+		})
+
+		out := `{"id":"postgres-test-branch","name":"postgres-test-branch","created_at":"2021-01-14T10:19:23.000Z","updated_at":"2021-01-14T10:19:23.000Z", "region": {"slug": "us-west", "display_name": "US West"}}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	branch, err := client.PostgresBranches.Create(ctx, &CreatePostgresBranchRequest{
+		Organization: "my-org",
+		Database:     "postgres-test-db",
+		Name:         testPostgresBranch,
+		BackupID:     "bak_123",
+		ConfigurationProfileSizes: []ConfigurationProfileSize{
+			{Name: "default", ClusterSize: "PS_40", Replicas: &replicas},
+			{Name: "analytics", Replicas: &zeroReplicas},
+		},
+		RouterSizes: []RouterSize{
+			{Name: "default", RouterSize: "NKR_20", ReplicasPerCell: &replicasPerCell},
+		},
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(branch.Name, qt.Equals, testPostgresBranch)
 }
 
 func TestPostgresBranches_CreateWithStorage(t *testing.T) {

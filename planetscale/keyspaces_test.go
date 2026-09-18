@@ -3,8 +3,10 @@ package planetscale
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -193,6 +195,76 @@ func TestKeyspaces_Create(t *testing.T) {
 	c.Assert(keyspace.ID, qt.Equals, wantID)
 	c.Assert(keyspace.Sharded, qt.Equals, true)
 	c.Assert(keyspace.Shards, qt.Equals, 2)
+}
+
+func TestKeyspaces_CreateExternal(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/foo/databases/bar/branches/baz/keyspaces/external")
+		var body map[string]any
+		c.Assert(json.NewDecoder(r.Body).Decode(&body), qt.IsNil)
+		c.Assert(body["name"], qt.Equals, "commerce")
+		c.Assert(body["cluster_size"], qt.Equals, "PS_10")
+		ds := body["external_datasource"].(map[string]any)
+		c.Assert(ds["hostname"], qt.Equals, "db.example.com")
+		c.Assert(ds["database_name"], qt.Equals, "commerce")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`{"id":"thisisanid","name":"commerce","external":true,"cluster_name":"PS_10"}`))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	keyspace, err := client.Keyspaces.CreateExternal(context.Background(), &CreateExternalKeyspaceRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Name:         "commerce",
+		ClusterSize:  "PS_10",
+		ExternalDatasource: ExternalDatasource{
+			Hostname:     "db.example.com",
+			DatabaseName: "commerce",
+			Username:     "import",
+			Password:     "secret",
+			Port:         3306,
+			SSLMode:      "required",
+		},
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(keyspace.ID, qt.Equals, "thisisanid")
+	c.Assert(keyspace.External, qt.IsTrue)
+}
+
+func TestKeyspaces_LintExternal(t *testing.T) {
+	c := qt.New(t)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPost)
+		c.Assert(r.URL.Path, qt.Equals, "/v1/organizations/foo/databases/bar/branches/baz/keyspaces/external/lint")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`{"can_connect":true,"total_storage_bytes":100}`))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	resp, err := client.Keyspaces.LintExternal(context.Background(), &LintExternalKeyspaceRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		ExternalDatasource: ExternalDatasource{
+			Hostname:     "db.example.com",
+			DatabaseName: "commerce",
+			Username:     "import",
+		},
+	})
+	c.Assert(err, qt.IsNil)
+	c.Assert(resp.CanConnect, qt.IsTrue)
+	c.Assert(resp.TotalStorageBytes, qt.Equals, int64(100))
 }
 
 func TestKeyspaces_Delete(t *testing.T) {
@@ -478,4 +550,42 @@ func TestKeyspaces_UpdateSettings(t *testing.T) {
 	c.Assert(keyspace.VReplicationFlags.AllowNoBlobBinlogRowImage, qt.Equals, true)
 	c.Assert(keyspace.VReplicationFlags.VPlayerBatching, qt.Equals, true)
 	c.Assert(keyspace.ReplicationDurabilityConstraints.Strategy, qt.Equals, "maximum")
+}
+
+func TestKeyspaces_UpdateSettingsMaxRollout(t *testing.T) {
+	c := qt.New(t)
+
+	var body string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Method, qt.Equals, http.MethodPatch)
+
+		raw, err := io.ReadAll(r.Body)
+		c.Assert(err, qt.IsNil)
+		body = string(raw)
+
+		w.WriteHeader(200)
+		out := `{"type":"Keyspace","id":"thisisanid","name":"planetscale","max_rollout":8}`
+		_, err = w.Write([]byte(out))
+		c.Assert(err, qt.IsNil)
+	}))
+
+	client, err := NewClient(WithBaseURL(ts.URL))
+	c.Assert(err, qt.IsNil)
+
+	ctx := context.Background()
+	maxRollout := 8
+
+	keyspace, err := client.Keyspaces.UpdateSettings(ctx, &UpdateKeyspaceSettingsRequest{
+		Organization: "foo",
+		Database:     "bar",
+		Branch:       "baz",
+		Keyspace:     "qux",
+		MaxRollout:   &maxRollout,
+	})
+
+	c.Assert(err, qt.IsNil)
+	c.Assert(strings.TrimSpace(body), qt.Equals, `{"max_rollout":8}`)
+	c.Assert(keyspace.MaxRollout, qt.Not(qt.IsNil))
+	c.Assert(*keyspace.MaxRollout, qt.Equals, 8)
 }

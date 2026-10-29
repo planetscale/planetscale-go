@@ -1,9 +1,0 @@
-agents:
-  queue: "public"
-steps:
-  - name: "Go build and test"
-    command: make
-    plugins:
-      - docker-compose#v4.14.0:
-          cli-version: "2"
-          run: app

@@ -1,4 +1,4 @@
-# planetscale-go [![Go Reference](https://pkg.go.dev/badge/github.com/planetscale/planetscale-go/planetscale.svg)](https://pkg.go.dev/github.com/planetscale/planetscale-go/planetscale) [![Build status](https://badge.buildkite.com/82dafa9518fe94b3fed75db71bcfc3836faeec49816e400f2e.svg?branch=main)](https://buildkite.com/planetscale/planetscale-go)
+# planetscale-go [![Go Reference](https://pkg.go.dev/badge/github.com/planetscale/planetscale-go/planetscale.svg)](https://pkg.go.dev/github.com/planetscale/planetscale-go/planetscale) [![CI](https://github.com/planetscale/planetscale-go/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/planetscale/planetscale-go/actions/workflows/ci.yaml)
 
 Go package to access the PlanetScale API.
 

@@ -63,6 +63,7 @@ type Client struct {
 	Keyspaces                      KeyspacesService
 	Logs                           LogsService
 	LookupVindex                   LookupVindexService
+	MaintenanceEvents              MaintenanceEventsService
 	MaintenanceSchedules           MaintenanceSchedulesService
 	Materialize                    MaterializeService
 	Metrics                        MetricsService
@@ -98,6 +99,7 @@ type Client struct {
 	TrafficRules             TrafficRulesService
 	VDiff                    VDiffService
 	Vtctld                   VtctldService
+	OIDCTrusts               OIDCTrustsService
 	Webhooks                 WebhooksService
 	Workflows                WorkflowsService
 }
@@ -369,6 +371,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.Keyspaces = &keyspacesService{client: c}
 	c.Logs = &logsService{client: c}
 	c.LookupVindex = &lookupVindexService{client: c}
+	c.MaintenanceEvents = &maintenanceEventsService{client: c}
 	c.MaintenanceSchedules = &maintenanceSchedulesService{client: c}
 	c.Materialize = &materializeService{client: c}
 	c.Metrics = &metricsService{client: c}
@@ -404,6 +407,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	c.TrafficRules = &trafficRulesService{client: c}
 	c.VDiff = &vdiffService{client: c}
 	c.Vtctld = &vtctldService{client: c}
+	c.OIDCTrusts = &oidcTrustsService{client: c}
 	c.Webhooks = &webhooksService{client: c}
 	c.Workflows = &workflowsService{client: c}
 

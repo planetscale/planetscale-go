@@ -34,4 +34,4 @@ jobs:
         with:
           version: "5.1.0"
 
-      - uses: licensee/licensed-ci@98eef7c23bcf8211e108781a9594e969da913e89 # v1.11.2
+      - uses: licensee/licensed-ci@f1f6507544a9db25b0f4730230bfdf67a9c1bc90 # v1.12.1
